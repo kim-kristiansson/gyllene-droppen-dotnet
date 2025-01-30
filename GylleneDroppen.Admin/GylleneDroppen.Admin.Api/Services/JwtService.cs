@@ -2,12 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using GylleneDroppen.Admin.Api.Options;
+using GylleneDroppen.Admin.Api.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace GylleneDroppen.Admin.Api.Services;
 
-public class JwtService(IOptions<JwtOptions> jwtOptions)
+public class JwtService(IOptions<JwtOptions> jwtOptions) : IJwtService
 {
     public string GenerateToken(Guid userId)
     {
