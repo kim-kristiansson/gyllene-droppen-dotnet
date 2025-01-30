@@ -23,7 +23,7 @@ public static class ConfigureOptionsExtensions
         {
             var sectionName = configType.Name; 
             var genericMethod = configureMethod.MakeGenericMethod(configType);
-            genericMethod.Invoke(null, new object[] { services, configuration.GetSection(sectionName) });
+            genericMethod.Invoke(null, [services, configuration.GetSection(sectionName)]);
         }
     }
 }
