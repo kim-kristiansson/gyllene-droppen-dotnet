@@ -10,6 +10,8 @@ builder.Services.AddConfigureOptions(builder.Configuration);
 
 builder.Services.AddJwtAuthentication();
 
+builder.Services.AddDatabase();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

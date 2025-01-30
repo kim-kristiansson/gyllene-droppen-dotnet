@@ -9,6 +9,7 @@ public static class ConfigureOptionsExtensions
         var configMappings = new Dictionary<Type, string>
         {
             { typeof(JwtOptions), "JwtOptions" },
+            { typeof(DatabaseOptions), "DatabaseOptions" },
         };
 
         foreach (var (configType, sectionName) in configMappings)
