@@ -1,3 +1,4 @@
+using System.Reflection;
 using GylleneDroppen.Admin.Api.Services;
 using GylleneDroppen.Admin.Api.Services.Interfaces;
 
@@ -7,14 +8,21 @@ public static class ScopedServicesExtension
 {
     public static void AddScopedServices(this IServiceCollection services)
     {
-        var serviceMappings = new Dictionary<Type, Type>
-        {
-            { typeof(IJwtService), typeof(JwtService) },
-        };
+        var serviceType = Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => t is {IsClass: true, IsAbstract: false} && 
+                        t.GetInterfaces().Any(i => i.Name.EndsWith("Service")))
+            .ToList();
 
-        foreach (var mapping in serviceMappings)
+        foreach (var implementationType in serviceType)
         {
-            services.AddScoped(mapping.Key, mapping.Value);
+            var interfaceType = implementationType.GetInterfaces()
+                .FirstOrDefault(i => i.Name == $"I{implementationType.Name}");
+
+            if (interfaceType is not null)
+            {
+                services.AddScoped(interfaceType, implementationType);
+            }
         }
     }
 }
