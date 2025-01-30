@@ -6,6 +6,8 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddConfigureOptions(builder.Configuration);
 
+builder.Services.AddJwtAuthentication();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
