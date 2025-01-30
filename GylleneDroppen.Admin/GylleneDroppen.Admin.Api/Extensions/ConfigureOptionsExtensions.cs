@@ -4,7 +4,7 @@ namespace GylleneDroppen.Admin.Api.Extensions;
 
 public static class ConfigureOptionsExtensions
 {
-    public static IServiceCollection AddAppConfigurations(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddConfigureOptions(this IServiceCollection services, IConfiguration configuration)
     {
         var configMappings = new Dictionary<Type, string>
         {
