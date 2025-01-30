@@ -4,6 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
+builder.Services.AddScopedServices();
+
 builder.Services.AddConfigureOptions(builder.Configuration);
 
 builder.Services.AddJwtAuthentication();
