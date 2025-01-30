@@ -1,4 +1,4 @@
-using GylleneDroppen.Admin.Api.Options;
+using System.Reflection;
 
 namespace GylleneDroppen.Admin.Api.Extensions;
 
@@ -6,19 +6,24 @@ public static class ConfigureOptionsExtensions
 {
     public static void AddConfigureOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        var configMappings = new Dictionary<Type, string>
-        {
-            { typeof(JwtOptions), "JwtOptions" },
-            { typeof(DatabaseOptions), "DatabaseOptions" },
-        };
+        var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
+            .GetMethods()
+            .First(m => m.Name == nameof(OptionsConfigurationServiceCollectionExtensions.Configure)
+                        && m.GetGenericArguments().Length == 1
+                        && m.GetParameters().Length == 2
+                        && m.GetParameters()[1].ParameterType == typeof(IConfiguration));
 
-        foreach (var (configType, sectionName) in configMappings)
-        {
-            var method = typeof(OptionsConfigurationServiceCollectionExtensions)
-                .GetMethod("Configure", [typeof(IServiceCollection), typeof(IConfigurationSection)])!
-                .MakeGenericMethod(configType);
+        var optionTypes = Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } &&
+                        t.GetProperties().Any(p => p.SetMethod is not null)) 
+            .ToList();
 
-            method.Invoke(null, [services, configuration.GetSection(sectionName)]);
+        foreach (var configType in optionTypes)
+        {
+            var sectionName = configType.Name; 
+            var genericMethod = configureMethod.MakeGenericMethod(configType);
+            genericMethod.Invoke(null, new object[] { services, configuration.GetSection(sectionName) });
         }
     }
 }
