@@ -1,5 +1,4 @@
 using GylleneDroppen.Admin.Api.Data.Configurations;
-using GylleneDroppen.Admin.Api.Extensions;
 using GylleneDroppen.Admin.Api.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new UserConfiguration());
+        
         base.OnModelCreating(modelBuilder);
     }
 }
