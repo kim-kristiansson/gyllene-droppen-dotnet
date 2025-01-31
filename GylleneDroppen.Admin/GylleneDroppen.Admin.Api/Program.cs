@@ -1,6 +1,9 @@
+using DotNetEnv;
 using GylleneDroppen.Admin.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Env.Load();
 
 builder.Services.AddOpenApi();
 
