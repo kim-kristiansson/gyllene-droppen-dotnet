@@ -1,16 +1,19 @@
+using DotNetEnv;
 using GylleneDroppen.Admin.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
+Env.Load();
 
-builder.Services.AddScopedServices();
+builder.Services.AddOpenApi();
 
 builder.Services.AddConfigureOptions(builder.Configuration);
 
 builder.Services.AddJwtAuthentication();
 
 builder.Services.AddDatabase();
+
+builder.Services.AddDependencyInjections();
 
 var app = builder.Build();
 
