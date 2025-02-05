@@ -6,7 +6,7 @@ using GylleneDroppen.Admin.Api.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace GylleneDroppen.Admin.Api.Services;
+namespace GylleneDroppen.Admin.Api.Services.Security;
 
 public class JwtService(IOptions<JwtOptions> jwtOptions) : IJwtService
 {
