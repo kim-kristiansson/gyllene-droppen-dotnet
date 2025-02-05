@@ -7,13 +7,13 @@ Env.Load();
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddScopedServices();
-
 builder.Services.AddConfigureOptions(builder.Configuration);
 
 builder.Services.AddJwtAuthentication();
 
 builder.Services.AddDatabase();
+
+builder.Services.AddDependencyInjections();
 
 var app = builder.Build();
 

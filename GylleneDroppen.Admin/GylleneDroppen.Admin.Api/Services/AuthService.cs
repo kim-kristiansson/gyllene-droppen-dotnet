@@ -5,7 +5,7 @@ using GylleneDroppen.Admin.Api.Utilities.Interfaces;
 
 namespace GylleneDroppen.Admin.Api.Services;
 
-public class AuthService(IUserService userService, IUserRepository userRepository, IArgon2Hasher argon2Hasher, JsonWebToken jsonWebToken) : IAuthService
+public class AuthService(IUserService userService, IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJsonWebToken jsonWebToken) : IAuthService
 {
     public async Task<ServiceResponse<string>> LoginAsync(string email, string password)
     {
