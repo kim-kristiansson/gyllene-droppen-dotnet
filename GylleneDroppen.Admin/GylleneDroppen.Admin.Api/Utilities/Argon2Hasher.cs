@@ -1,9 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using GylleneDroppen.Admin.Api.Services.Interfaces;
+using GylleneDroppen.Admin.Api.Utilities.Interfaces;
 using Konscious.Security.Cryptography;
 
-namespace GylleneDroppen.Admin.Api.Services;
+namespace GylleneDroppen.Admin.Api.Utilities;
 
 public class Argon2Hasher : IArgon2Hasher
 {

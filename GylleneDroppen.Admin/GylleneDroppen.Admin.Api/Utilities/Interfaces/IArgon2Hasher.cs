@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Admin.Api.Services.Interfaces;
+namespace GylleneDroppen.Admin.Api.Utilities.Interfaces;
 
 public interface IArgon2Hasher
 {
