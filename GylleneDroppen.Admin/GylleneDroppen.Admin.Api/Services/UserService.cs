@@ -9,7 +9,7 @@ namespace GylleneDroppen.Admin.Api.Services;
 
 public class UserService(IUserRepository userRepository, IArgon2Hasher argon2Hasher) : IUserService
 {
-    public async Task<ServiceResponse<RegisterResponse>> CreateUserAsync(string email, string password)
+    public async Task<ServiceResponse<MessageResponse>> CreateUserAsync(string email, string password)
     {
         var (hash, salt) = argon2Hasher.HashPassword(password);
 
@@ -24,6 +24,6 @@ public class UserService(IUserRepository userRepository, IArgon2Hasher argon2Has
         await userRepository.AddAsync(user);
         await userRepository.SaveChangesAsync();
         
-        return ServiceResponse<RegisterResponse>.Success(new RegisterResponse("User registered successfully. Please check your email for verification."));
+        return ServiceResponse<MessageResponse>.Success(new MessageResponse("User registered successfully. Please check your email for verification."));
     }
 }

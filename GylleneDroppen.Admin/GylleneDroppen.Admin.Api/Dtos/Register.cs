@@ -15,8 +15,3 @@ public class RegisterRequest
     [Compare("Password")]
     public required string ConfirmPassword { get; init; }
 }
-
-public class RegisterResponse(string message)
-{
-    public string Message { get; init; } = message;
-}

@@ -6,5 +6,5 @@ namespace GylleneDroppen.Admin.Api.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<ServiceResponse<RegisterResponse>> CreateUserAsync(string email, string password);
+    Task<ServiceResponse<MessageResponse>> CreateUserAsync(string email, string password);
 }

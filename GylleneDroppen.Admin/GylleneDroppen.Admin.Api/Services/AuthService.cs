@@ -27,11 +27,19 @@ public class AuthService(IUserService userService, IUserRepository userRepositor
         });
     }
 
-    public async Task<ServiceResponse<RegisterResponse>> RegisterAsync(RegisterRequest request)
+    public async Task<ServiceResponse<MessageResponse>> RegisterAsync(RegisterRequest request)
     {
         if(await userRepository.GetByEmailAsync(request.Email) is not null)
-            return ServiceResponse<RegisterResponse>.Failure("Email already exists.", 400);
+            return ServiceResponse<MessageResponse>.Failure("Email already exists.", 400);
 
         return await userService.CreateUserAsync(request.Email, request.Password);
+    }
+
+    public async Task<ServiceResponse<MessageResponse>> LogoutAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token)) return ServiceResponse<MessageResponse>.Failure("Invalid token.", 400);
+        
+        await jsonWebToken.BlacklistTokenAsync(token);
+        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Logged out successfully."));
     }
 }

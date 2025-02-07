@@ -2,13 +2,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using GylleneDroppen.Admin.Api.Options;
+using GylleneDroppen.Admin.Api.Repositories.Interfaces;
 using GylleneDroppen.Admin.Api.Utilities.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace GylleneDroppen.Admin.Api.Utilities;
 
-public class JsonWebToken(IOptions<JwtOptions> jwtOptions) : IJsonWebToken
+public class JsonWebToken(IOptions<JwtOptions> jwtOptions, IRedisRepository redisRepository) : IJsonWebToken
 {
     public string GenerateToken(Guid userId)
     {
@@ -31,4 +32,24 @@ public class JsonWebToken(IOptions<JwtOptions> jwtOptions) : IJsonWebToken
         
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    
+    public async Task BlacklistTokenAsync(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+
+        if (handler.ReadToken(token) is not JwtSecurityToken jwtToken) return;
+
+        var expiration = jwtToken.ValidTo;
+        var ttl = expiration.Subtract(DateTime.UtcNow);
+
+        if (ttl <= TimeSpan.Zero) return;
+
+        await redisRepository.SaveAsync($"blacklist:{token}", "revoked", ttl);
+    }
+
+    public async Task<bool> IsTokenBlacklistedAsync(string token)
+    {
+        return await redisRepository.ExistsAsync($"blacklist:{token}");
+    }
+
 }

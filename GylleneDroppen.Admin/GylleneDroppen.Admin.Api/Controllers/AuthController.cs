@@ -21,4 +21,12 @@ public class AuthController(IAuthService authService) : ControllerBase
         var response = await authService.RegisterAsync(registerRequest);
         return response.ToActionResult();
     }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var token = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        var response = await authService.LogoutAsync(token);
+        return response.ToActionResult();
+    }
 }
