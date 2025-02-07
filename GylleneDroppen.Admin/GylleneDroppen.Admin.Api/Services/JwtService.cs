@@ -1,15 +1,16 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using GylleneDroppen.Admin.Api.Options;
 using GylleneDroppen.Admin.Api.Repositories.Interfaces;
-using GylleneDroppen.Admin.Api.Utilities.Interfaces;
+using GylleneDroppen.Admin.Api.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace GylleneDroppen.Admin.Api.Utilities;
+namespace GylleneDroppen.Admin.Api.Services;
 
-public class JsonWebToken(IOptions<JwtOptions> jwtOptions, IRedisRepository redisRepository) : IJsonWebToken
+public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisRepository) : IJwtService
 {
     public string GenerateToken(Guid userId)
     {
@@ -26,7 +27,7 @@ public class JsonWebToken(IOptions<JwtOptions> jwtOptions, IRedisRepository redi
             issuer: jwtOptions.Value.Issuer,
             audience: jwtOptions.Value.Audience,
             claims: claims,
-            expires: DateTime.Now.AddMinutes(jwtOptions.Value.ExpirationMinutes),
+            expires: DateTime.Now.AddMinutes(jwtOptions.Value.AccessTokenExpirationMinutes),
             signingCredentials: credentials
         );
         
@@ -52,4 +53,26 @@ public class JsonWebToken(IOptions<JwtOptions> jwtOptions, IRedisRepository redi
         return await redisRepository.ExistsAsync($"blacklist:{token}");
     }
 
+    public string GenerateRefreshToken(Guid userId)
+    {
+        var randomBytes = new byte[62];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
+    }
+
+    public async Task SaveRefreshTokenAsync(Guid userId, string refreshToken)
+    {
+        await redisRepository.SaveAsync($"refresh:{userId}", refreshToken, TimeSpan.FromDays(jwtOptions.Value.RefreshTokenExpirationDays));
+    }
+
+    public async Task<string?> GetRefreshTokenAsync(Guid userId)
+    {
+        return await redisRepository.GetAsync($"refresh:{userId}");
+    }
+
+    public async Task RevokeRefreshTokenAsync(Guid userId)
+    {
+        await redisRepository.DeleteAsync($"refresh:{userId}");
+    }
 }

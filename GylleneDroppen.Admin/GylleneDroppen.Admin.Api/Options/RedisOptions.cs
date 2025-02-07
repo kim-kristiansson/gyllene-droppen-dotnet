@@ -2,6 +2,6 @@ namespace GylleneDroppen.Admin.Api.Options;
 
 public class RedisOptions
 {
-    public string ConnectionString { get; set; }
-    public string BlacklistedTokenTtl { get; set; }
+     public required string ConnectionString { get; init; }
+     public required string InstanceName { get; init; }
 }

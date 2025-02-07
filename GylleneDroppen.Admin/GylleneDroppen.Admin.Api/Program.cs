@@ -14,6 +14,8 @@ builder.Services.AddJwtAuthentication();
 
 builder.Services.AddDatabase();
 
+builder.Services.AddRedis(builder.Configuration);
+
 builder.Services.AddDependencyInjections();
 
 builder.Services.AddControllers();
@@ -29,6 +31,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddlewares();
 
 app.MapControllers();
+
+app.UseAuthentication();
 
 app.UseHttpsRedirection();
 

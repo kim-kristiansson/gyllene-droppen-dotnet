@@ -12,17 +12,18 @@ public static class DependencyInjectionExtensions
      {
          { typeof(IAuthService), typeof(AuthService) },
          { typeof(IUserService), typeof(UserService) },
+         { typeof(IJwtService), typeof(JwtService) }
      };
      
      private static readonly Dictionary<Type, Type> Repositories = new()
      {
          { typeof(IUserRepository), typeof(UserRepository) },
+         {typeof(IRedisRepository), typeof(RedisRepository)}
      };
      
      private static readonly Dictionary<Type, Type> Utilities = new()
      {
-         { typeof(IArgon2Hasher), typeof(Argon2Hasher) },
-         { typeof(IJsonWebToken), typeof(JsonWebToken) },
+         { typeof(IArgon2Hasher), typeof(Argon2Hasher) }
      };
 
     
