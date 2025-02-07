@@ -24,10 +24,10 @@ public class Argon2Hasher : IArgon2Hasher
 
     public bool VerifyPassword(string password, string storedHash, string storedSalt)
     {
-        var saltBytes = Convert.FromBase64String(storedHash);
+        var saltBytes = Convert.FromBase64String(storedSalt);
         var computedHash = HashArgon2(password, saltBytes);
         
-        return Convert.ToBase64String(computedHash) == storedSalt;
+        return Convert.ToBase64String(computedHash) == storedHash;
     }
 
     private static byte[] HashArgon2(string password, byte[] salt)
