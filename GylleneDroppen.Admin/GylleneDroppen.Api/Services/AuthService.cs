@@ -1,4 +1,5 @@
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Models;
 using GylleneDroppen.Api.Repositories.Interfaces;
 using GylleneDroppen.Api.Services.Interfaces;
 using GylleneDroppen.Api.Utilities;
@@ -6,7 +7,7 @@ using GylleneDroppen.Api.Utilities.Interfaces;
 
 namespace GylleneDroppen.Api.Services;
 
-public class AuthService(IUserService userService, IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService) : IAuthService
+public class AuthService(IUserService userService, IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService, IRedisRepository redisRepository) : IAuthService
 {
     public async Task<ServiceResponse<LoginResponse>> LoginAsync(LoginRequest request)
     {
@@ -35,6 +36,19 @@ public class AuthService(IUserService userService, IUserRepository userRepositor
     {
         if(await userRepository.GetByEmailAsync(request.Email) is not null)
             return ServiceResponse<MessageResponse>.Failure("Email already exists.", 400);
+
+
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = request.Email,
+            PasswordHash = argon2Hasher.HashPassword(request.Password).Hash,
+            PasswordSalt = argon2Hasher.HashPassword(request.Password).Salt
+        };
+
+        var verificationCode = CodeGenerator.GenerateVerificationCode(6);
+        
+        await redisRepository.SaveAsync($"pending_user:{user.Email}", verificationCode, TimeSpan.FromMinutes(15));
 
         return await userService.CreateUserAsync(request.Email, request.Password);
     }
