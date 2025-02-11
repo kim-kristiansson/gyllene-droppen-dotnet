@@ -9,4 +9,5 @@ public interface IAuthService
     Task<ServiceResponse<MessageResponse>> RegisterAsync(RegisterRequest request);
     Task<ServiceResponse<MessageResponse>> LogoutAsync(string accessToken, LogoutRequest request);
     Task<ServiceResponse<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request);
+    Task<ServiceResponse<MessageResponse>> ConfirmEmailAsync(ConfirmEmailRequest request);
 }

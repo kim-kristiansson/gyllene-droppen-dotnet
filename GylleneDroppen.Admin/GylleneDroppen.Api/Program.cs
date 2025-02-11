@@ -14,6 +14,8 @@ builder.Services.AddJwtAuthentication();
 
 builder.Services.AddDatabase();
 
+builder.Services.AddSmtpClient();
+
 builder.Services.AddRedis(builder.Configuration);
 
 builder.Services.AddDependencyInjections();
