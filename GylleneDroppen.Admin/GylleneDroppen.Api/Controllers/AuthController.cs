@@ -1,3 +1,4 @@
+using GylleneDroppen.Api.Attributes;
 using GylleneDroppen.Api.Dtos;
 using GylleneDroppen.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -33,6 +34,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         return response.ToActionResult();
     }
 
+    [Authorize]
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
     {
@@ -45,5 +47,12 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var result = await authService.ConfirmEmailAsync(request);
         return result.ToActionResult();
+    }
+    
+    [Admin]
+    [HttpGet("admin")]
+    public IActionResult Admin()
+    {
+        return Ok();
     }
 }
