@@ -1,15 +1,17 @@
 using System.Text.Json;
 using GylleneDroppen.Api.Dtos;
 using GylleneDroppen.Api.Models;
+using GylleneDroppen.Api.Options;
 using GylleneDroppen.Api.RedisModels;
 using GylleneDroppen.Api.Repositories.Interfaces;
 using GylleneDroppen.Api.Services.Interfaces;
 using GylleneDroppen.Api.Utilities;
 using GylleneDroppen.Api.Utilities.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace GylleneDroppen.Api.Services;
 
-public class AuthService(IUserService userService, IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService, IRedisRepository redisRepository, IEmailService emailService) : IAuthService
+public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService, IRedisRepository redisRepository, IEmailService emailService, IOptions<GlobalOptions> globalOptions) : IAuthService
 {
     public async Task<ServiceResponse<LoginResponse>> LoginAsync(LoginRequest request)
     {
@@ -43,12 +45,14 @@ public class AuthService(IUserService userService, IUserRepository userRepositor
         if (existingPendingUser != null)
             return ServiceResponse<MessageResponse>.Failure("A verification code has already been sent. Please check your email.", 400);
 
+        var (hash, salt) = argon2Hasher.HashPassword(request.Password);
+        
         var user = new User
         {
             Id = Guid.NewGuid(),
             Email = request.Email,
-            PasswordHash = argon2Hasher.HashPassword(request.Password).Hash,
-            PasswordSalt = argon2Hasher.HashPassword(request.Password).Salt
+            PasswordHash = hash,
+            PasswordSalt = salt
         };
 
         var confirmationCode = CodeGenerator.GenerateConfirmationCode(6);
@@ -63,7 +67,9 @@ public class AuthService(IUserService userService, IUserRepository userRepositor
         
         await redisRepository.SaveAsync($"pending_user:{user.Email}", pendingUserJson, TimeSpan.FromMinutes(15));
         
-        return await emailService.SendEmailVerificationCodeAsync(user.Email, confirmationCode);
+        var confirmationLink = $"{globalOptions.Value.FrontendBaseUrl}/verify-email?email={user.Email}&code={confirmationCode}";
+        
+        return await emailService.SendEmailVerificationCodeAsync(user.Email, confirmationCode, confirmationLink);
     }
 
     public async Task<ServiceResponse<MessageResponse>> LogoutAsync(string token, LogoutRequest request)
@@ -90,6 +96,10 @@ public class AuthService(IUserService userService, IUserRepository userRepositor
         var newAccessToken = jwtService.GenerateToken(request.UserId);
         var newRefreshToken = jwtService.GenerateRefreshToken(request.UserId);
         
+        await jwtService.RevokeRefreshTokenAsync(request.UserId);
+        
+        await jwtService.SaveRefreshTokenAsync(request.UserId, newRefreshToken);
+        
         var response = new RefreshTokenResponse()
         {
             AccessToken = newAccessToken, 
@@ -108,7 +118,7 @@ public class AuthService(IUserService userService, IUserRepository userRepositor
         
         var pendingUser = JsonSerializer.Deserialize<PendingUser>(pendingUserJson);
         
-        if (pendingUser == null || pendingUser.ConfirmationCode != request.ConfirmationCode)
+        if (pendingUser is null || !pendingUser.ConfirmationCode.Equals(request.ConfirmationCode, StringComparison.OrdinalIgnoreCase))
             return ServiceResponse<MessageResponse>.Failure("Invalid confirmation code.", 400);
         
         await userRepository.AddAsync(pendingUser.User);

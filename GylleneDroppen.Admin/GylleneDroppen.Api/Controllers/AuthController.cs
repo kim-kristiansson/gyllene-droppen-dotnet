@@ -43,6 +43,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("confirm-email")]
     public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request)
     {
-        var result = await authService.ConfirmEmailAsync()
+        var result = await authService.ConfirmEmailAsync(request);
+        return result.ToActionResult();
     }
 }

@@ -12,7 +12,6 @@ public static class DependencyInjectionExtensions
      private static readonly Dictionary<Type, Type> Services = new()
      {
          { typeof(IAuthService), typeof(AuthService) },
-         { typeof(IUserService), typeof(UserService) },
          { typeof(IJwtService), typeof(JwtService) }
      };
      
