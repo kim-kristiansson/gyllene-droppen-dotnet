@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using GylleneDroppen.Api.Models;
 using GylleneDroppen.Api.Options;
 using GylleneDroppen.Api.Repositories.Interfaces;
 using GylleneDroppen.Api.Services.Interfaces;
@@ -12,14 +13,15 @@ namespace GylleneDroppen.Api.Services;
 
 public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisRepository) : IJwtService
 {
-    public string GenerateToken(Guid userId)
+    public string GenerateToken(User user)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Value.Secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>
         {
-            new (ClaimTypes.Name, userId.ToString()),
+            new (ClaimTypes.Name, user.Id.ToString()),
+            new (ClaimTypes.Role, user.Role.ToString()),
             new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Enums;
 using GylleneDroppen.Api.Models;
 using GylleneDroppen.Api.Options;
 using GylleneDroppen.Api.RedisModels;
@@ -22,7 +23,7 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
             return ServiceResponse<LoginResponse>.Failure("Invalid email or password.", 401);
         }
 
-        var accessToken = jwtService.GenerateToken(user.Id);
+        var accessToken = jwtService.GenerateToken(user);
         var refreshToken = jwtService.GenerateRefreshToken(user.Id);
         
         await jwtService.SaveRefreshTokenAsync(user.Id, refreshToken);
@@ -52,7 +53,8 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
             Id = Guid.NewGuid(),
             Email = request.Email,
             PasswordHash = hash,
-            PasswordSalt = salt
+            PasswordSalt = salt,
+            Role = RoleType.User,
         };
 
         var confirmationCode = CodeGenerator.GenerateConfirmationCode(6);
@@ -92,8 +94,12 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         var storedRefreshToken = await jwtService.GetRefreshTokenAsync(request.UserId);
         if(storedRefreshToken == null || storedRefreshToken != request.RefreshToken)
             return ServiceResponse<RefreshTokenResponse>.Failure("Invalid refresh token.", 400);
+        
+        var user = await userRepository.GetByIdAsync(request.UserId);
+        if(user == null)
+            return ServiceResponse<RefreshTokenResponse>.Failure("Invalid refresh token.", 404);
 
-        var newAccessToken = jwtService.GenerateToken(request.UserId);
+        var newAccessToken = jwtService.GenerateToken(user);
         var newRefreshToken = jwtService.GenerateRefreshToken(request.UserId);
         
         await jwtService.RevokeRefreshTokenAsync(request.UserId);

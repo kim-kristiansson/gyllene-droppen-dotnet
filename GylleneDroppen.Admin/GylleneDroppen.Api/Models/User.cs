@@ -1,3 +1,5 @@
+using GylleneDroppen.Api.Enums;
+
 namespace GylleneDroppen.Api.Models;
 
 public class User
@@ -6,4 +8,5 @@ public class User
     public required string Email { get; init; }
     public required string PasswordHash { get; init; }
     public required string PasswordSalt { get; init; }
+    public required RoleType Role { get; init; } 
 }

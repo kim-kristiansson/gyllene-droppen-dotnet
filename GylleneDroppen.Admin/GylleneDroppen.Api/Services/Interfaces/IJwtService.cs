@@ -1,8 +1,10 @@
+using GylleneDroppen.Api.Models;
+
 namespace GylleneDroppen.Api.Services.Interfaces;
 
 public interface IJwtService
 {
-    string GenerateToken(Guid userId);
+    string GenerateToken(User user);
     Task BlacklistTokenAsync(string token);
     Task<bool> IsTokenBlacklistedAsync(string token);
     string GenerateRefreshToken(Guid userId);
