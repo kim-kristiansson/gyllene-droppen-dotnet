@@ -4,7 +4,7 @@ namespace GylleneDroppen.Api.Utilities;
 
 public static class CodeGenerator
 {
-    public static string GenerateVerificationCode(int length)
+    public static string GenerateConfirmationCode(int length)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         return new string(Enumerable.Range(0, length)
