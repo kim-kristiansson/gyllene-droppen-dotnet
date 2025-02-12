@@ -10,7 +10,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddConfigureOptions(builder.Configuration);
 
-builder.Services.AddJwtAuthentication();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddDatabase();
 
@@ -35,6 +35,8 @@ app.UseMiddlewares();
 app.MapControllers();
 
 app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.UseHttpsRedirection();
 

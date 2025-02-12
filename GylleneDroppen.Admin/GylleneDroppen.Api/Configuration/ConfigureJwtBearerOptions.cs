@@ -13,8 +13,8 @@ public class ConfigureJwtBearerOptions : IConfigureOptions<JwtBearerOptions>
     public ConfigureJwtBearerOptions(IOptions<JwtOptions> jwtOptions)
     {
         _jwtOptions = jwtOptions.Value;
-        
-        if(string.IsNullOrWhiteSpace(_jwtOptions.Secret) || _jwtOptions.Secret.Length < 32)
+
+        if (string.IsNullOrWhiteSpace(_jwtOptions.Secret) || _jwtOptions.Secret.Length < 32)
         {
             throw new ArgumentException("JWT Secret is missing or too short (must be at least 32 characters).");
         }
@@ -22,6 +22,7 @@ public class ConfigureJwtBearerOptions : IConfigureOptions<JwtBearerOptions>
 
     public void Configure(JwtBearerOptions options)
     {
+        Console.WriteLine($"JWT Secret!!: {_jwtOptions.Secret}");
         options.TokenValidationParameters = new TokenValidationParameters
         {
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret)),

@@ -128,6 +128,8 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
             return ServiceResponse<MessageResponse>.Failure("Invalid confirmation code.", 400);
         
         await userRepository.AddAsync(pendingUser.User);
+
+        await userRepository.SaveChangesAsync();
         
         await redisRepository.DeleteAsync($"pending_user:{request.Email}");
         
