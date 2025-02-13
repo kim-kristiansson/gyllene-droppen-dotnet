@@ -2,17 +2,15 @@ using System.Text.Json;
 using GylleneDroppen.Api.Dtos;
 using GylleneDroppen.Api.Enums;
 using GylleneDroppen.Api.Models;
-using GylleneDroppen.Api.Options;
 using GylleneDroppen.Api.RedisModels;
 using GylleneDroppen.Api.Repositories.Interfaces;
 using GylleneDroppen.Api.Services.Interfaces;
 using GylleneDroppen.Api.Utilities;
 using GylleneDroppen.Api.Utilities.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace GylleneDroppen.Api.Services;
 
-public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService, IRedisRepository redisRepository, IEmailService emailService, IOptions<GlobalOptions> globalOptions) : IAuthService
+public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService, IRedisRepository redisRepository, IEmailService emailService) : IAuthService
 {
     public async Task<ServiceResponse<LoginResponse>> LoginAsync(LoginRequest request)
     {
@@ -69,9 +67,7 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         
         await redisRepository.SaveAsync($"pending_user:{user.Email}", pendingUserJson, TimeSpan.FromMinutes(15));
         
-        var confirmationLink = $"{globalOptions.Value.FrontendBaseUrl}/verify-email?email={user.Email}&code={confirmationCode}";
-        
-        return await emailService.SendEmailVerificationCodeAsync(user.Email, confirmationCode, confirmationLink);
+        return await emailService.SendEmailConfirmationCodeAsync(user.Email, confirmationCode);
     }
 
     public async Task<ServiceResponse<MessageResponse>> LogoutAsync(LogoutRequest request, string accessToken)
@@ -133,5 +129,50 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         await redisRepository.DeleteAsync($"pending_user:{request.Email}");
         
         return ServiceResponse<MessageResponse>.Success(new MessageResponse("Email successfully verified. You can now log in."));
+    }
+
+    public async Task<ServiceResponse<MessageResponse>> RequestPasswordResetAsync(PasswordResetRequest request)
+    {
+        var user = await userRepository.GetByEmailAsync(request.Email);
+        if(user is null)
+            return ServiceResponse<MessageResponse>.Failure("Email not found", 400);
+
+        var resetToken = CodeGenerator.GenerateConfirmationCode(6);
+        var tokenEntry = new PasswordResetToken
+        {
+            Email = request.Email,
+            Token = resetToken,
+        };
+        
+        var serializedToken = JsonSerializer.Serialize(tokenEntry);
+        await redisRepository.SaveAsync($"password_reset:{user.Email}", serializedToken, TimeSpan.FromMinutes(15));
+        
+        return await emailService.SendPasswordResetEmailAsync(user.Email, resetToken);
+    }
+
+    public async Task<ServiceResponse<MessageResponse>> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var tokenJson = await redisRepository.GetAsync($"password_reset:{request.Email}");
+        if(tokenJson is null)
+            return ServiceResponse<MessageResponse>.Failure("Invalid token.", 400);
+        
+        var tokenEntry = JsonSerializer.Deserialize<PasswordResetToken>(tokenJson);
+        if(tokenEntry is null || tokenEntry.Token != request.Token)
+            return ServiceResponse<MessageResponse>.Failure("Invalid token.", 400);
+        
+        var (hash, salt) = argon2Hasher.HashPassword(request.Email);
+        
+        var user = await userRepository.GetByEmailAsync(request.Email);
+        if(user == null)
+            return ServiceResponse<MessageResponse>.Failure("Email not found", 400);
+        
+        user.PasswordHash = hash;
+        user.PasswordSalt = salt;
+        
+        userRepository.Update(user);
+        
+        await redisRepository.DeleteAsync($"password_reset:{user.Email}");
+        
+        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Password reset successfully."));
     }
 }

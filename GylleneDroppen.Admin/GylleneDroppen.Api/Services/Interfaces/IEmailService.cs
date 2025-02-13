@@ -5,5 +5,6 @@ namespace GylleneDroppen.Api.Services.Interfaces;
 
 public interface IEmailService
 {
-    Task<ServiceResponse<MessageResponse>> SendEmailVerificationCodeAsync(string email, string confirmationCode, string confirmationLink);
+    Task<ServiceResponse<MessageResponse>> SendEmailConfirmationCodeAsync(string email, string confirmationCode);
+    Task<ServiceResponse<MessageResponse>> SendPasswordResetEmailAsync(string email, string resetToken);
 }
