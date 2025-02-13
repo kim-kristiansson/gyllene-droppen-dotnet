@@ -17,7 +17,8 @@ public class EventService(IEventRepository eventRepository) : IEventService
             Description = createEventRequest.Description,
             Location = createEventRequest.Location,
             StartTime = createEventRequest.StartTime,
-            EndTime = createEventRequest.EndTime
+            EndTime = createEventRequest.EndTime,
+            Capacity = 
         };
         
         await eventRepository.AddAsync(newEvent);
