@@ -74,22 +74,21 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         return await emailService.SendEmailVerificationCodeAsync(user.Email, confirmationCode, confirmationLink);
     }
 
-    public async Task<ServiceResponse<MessageResponse>> LogoutAsync(string token, LogoutRequest request)
+    public async Task<ServiceResponse<MessageResponse>> LogoutAsync(LogoutRequest request, string accessToken)
     {
-        if (string.IsNullOrWhiteSpace(token)) return ServiceResponse<MessageResponse>.Failure("Invalid token.", 400);
+        if (string.IsNullOrWhiteSpace(accessToken)) return ServiceResponse<MessageResponse>.Failure("Invalid token.", 400);
         
         var storedRefreshToken = await jwtService.GetRefreshTokenAsync(request.UserId);
         
         if(storedRefreshToken is null || storedRefreshToken != request.RefreshToken)
             return ServiceResponse<MessageResponse>.Failure("Invalid refresh token.", 400);
         
-        await jwtService.BlacklistTokenAsync(token);
-        await jwtService.RevokeRefreshTokenAsync(request.UserId);
+        await jwtService.RevokeTokensAsync(request.UserId, accessToken);
         
         return ServiceResponse<MessageResponse>.Success(new MessageResponse("Logged out successfully."));
     }
 
-    public async Task<ServiceResponse<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request)
+    public async Task<ServiceResponse<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request, string accessToken)
     {
         var storedRefreshToken = await jwtService.GetRefreshTokenAsync(request.UserId);
         if(storedRefreshToken == null || storedRefreshToken != request.RefreshToken)
@@ -102,7 +101,7 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         var newAccessToken = jwtService.GenerateToken(user);
         var newRefreshToken = jwtService.GenerateRefreshToken(request.UserId);
         
-        await jwtService.RevokeRefreshTokenAsync(request.UserId);
+        await jwtService.RevokeTokensAsync(request.UserId, accessToken);
         
         await jwtService.SaveRefreshTokenAsync(request.UserId, newRefreshToken);
         

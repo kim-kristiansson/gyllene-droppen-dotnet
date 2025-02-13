@@ -30,14 +30,14 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.UseMiddlewares();
-
-app.MapControllers();
-
 app.UseAuthentication();
 
 app.UseAuthorization();
 
 app.UseHttpsRedirection();
+
+app.UseMiddlewares();
+
+app.MapControllers();
 
 app.Run();

@@ -36,7 +36,7 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisR
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     
-    public async Task BlacklistTokenAsync(string token)
+    public async Task BlacklistAccessTokenAsync(string token)
     {
         var handler = new JwtSecurityTokenHandler();
 
@@ -50,7 +50,7 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisR
         await redisRepository.SaveAsync($"blacklist:{token}", "revoked", ttl);
     }
 
-    public async Task<bool> IsTokenBlacklistedAsync(string token)
+    public async Task<bool> IsAccessTokenBlacklistedAsync(string token)
     {
         return await redisRepository.ExistsAsync($"blacklist:{token}");
     }
@@ -73,8 +73,9 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisR
         return await redisRepository.GetAsync($"refresh:{userId}");
     }
 
-    public async Task RevokeRefreshTokenAsync(Guid userId)
+    public async Task RevokeTokensAsync(Guid userId, string accessToken)
     {
         await redisRepository.DeleteAsync($"refresh:{userId}");
+        await BlacklistAccessTokenAsync(accessToken);
     }
 }

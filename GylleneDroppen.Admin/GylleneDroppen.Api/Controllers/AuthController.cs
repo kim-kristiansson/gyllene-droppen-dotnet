@@ -30,7 +30,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var accessToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
         
-        var response = await authService.LogoutAsync(accessToken, request);
+        var response = await authService.LogoutAsync(request, accessToken);
         return response.ToActionResult();
     }
 
@@ -38,7 +38,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
     {
-        var response = await authService.RefreshTokenAsync(request);
+        var accessToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        
+        var response = await authService.RefreshTokenAsync(request, accessToken);
         return response.ToActionResult();
     }
 
