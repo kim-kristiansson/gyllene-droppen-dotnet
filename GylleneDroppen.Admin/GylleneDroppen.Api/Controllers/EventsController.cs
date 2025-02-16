@@ -44,4 +44,12 @@ public class EventsController(IEventService eventService) : ControllerBase
         var response = await eventService.RegisterForEventAsync(request, userId);
         return response.ToActionResult();
     }
+
+    [Admin]
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventRequest request)
+    {
+        var response = await eventService.UpdateEventAsync(request);
+        return response.ToActionResult();
+    }
 }

@@ -10,4 +10,5 @@ public interface IEventService
     Task<ServiceResponse<List<EventUserResponse>>> GetUpcomingEventsAsync();
     Task<ServiceResponse<List<EventAdminResponse>>> GetAllEventsAsync();
     Task<ServiceResponse<MessageResponse>> RegisterForEventAsync(RegisterForEventRequest request, Guid userId);
+    Task<ServiceResponse<MessageResponse>> UpdateEventAsync(UpdateEventRequest request);
 }
