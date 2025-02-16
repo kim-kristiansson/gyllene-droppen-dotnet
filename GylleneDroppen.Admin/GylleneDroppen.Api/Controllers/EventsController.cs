@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using GylleneDroppen.Api.Attributes;
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Extensions;
 using GylleneDroppen.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,12 +19,29 @@ public class EventsController(IEventService eventService) : ControllerBase
         var response = await eventService.CreateEventAsync(request);
         return response.ToActionResult();
     }
+
+    [Admin]
+    [HttpPost("all")]
+    public async Task<IActionResult> GetAllEvents()
+    {
+        var response = await eventService.GetAllEventsAsync();
+        return response.ToActionResult();
+    }
     
     [Authorize]
     [HttpGet("upcoming")]
     public async Task<IActionResult> GetUpcomingEvents()
     {
-        var response = await eventService.GetUpcomingEvents();
+        var response = await eventService.GetUpcomingEventsAsync();
+        return response.ToActionResult();
+    }
+
+    [Authorize]
+    [HttpPost("register")]
+    public async Task<IActionResult> RegisterForEvent([FromBody] RegisterForEventRequest request)
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var response = await eventService.RegisterForEventAsync(request, userId);
         return response.ToActionResult();
     }
 }

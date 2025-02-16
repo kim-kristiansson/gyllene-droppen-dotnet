@@ -22,6 +22,7 @@ public class EventMapper : IEventMapper
             Deadline = request.Deadline,
             Organizer = request.Organizer,
             CreatedBy = request.CreatedBy,
+            Participants = []
         };
     }
     
@@ -64,5 +65,10 @@ public class EventMapper : IEventMapper
     public List<EventUserResponse> ToEventUserResponse(List<Event> events)
     {
         return events.Select(ToEventUserResponse).ToList();
+    }
+    
+    public List<EventAdminResponse> ToEventAdminResponse(List<Event> events)
+    {
+        return events.Select(ToEventAdminResponse).ToList();
     }
 }

@@ -1,10 +1,13 @@
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Extensions;
 using GylleneDroppen.Api.Utilities;
 
 namespace GylleneDroppen.Api.Services.Interfaces;
 
 public interface IEventService
 {
-    Task<ServiceResponse<EventAdminResponse>> CreateEventAsync(CreateEventRequest createEventRequest);
-    Task<ServiceResponse<List<EventUserResponse>>> GetUpcomingEvents();
+    Task<ServiceResponse<EventAdminResponse>> CreateEventAsync(CreateEventRequest request);
+    Task<ServiceResponse<List<EventUserResponse>>> GetUpcomingEventsAsync();
+    Task<ServiceResponse<List<EventAdminResponse>>> GetAllEventsAsync();
+    Task<ServiceResponse<MessageResponse>> RegisterForEventAsync(RegisterForEventRequest request, Guid userId);
 }

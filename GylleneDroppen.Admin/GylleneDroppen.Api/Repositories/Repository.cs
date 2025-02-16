@@ -21,17 +21,17 @@ namespace GylleneDroppen.Api.Repositories
             await DbSet.AddAsync(entity);
         }
 
-        public async Task AddRangeAsync(IEnumerable<T> entities)
+        public async Task AddRangeAsync(List<T> entities)
         {
             await DbSet.AddRangeAsync(entities);
         }
 
-        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+        public async Task<List<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
             return await DbSet.Where(predicate).ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<List<T>> GetAllAsync()
         {
             return await DbSet.ToListAsync();
         }
@@ -46,7 +46,7 @@ namespace GylleneDroppen.Api.Repositories
             DbSet.Remove(entity);
         }
 
-        public void RemoveRange(IEnumerable<T> entities)
+        public void RemoveRange(List<T> entities)
         {
             DbSet.RemoveRange(entities);
         }

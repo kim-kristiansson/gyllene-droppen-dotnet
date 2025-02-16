@@ -14,4 +14,5 @@ public class Event
     public required DateTime Deadline { get; init; }
     public required User Organizer { get; init; }
     public required User CreatedBy { get; init; }
+    public required List<Participant> Participants { get; init; }
 }
