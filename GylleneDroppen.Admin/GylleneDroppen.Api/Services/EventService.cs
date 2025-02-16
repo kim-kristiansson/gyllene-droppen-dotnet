@@ -1,56 +1,31 @@
 using GylleneDroppen.Api.Dtos;
-using GylleneDroppen.Api.Models;
+using GylleneDroppen.Api.Mappers.Interfaces;
 using GylleneDroppen.Api.Repositories.Interfaces;
 using GylleneDroppen.Api.Services.Interfaces;
 using GylleneDroppen.Api.Utilities;
 
 namespace GylleneDroppen.Api.Services;
 
-public class EventService(IEventRepository eventRepository) : IEventService
+public class EventService(IEventRepository eventRepository, IEventMapper eventMapper) : IEventService
 {
-    public async Task<ServiceResponse<EventResponse>> CreateEventAsync(CreateEventRequest createEventRequest)
+    public async Task<ServiceResponse<EventAdminResponse>> CreateEventAsync(CreateEventRequest createEventRequest)
     {
-        var newEvent = new Event
-        {
-            Id = Guid.NewGuid(),
-            Title = createEventRequest.Title,
-            Description = createEventRequest.Description,
-            Location = createEventRequest.Location,
-            StartTime = createEventRequest.StartTime,
-            EndTime = createEventRequest.EndTime,
-            Capacity = 
-        };
+        var newEvent = eventMapper.ToEvent(createEventRequest);
         
         await eventRepository.AddAsync(newEvent);
         await eventRepository.SaveChangesAsync();
 
-        var response = new EventResponse
-        {
-            Id = newEvent.Id,
-            Title = newEvent.Title,
-            Description = newEvent.Description,
-            Location = newEvent.Location,
-            StartTime = newEvent.StartTime,
-            EndTime = newEvent.EndTime
-        };
+        var response = eventMapper.ToEventAdminResponse(newEvent);
 
-        return ServiceResponse<EventResponse>.Success(response);
+        return ServiceResponse<EventAdminResponse>.Success(response);
     }
 
-    public async Task<ServiceResponse<List<EventResponse>>> GetUpcomingEvents()
+    public async Task<ServiceResponse<List<EventUserResponse>>> GetUpcomingEvents()
     {
         var upcomingEvents = await eventRepository.GetUpcomingEventsAsync();
+
+        var response = eventMapper.ToEventUserResponse(upcomingEvents);
         
-        var response = upcomingEvents.Select(e => new EventResponse
-        {
-            Id = e.Id,
-            Title = e.Title,
-            Description = e.Description,
-            Location = e.Location,
-            StartTime = e.StartTime,
-            EndTime = e.EndTime,
-        }).ToList();
-        
-        return ServiceResponse<List<EventResponse>>.Success(response);
+        return ServiceResponse<List<EventUserResponse>>.Success(response);
     }
 }

@@ -2,7 +2,7 @@ using GylleneDroppen.Api.Models;
 
 namespace GylleneDroppen.Api.Dtos;
 
-public class EventResponse
+public class EventUserResponse
 {
     public required Guid Id { get; init; }
     public required string Title { get; init; }

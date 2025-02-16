@@ -1,6 +1,8 @@
-namespace GylleneDroppen.Api.Models;
+using GylleneDroppen.Api.Models;
 
-public class Event
+namespace GylleneDroppen.Api.Dtos;
+
+public class EventAdminResponse
 {
     public required Guid Id { get; init; }
     public required DateTime CreatedAt { get; init; }
