@@ -10,16 +10,22 @@ namespace GylleneDroppen.Api.Services;
 
 public class EventService(IEventRepository eventRepository, IEventMapper eventMapper, IParticipantRepository participantRepository) : IEventService
 {
-    public async Task<ServiceResponse<EventAdminResponse>> CreateEventAsync(CreateEventRequest createEventRequest)
+    public async Task<ServiceResponse<MessageResponse>> CreateEventAsync(CreateEventRequest request)
     {
-        var newEvent = eventMapper.ToEvent(createEventRequest);
+        if (request.EndTime <= request.StartTime)
+            return ServiceResponse<MessageResponse>.Failure("End time must be after start time.", 400);
+        
+        if (request.Deadline >= request.StartTime)
+            return ServiceResponse<MessageResponse>.Failure("Deadline must be before event start time.", 400);
+        
+        var newEvent = eventMapper.ToEvent(request);
         
         await eventRepository.AddAsync(newEvent);
         await eventRepository.SaveChangesAsync();
 
         var response = eventMapper.ToEventAdminResponse(newEvent);
 
-        return ServiceResponse<EventAdminResponse>.Success(response);
+        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Event created successfully."));
     }
 
     public async Task<ServiceResponse<List<EventUserResponse>>> GetUpcomingEventsAsync()
@@ -68,11 +74,17 @@ public class EventService(IEventRepository eventRepository, IEventMapper eventMa
         return ServiceResponse<MessageResponse>.Success(new MessageResponse("Successfully registered for the event."));
     }
 
-    public async Task<ServiceResponse<MessageResponse>> UpdateEventAsync(UpdateEventRequest request)
+    public async Task<ServiceResponse<MessageResponse>> UpdateEventAsync(UpdateRequest request)
     {
         var existingEvent = await eventRepository.GetByIdAsync(request.Id);
         if(existingEvent is null)
             return ServiceResponse<MessageResponse>.Failure("Event not found.", 404);
+        
+        if (request.EndTime <= request.StartTime)
+            return ServiceResponse<MessageResponse>.Failure("End time must be after start time.", 400);
+        
+        if (request.Deadline >= request.StartTime)
+            return ServiceResponse<MessageResponse>.Failure("Deadline must be before event start time.", 400);
         
         existingEvent.Title = request.Title;
         existingEvent.Description = request.Description;

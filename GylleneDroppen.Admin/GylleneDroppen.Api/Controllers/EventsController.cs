@@ -47,7 +47,7 @@ public class EventsController(IEventService eventService) : ControllerBase
 
     [Admin]
     [HttpPut("update")]
-    public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventRequest request)
+    public async Task<IActionResult> UpdateEvent([FromBody] UpdateRequest request)
     {
         var response = await eventService.UpdateEventAsync(request);
         return response.ToActionResult();

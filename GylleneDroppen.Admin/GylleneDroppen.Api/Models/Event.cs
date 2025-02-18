@@ -10,9 +10,13 @@ public class Event
     public required DateTime EndTime { get; set; }
     public required string Location { get; set; }
     public required int Capacity { get; set; }
-    public required decimal Price { get; set; }
+    public required int Price { get; set; }
     public required DateTime Deadline { get; set; }
-    public required User Organizer { get; set; }
-    public required User CreatedBy { get; init; }
-    public required List<Participant> Participants { get; init; }
+    
+    public required Guid OrganizerId { get; set; }
+    public User? Organizer { get; set; }
+    
+    public required Guid CreatedById { get; set; }
+    public User? CreatedBy { get; init; }
+    public required List<Participant> Participants { get; init; } = [];
 }

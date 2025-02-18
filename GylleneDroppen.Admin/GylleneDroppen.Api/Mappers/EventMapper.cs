@@ -17,11 +17,11 @@ public class EventMapper : IEventMapper
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             Capacity = request.Capacity,
-            CreatedAt = request.CreatedAt,
+            CreatedAt = DateTime.UtcNow,
             Price = request.Price,
             Deadline = request.Deadline,
-            Organizer = request.Organizer,
-            CreatedBy = request.CreatedBy,
+            OrganizerId = request.OrganizerId,
+            CreatedById = request.CreatedById,
             Participants = []
         };
     }
@@ -40,8 +40,8 @@ public class EventMapper : IEventMapper
             CreatedAt = @event.CreatedAt,
             Price = @event.Price,
             Deadline = @event.Deadline,
-            Organizer = @event.Organizer,
-            CreatedBy = @event.CreatedBy,
+            OrganizerId = @event.OrganizerId,
+            CreatedById = @event.CreatedById,
         };
     }
 
@@ -58,7 +58,8 @@ public class EventMapper : IEventMapper
             Capacity = @event.Capacity,
             Price = @event.Price,
             Deadline = @event.Deadline,
-            Organizer = @event.Organizer,
+            OrganizerId = @event.OrganizerId,
+            CreatedById = @event.CreatedById,
         };
     }
 

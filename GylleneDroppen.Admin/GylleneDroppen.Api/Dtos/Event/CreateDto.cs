@@ -10,11 +10,10 @@ public class CreateEventRequest
     public required DateTime StartTime { get; init; }
     public required DateTime EndTime { get; init; }
     public required int Capacity { get; init; }
-    public required DateTime CreatedAt { get; init; }
     public required int Price { get; init; }
     public required DateTime Deadline { get; init; }
-    public required User Organizer { get; init; }
-    public required User CreatedBy { get; init; }
+    public required Guid OrganizerId { get; init; }
+    public required Guid CreatedById { get; init; }
 }
 
 public class CreateEventResponse
