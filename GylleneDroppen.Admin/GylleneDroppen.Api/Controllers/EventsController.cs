@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using GylleneDroppen.Api.Attributes;
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Dtos.Event;
 using GylleneDroppen.Api.Extensions;
 using GylleneDroppen.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -47,9 +48,9 @@ public class EventsController(IEventService eventService) : ControllerBase
 
     [Admin]
     [HttpPut("update")]
-    public async Task<IActionResult> UpdateEvent([FromBody] UpdateRequest request)
+    public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventRequest eventRequest)
     {
-        var response = await eventService.UpdateEventAsync(request);
+        var response = await eventService.UpdateEventAsync(eventRequest);
         return response.ToActionResult();
     }
 }

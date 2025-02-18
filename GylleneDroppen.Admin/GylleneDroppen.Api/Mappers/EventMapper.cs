@@ -1,4 +1,5 @@
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Dtos.Event;
 using GylleneDroppen.Api.Mappers.Interfaces;
 using GylleneDroppen.Api.Models;
 
@@ -57,9 +58,7 @@ public class EventMapper : IEventMapper
             Location = @event.Location,
             Capacity = @event.Capacity,
             Price = @event.Price,
-            Deadline = @event.Deadline,
-            OrganizerId = @event.OrganizerId,
-            CreatedById = @event.CreatedById,
+            Deadline = @event.Deadline
         };
     }
 

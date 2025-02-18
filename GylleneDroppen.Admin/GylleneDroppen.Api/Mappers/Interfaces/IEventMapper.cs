@@ -1,4 +1,5 @@
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Dtos.Event;
 using GylleneDroppen.Api.Models;
 
 namespace GylleneDroppen.Api.Mappers.Interfaces;

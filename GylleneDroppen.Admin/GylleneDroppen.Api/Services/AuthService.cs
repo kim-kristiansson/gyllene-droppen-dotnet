@@ -49,6 +49,8 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         var user = new User
         {
             Id = Guid.NewGuid(),
+            FirstName = request.FirstName,
+            LastName = request.LastName,
             Email = request.Email,
             PasswordHash = hash,
             PasswordSalt = salt,

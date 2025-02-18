@@ -13,13 +13,15 @@ public static class DependencyInjectionExtensions
      {
          { typeof(IAuthService), typeof(AuthService) },
          { typeof(IEmailService), typeof(EmailService) },
-         { typeof(IJwtService), typeof(JwtService) }
+         { typeof(IJwtService), typeof(JwtService) },
+         { typeof(IEventService), typeof(EventService) },
      };
      
      private static readonly Dictionary<Type, Type> Repositories = new()
      {
          { typeof(IUserRepository), typeof(UserRepository) },
-         {typeof(IRedisRepository), typeof(RedisRepository)}
+         {typeof(IRedisRepository), typeof(RedisRepository)},
+         {typeof(IEventRepository), typeof(EventRepository)},
      };
      
      private static readonly Dictionary<Type, Type> Utilities = new()

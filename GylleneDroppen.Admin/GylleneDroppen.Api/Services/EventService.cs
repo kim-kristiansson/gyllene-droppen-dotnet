@@ -1,4 +1,5 @@
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Dtos.Event;
 using GylleneDroppen.Api.Extensions;
 using GylleneDroppen.Api.Mappers.Interfaces;
 using GylleneDroppen.Api.Models;
@@ -8,7 +9,11 @@ using GylleneDroppen.Api.Utilities;
 
 namespace GylleneDroppen.Api.Services;
 
-public class EventService(IEventRepository eventRepository, IEventMapper eventMapper, IParticipantRepository participantRepository) : IEventService
+public class EventService(
+    IEventRepository eventRepository, 
+    IEventMapper eventMapper, 
+    IParticipantRepository participantRepository) 
+    : IEventService
 {
     public async Task<ServiceResponse<MessageResponse>> CreateEventAsync(CreateEventRequest request)
     {
@@ -23,16 +28,12 @@ public class EventService(IEventRepository eventRepository, IEventMapper eventMa
         await eventRepository.AddAsync(newEvent);
         await eventRepository.SaveChangesAsync();
 
-        var response = eventMapper.ToEventAdminResponse(newEvent);
-
         return ServiceResponse<MessageResponse>.Success(new MessageResponse("Event created successfully."));
     }
 
     public async Task<ServiceResponse<List<EventUserResponse>>> GetUpcomingEventsAsync()
     {
-        var upcomingEvents = await eventRepository.GetUpcomingEventsAsync();
-
-        var response = eventMapper.ToEventUserResponse(upcomingEvents);
+        var response = await eventRepository.GetUpcomingEventsAsync();
         
         return ServiceResponse<List<EventUserResponse>>.Success(response);
     }
@@ -48,7 +49,7 @@ public class EventService(IEventRepository eventRepository, IEventMapper eventMa
 
     public async Task<ServiceResponse<MessageResponse>> RegisterForEventAsync(RegisterForEventRequest request, Guid userId)
     {
-        var @event = await eventRepository.GetByIdAsync(request.EventId);
+        var @event = await eventRepository.GetRegisterEventDataAsync(request.EventId);
         
         if(@event == null)
             return ServiceResponse<MessageResponse>.Failure("Event not found.", 404);
@@ -56,7 +57,7 @@ public class EventService(IEventRepository eventRepository, IEventMapper eventMa
         if(DateTime.UtcNow > @event.Deadline)
             return ServiceResponse<MessageResponse>.Failure("Registration deadline has passed.", 400);
         
-        if(@event.Participants.Count >= @event.Capacity)
+        if(@event.ParticipantCount >= @event.Capacity)
             return ServiceResponse<MessageResponse>.Failure("This event is fully booked.", 400);
 
         if (await participantRepository.IsUserRegisteredAsync(userId, request.EventId))
@@ -66,7 +67,7 @@ public class EventService(IEventRepository eventRepository, IEventMapper eventMa
         {
             UserId = userId,
             EventId = request.EventId,
-            RegisteredAt = DateTime.UtcNow,
+            RegisteredAt = DateTime.UtcNow
         };
         
         await participantRepository.AddAsync(registration);
@@ -74,27 +75,44 @@ public class EventService(IEventRepository eventRepository, IEventMapper eventMa
         return ServiceResponse<MessageResponse>.Success(new MessageResponse("Successfully registered for the event."));
     }
 
-    public async Task<ServiceResponse<MessageResponse>> UpdateEventAsync(UpdateRequest request)
+    public async Task<ServiceResponse<MessageResponse>> UpdateEventAsync(UpdateEventRequest eventRequest)
     {
-        var existingEvent = await eventRepository.GetByIdAsync(request.Id);
+        var existingEvent = await eventRepository.GetByIdAsync(eventRequest.Id);
         if(existingEvent is null)
             return ServiceResponse<MessageResponse>.Failure("Event not found.", 404);
         
-        if (request.EndTime <= request.StartTime)
+        if (eventRequest.EndTime <= eventRequest.StartTime)
             return ServiceResponse<MessageResponse>.Failure("End time must be after start time.", 400);
         
-        if (request.Deadline >= request.StartTime)
+        if (eventRequest.Deadline >= eventRequest.StartTime)
             return ServiceResponse<MessageResponse>.Failure("Deadline must be before event start time.", 400);
         
-        existingEvent.Title = request.Title;
-        existingEvent.Description = request.Description;
-        existingEvent.Location = request.Location;
-        existingEvent.StartTime = request.StartTime;
-        existingEvent.EndTime = request.EndTime;
-        existingEvent.Capacity = request.Capacity;
-        existingEvent.Price = request.Price;
-        existingEvent.Deadline = request.Deadline;
-        existingEvent.Organizer = request.Organizer;
+        if (existingEvent.Title != eventRequest.Title)
+            existingEvent.Title = eventRequest.Title;
+    
+        if (existingEvent.Description != eventRequest.Description)
+            existingEvent.Description = eventRequest.Description;
+    
+        if (existingEvent.Location != eventRequest.Location)
+            existingEvent.Location = eventRequest.Location;
+    
+        if (existingEvent.StartTime != eventRequest.StartTime)
+            existingEvent.StartTime = eventRequest.StartTime;
+    
+        if (existingEvent.EndTime != eventRequest.EndTime)
+            existingEvent.EndTime = eventRequest.EndTime;
+    
+        if (existingEvent.Capacity != eventRequest.Capacity)
+            existingEvent.Capacity = eventRequest.Capacity;
+    
+        if (existingEvent.Price != eventRequest.Price)
+            existingEvent.Price = eventRequest.Price;
+    
+        if (existingEvent.Deadline != eventRequest.Deadline)
+            existingEvent.Deadline = eventRequest.Deadline;
+        
+        if (existingEvent.OrganizerId != eventRequest.OrganizerId)
+            existingEvent.OrganizerId = eventRequest.OrganizerId;
         
         eventRepository.Update(existingEvent);
         await eventRepository.SaveChangesAsync();
