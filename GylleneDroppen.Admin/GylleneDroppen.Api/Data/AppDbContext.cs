@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         modelBuilder.ApplyConfiguration(new EventConfiguration());
         modelBuilder.ApplyConfiguration(new UserConfiguration());
+        modelBuilder.ApplyConfiguration(new ParticipantConfiguration());
         
         base.OnModelCreating(modelBuilder);
     }

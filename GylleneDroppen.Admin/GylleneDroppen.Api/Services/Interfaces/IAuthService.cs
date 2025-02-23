@@ -1,4 +1,5 @@
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Dtos.Auth;
 using GylleneDroppen.Api.Utilities;
 
 namespace GylleneDroppen.Api.Services.Interfaces;

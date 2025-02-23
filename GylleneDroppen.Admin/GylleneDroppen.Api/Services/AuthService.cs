@@ -1,5 +1,6 @@
 using System.Text.Json;
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Dtos.Auth;
 using GylleneDroppen.Api.Enums;
 using GylleneDroppen.Api.Models;
 using GylleneDroppen.Api.RedisModels;
@@ -10,7 +11,7 @@ using GylleneDroppen.Api.Utilities.Interfaces;
 
 namespace GylleneDroppen.Api.Services;
 
-public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService, IRedisRepository redisRepository, IEmailService emailService) : IAuthService
+public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService, IRedisRepository redisRepository, IEmailService emailService, ICookieService cookieService) : IAuthService
 {
     public async Task<ServiceResponse<LoginResponse>> LoginAsync(LoginRequest request)
     {
@@ -24,6 +25,9 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         var accessToken = jwtService.GenerateToken(user);
         var refreshToken = jwtService.GenerateRefreshToken(user.Id);
         
+        cookieService.SetAccessToken(accessToken);
+        cookieService.SetRefreshToken(refreshToken);
+        
         await jwtService.SaveRefreshTokenAsync(user.Id, refreshToken);
 
         return ServiceResponse<LoginResponse>.Success(new LoginResponse
@@ -31,7 +35,9 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
             Id = user.Id,
             Email = user.Email,
             AccessToken = accessToken,
-            RefreshToken = refreshToken
+            RefreshToken = refreshToken,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
         });
     }
 
@@ -83,6 +89,8 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         
         await jwtService.RevokeTokensAsync(request.UserId, accessToken);
         
+        cookieService.RemoveAuthCookies();
+        
         return ServiceResponse<MessageResponse>.Success(new MessageResponse("Logged out successfully."));
     }
 
@@ -108,6 +116,11 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
             AccessToken = newAccessToken, 
             RefreshToken = newRefreshToken
         };
+        
+        cookieService.RemoveAuthCookies();
+        
+        cookieService.SetAccessToken(newAccessToken);
+        cookieService.SetRefreshToken(newRefreshToken);
         
         return ServiceResponse<RefreshTokenResponse>.Success(response);
     }

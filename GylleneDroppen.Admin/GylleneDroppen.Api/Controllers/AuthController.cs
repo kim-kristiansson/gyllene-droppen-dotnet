@@ -1,5 +1,6 @@
 using GylleneDroppen.Api.Attributes;
 using GylleneDroppen.Api.Dtos;
+using GylleneDroppen.Api.Dtos.Auth;
 using GylleneDroppen.Api.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -51,9 +52,9 @@ public class AuthController(IAuthService authService) : ControllerBase
         return result.ToActionResult();
     }
     
-    [Admin]
-    [HttpGet("admin")]
-    public IActionResult Admin()
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
     {
         return Ok();
     }
