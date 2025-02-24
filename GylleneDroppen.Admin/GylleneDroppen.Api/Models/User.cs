@@ -10,6 +10,6 @@ public class User
     public required string Email { get; init; }
     public required string PasswordHash { get; set; }
     public required string PasswordSalt { get; set; }
-    public required RoleType Role { get; init; }
+    public required RoleType Role { get; set; } = RoleType.User;
     public List<Participant> Participations { get; init; } = [];
 }

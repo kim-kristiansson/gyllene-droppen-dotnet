@@ -17,7 +17,7 @@ public static class CorsExtensions
             {
                 var globalOptions = services.BuildServiceProvider().GetRequiredService<IOptions<GlobalOptions>>();
                 
-                policy.WithOrigins(globalOptions.Value.FrontendBaseUrl)
+                policy.WithOrigins(globalOptions.Value.FrontendBaseUrl, globalOptions.Value.AdminBaseUrl)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
