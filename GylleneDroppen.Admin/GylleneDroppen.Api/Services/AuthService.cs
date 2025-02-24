@@ -38,6 +38,7 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
             RefreshToken = refreshToken,
             FirstName = user.FirstName,
             LastName = user.LastName,
+            Role = user.Role.ToString(),
         });
     }
 
