@@ -20,7 +20,8 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisR
 
         var claims = new List<Claim>
         {
-            new (ClaimTypes.Name, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new (ClaimTypes.Name, user.Email),
             new (ClaimTypes.Role, user.Role.ToString()),
             new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
@@ -77,5 +78,17 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisR
     {
         await redisRepository.DeleteAsync($"refresh:{userId}");
         await BlacklistAccessTokenAsync(accessToken);
+    }
+
+    public Guid GetUserIdFromToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+
+        if(handler.ReadToken(token) is not JwtSecurityToken jwtToken)
+            return Guid.Empty;
+        
+        var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
+        
+        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
     }
 }

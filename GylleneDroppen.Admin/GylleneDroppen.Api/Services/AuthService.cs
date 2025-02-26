@@ -13,33 +13,23 @@ namespace GylleneDroppen.Api.Services;
 
 public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Hasher, IJwtService jwtService, IRedisRepository redisRepository, IEmailService emailService, ICookieService cookieService) : IAuthService
 {
-    public async Task<ServiceResponse<LoginResponse>> LoginAsync(LoginRequest request)
+    public async Task<ServiceResponse<MessageResponse>> LoginAsync(LoginRequest request)
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
 
         if (user is null || !argon2Hasher.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
         {
-            return ServiceResponse<LoginResponse>.Failure("Invalid email or password.", 401);
+            return ServiceResponse<MessageResponse>.Failure("Invalid email or password.", 401);
         }
 
         var accessToken = jwtService.GenerateToken(user);
         var refreshToken = jwtService.GenerateRefreshToken(user.Id);
         
-        cookieService.SetAccessToken(accessToken);
-        cookieService.SetRefreshToken(refreshToken);
+        cookieService.SetAuthTokens(accessToken, refreshToken);
         
         await jwtService.SaveRefreshTokenAsync(user.Id, refreshToken);
 
-        return ServiceResponse<LoginResponse>.Success(new LoginResponse
-        {
-            Id = user.Id,
-            Email = user.Email,
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Role = user.Role.ToString(),
-        });
+        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Login successful"));
     }
 
     public async Task<ServiceResponse<MessageResponse>> RegisterAsync(RegisterRequest request)
@@ -79,51 +69,59 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
         return await emailService.SendEmailConfirmationCodeAsync(user.Email, confirmationCode);
     }
 
-    public async Task<ServiceResponse<MessageResponse>> LogoutAsync(LogoutRequest request, string accessToken)
+    public async Task<ServiceResponse<MessageResponse>> LogoutAsync()
     {
-        if (string.IsNullOrWhiteSpace(accessToken)) return ServiceResponse<MessageResponse>.Failure("Invalid token.", 400);
+        var accessToken = cookieService.GetAccessToken();
         
-        var storedRefreshToken = await jwtService.GetRefreshTokenAsync(request.UserId);
+        if(string.IsNullOrEmpty(accessToken))
+            return ServiceResponse<MessageResponse>.Failure("Invalid access token.", 401);
         
-        if(storedRefreshToken is null || storedRefreshToken != request.RefreshToken)
-            return ServiceResponse<MessageResponse>.Failure("Invalid refresh token.", 400);
+        var userId = jwtService.GetUserIdFromToken(accessToken);
         
-        await jwtService.RevokeTokensAsync(request.UserId, accessToken);
+        if(userId == Guid.Empty)
+            return ServiceResponse<MessageResponse>.Failure("Invalid access token.", 401);
+
+        var storedRefreshToken = await jwtService.GetRefreshTokenAsync(userId);
+        if(storedRefreshToken is null)
+            return ServiceResponse<MessageResponse>.Failure("Invalid refresh token.", 401);
+        
+        await jwtService.RevokeTokensAsync(userId, accessToken);
         
         cookieService.RemoveAuthCookies();
         
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Logged out successfully."));
+        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Logout successful"));
     }
 
-    public async Task<ServiceResponse<RefreshTokenResponse>> RefreshTokenAsync(RefreshTokenRequest request, string accessToken)
+    public async Task<ServiceResponse<MessageResponse>> RefreshTokenAsync()
     {
-        var storedRefreshToken = await jwtService.GetRefreshTokenAsync(request.UserId);
-        if(storedRefreshToken == null || storedRefreshToken != request.RefreshToken)
-            return ServiceResponse<RefreshTokenResponse>.Failure("Invalid refresh token.", 400);
+        var accessToken = cookieService.GetAccessToken();
+        var refreshToken = cookieService.GetRefreshToken();
         
-        var user = await userRepository.GetByIdAsync(request.UserId);
+        if(string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(refreshToken))
+            return ServiceResponse<MessageResponse>.Failure("Invalid token.", 401);
+        
+        var userId = jwtService.GetUserIdFromToken(accessToken);
+        if(userId == Guid.Empty)
+            return ServiceResponse<MessageResponse>.Failure("Invalid access token.", 401);
+        
+        var storedRefreshToken = await jwtService.GetRefreshTokenAsync(userId);
+        if(storedRefreshToken == null || storedRefreshToken != refreshToken)
+            return ServiceResponse<MessageResponse>.Failure("Invalid refresh token.", 401);
+        
+        var user = await userRepository.GetByIdAsync(userId);
         if(user == null)
-            return ServiceResponse<RefreshTokenResponse>.Failure("Invalid refresh token.", 404);
-
+            return ServiceResponse<MessageResponse>.Failure("Invalid refresh token.", 401);
+        
         var newAccessToken = jwtService.GenerateToken(user);
-        var newRefreshToken = jwtService.GenerateRefreshToken(request.UserId);
+        var newRefreshToken = jwtService.GenerateRefreshToken(user.Id);
         
-        await jwtService.RevokeTokensAsync(request.UserId, accessToken);
-        
-        await jwtService.SaveRefreshTokenAsync(request.UserId, newRefreshToken);
-        
-        var response = new RefreshTokenResponse()
-        {
-            AccessToken = newAccessToken, 
-            RefreshToken = newRefreshToken
-        };
+        await jwtService.RevokeTokensAsync(userId, accessToken);
+        await jwtService.SaveRefreshTokenAsync(userId, refreshToken);
         
         cookieService.RemoveAuthCookies();
+        cookieService.SetAuthTokens(newAccessToken, newRefreshToken);
         
-        cookieService.SetAccessToken(newAccessToken);
-        cookieService.SetRefreshToken(newRefreshToken);
-        
-        return ServiceResponse<RefreshTokenResponse>.Success(response);
+        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Refresh token successful"));
     }
 
     public async Task<ServiceResponse<MessageResponse>> ConfirmEmailAsync(ConfirmEmailRequest request)

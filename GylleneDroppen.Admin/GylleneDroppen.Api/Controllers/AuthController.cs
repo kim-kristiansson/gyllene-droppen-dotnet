@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using GylleneDroppen.Api.Attributes;
 using GylleneDroppen.Api.Dtos;
 using GylleneDroppen.Api.Dtos.Auth;
@@ -27,21 +28,17 @@ public class AuthController(IAuthService authService) : ControllerBase
 
     [Authorize]
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout(LogoutRequest request)
+    public async Task<IActionResult> Logout()
     {
-        var accessToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-        
-        var response = await authService.LogoutAsync(request, accessToken);
+        var response = await authService.LogoutAsync();
         return response.ToActionResult();
     }
 
     [Authorize]
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken(RefreshTokenRequest request)
+    public async Task<IActionResult> RefreshToken()
     {
-        var accessToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-        
-        var response = await authService.RefreshTokenAsync(request, accessToken);
+        var response = await authService.RefreshTokenAsync();
         return response.ToActionResult();
     }
 
@@ -54,8 +51,15 @@ public class AuthController(IAuthService authService) : ControllerBase
     
     [Authorize]
     [HttpGet("me")]
-    public IActionResult Me()
+    public IActionResult GetCurrentUser()
     {
-        return Ok();
+        if(User.Identity is not ClaimsIdentity claimsIdentity)
+            return Unauthorized("Invalid token.");
+        
+        var claims = claimsIdentity.Claims
+            .Select(c => new Claim(c.Type, c.Value))
+            .ToList();
+
+        return Ok(claims);
     }
 }

@@ -34,9 +34,35 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, IOptions<Jw
         httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", token, options);
     }
 
+    public string? GetAccessToken()
+    {
+        return httpContextAccessor.HttpContext?.Request.Cookies["accessToken"];
+    }
+
+    public string? GetRefreshToken()
+    {
+        return httpContextAccessor.HttpContext?.Request.Cookies["refreshToken"];
+    }
+
     public void RemoveAuthCookies()
     {
-        httpContextAccessor.HttpContext?.Response.Cookies.Delete("accessToken");
-        httpContextAccessor.HttpContext?.Response.Cookies.Delete("refreshToken");
+        var expiredOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Path = "/",
+            Expires = DateTime.UtcNow.AddDays(-1)
+        };
+
+        httpContextAccessor.HttpContext?.Response.Cookies.Append("accessToken", "", expiredOptions);
+        httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", "", expiredOptions);
+
+    }
+
+    public void SetAuthTokens(string accessToken, string refreshToken)
+    {
+        SetAccessToken(accessToken);
+        SetRefreshToken(refreshToken);
     }
 }
