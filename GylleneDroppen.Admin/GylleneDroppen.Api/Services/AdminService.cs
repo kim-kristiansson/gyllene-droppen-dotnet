@@ -44,4 +44,19 @@ public class AdminService(IUserRepository userRepository) : IAdminService
         
         return ServiceResponse<MessageResponse>.Success(new MessageResponse("User demoted to User."));
     }
+
+    public async Task<ServiceResponse<List<AdminResponse>>> GetAllAdminsAsync()
+    {
+        var admins = await userRepository.GetUsersByRoleAsync(RoleType.Admin);
+        
+        var response = admins.Select(user => new AdminResponse
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+        }).ToList();
+        
+        return ServiceResponse<List<AdminResponse>>.Success(response);
+    }
 }

@@ -1,6 +1,4 @@
-using GylleneDroppen.Api.Models;
-
-namespace GylleneDroppen.Api.Dtos;
+namespace GylleneDroppen.Api.Dtos.Event;
 
 public class CreateEventRequest
 {

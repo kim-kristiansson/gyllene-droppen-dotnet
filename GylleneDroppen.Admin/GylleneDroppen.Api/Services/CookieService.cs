@@ -6,6 +6,9 @@ namespace GylleneDroppen.Api.Services;
 
 public class CookieService(IHttpContextAccessor httpContextAccessor, IOptions<JwtOptions> jwtOptions) : ICookieService
 {
+    private const string AccessTokenKey = "accessToken";
+    private const string RefreshTokenKey = "refreshToken";
+
     public void SetAccessToken(string token)
     {
         var options = new CookieOptions
@@ -16,8 +19,8 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, IOptions<Jw
             Expires = DateTime.UtcNow.AddMinutes(jwtOptions.Value.AccessTokenExpirationMinutes),
             Path = "/"
         };
-        
-        httpContextAccessor.HttpContext?.Response.Cookies.Append("accessToken", token, options);
+
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(AccessTokenKey, token, options);
     }
 
     public void SetRefreshToken(string token)
@@ -31,33 +34,23 @@ public class CookieService(IHttpContextAccessor httpContextAccessor, IOptions<Jw
             Path = "/"
         };
         
-        httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", token, options);
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(RefreshTokenKey, token, options);
     }
 
     public string? GetAccessToken()
     {
-        return httpContextAccessor.HttpContext?.Request.Cookies["accessToken"];
+        return httpContextAccessor.HttpContext?.Request.Cookies[AccessTokenKey];
     }
 
     public string? GetRefreshToken()
     {
-        return httpContextAccessor.HttpContext?.Request.Cookies["refreshToken"];
+        return httpContextAccessor.HttpContext?.Request.Cookies[RefreshTokenKey];
     }
 
     public void RemoveAuthCookies()
     {
-        var expiredOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Path = "/",
-            Expires = DateTime.UtcNow.AddDays(-1)
-        };
-
-        httpContextAccessor.HttpContext?.Response.Cookies.Append("accessToken", "", expiredOptions);
-        httpContextAccessor.HttpContext?.Response.Cookies.Append("refreshToken", "", expiredOptions);
-
+        httpContextAccessor.HttpContext?.Response.Cookies.Delete(AccessTokenKey);
+        httpContextAccessor.HttpContext?.Response.Cookies.Delete(RefreshTokenKey);
     }
 
     public void SetAuthTokens(string accessToken, string refreshToken)

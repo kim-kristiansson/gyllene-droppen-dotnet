@@ -72,23 +72,24 @@ public class AuthService(IUserRepository userRepository, IArgon2Hasher argon2Has
     public async Task<ServiceResponse<MessageResponse>> LogoutAsync()
     {
         var accessToken = cookieService.GetAccessToken();
+    
+        if (!string.IsNullOrEmpty(accessToken))
+        {
+            var userId = jwtService.GetUserIdFromToken(accessToken);
         
-        if(string.IsNullOrEmpty(accessToken))
-            return ServiceResponse<MessageResponse>.Failure("Invalid access token.", 401);
-        
-        var userId = jwtService.GetUserIdFromToken(accessToken);
-        
-        if(userId == Guid.Empty)
-            return ServiceResponse<MessageResponse>.Failure("Invalid access token.", 401);
+            if (userId != Guid.Empty)
+            {
+                var storedRefreshToken = await jwtService.GetRefreshTokenAsync(userId);
+            
+                if (!string.IsNullOrEmpty(storedRefreshToken))
+                {
+                    await jwtService.RevokeTokensAsync(userId, accessToken);
+                }
+            }
+        }
 
-        var storedRefreshToken = await jwtService.GetRefreshTokenAsync(userId);
-        if(storedRefreshToken is null)
-            return ServiceResponse<MessageResponse>.Failure("Invalid refresh token.", 401);
-        
-        await jwtService.RevokeTokensAsync(userId, accessToken);
-        
         cookieService.RemoveAuthCookies();
-        
+
         return ServiceResponse<MessageResponse>.Success(new MessageResponse("Logout successful"));
     }
 

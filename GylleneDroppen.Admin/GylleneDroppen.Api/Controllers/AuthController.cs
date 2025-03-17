@@ -26,7 +26,6 @@ public class AuthController(IAuthService authService) : ControllerBase
         return response.ToActionResult();
     }
 
-    [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {

@@ -1,8 +1,6 @@
 using System.Text;
-using GylleneDroppen.Api.Configuration;
 using GylleneDroppen.Api.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace GylleneDroppen.Api.Extensions;

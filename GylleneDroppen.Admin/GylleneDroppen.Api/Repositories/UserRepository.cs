@@ -1,4 +1,5 @@
 using GylleneDroppen.Api.Data;
+using GylleneDroppen.Api.Enums;
 using GylleneDroppen.Api.Models;
 using GylleneDroppen.Api.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,5 +11,10 @@ public class UserRepository(AppDbContext context):Repository<User>(context), IUs
     public async Task<User?> GetByEmailAsync(string email)
     {
         return await DbSet.FirstOrDefaultAsync(x => x.Email == email);
+    }
+
+    public async Task<List<User>> GetUsersByRoleAsync(RoleType role)
+    {
+        return await DbSet.Where(u => u.Role == role).ToListAsync();
     }
 }

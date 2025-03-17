@@ -23,6 +23,7 @@ public static class DependencyInjectionExtensions
          { typeof(IJwtService), typeof(JwtService) },
          { typeof(IEventService), typeof(EventService) },
          { typeof(ICookieService), typeof(CookieService) },
+         { typeof(IAdminService), typeof(AdminService) },
      };
      
      private static readonly Dictionary<Type, Type> Repositories = new()
