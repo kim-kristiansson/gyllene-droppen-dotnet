@@ -11,4 +11,5 @@ public interface IJwtService
     Task SaveRefreshTokenAsync(Guid userId, string refreshToken);
     Task<string?> GetRefreshTokenAsync(Guid userId);
     Task RevokeTokensAsync(Guid userId, string accessToken);
+    Guid GetUserIdFromToken(string token);
 }

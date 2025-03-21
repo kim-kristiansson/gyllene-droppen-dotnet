@@ -1,8 +1,6 @@
 using System.Text;
-using GylleneDroppen.Api.Configuration;
 using GylleneDroppen.Api.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 namespace GylleneDroppen.Api.Extensions;
@@ -30,6 +28,19 @@ public static class AuthenticationServiceExtensions
                 ValidateAudience = !string.IsNullOrWhiteSpace(jwtOptions.Audience),
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero
+            };
+            
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    if (context.Request.Cookies.TryGetValue("accessToken", out var token))
+                    {
+                        context.Token = token;
+                    }
+
+                    return Task.CompletedTask;
+                }
             };
         });
     }

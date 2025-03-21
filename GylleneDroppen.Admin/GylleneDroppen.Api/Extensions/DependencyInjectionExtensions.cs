@@ -1,3 +1,5 @@
+using GylleneDroppen.Api.Mappers;
+using GylleneDroppen.Api.Mappers.Interfaces;
 using GylleneDroppen.Api.Repositories;
 using GylleneDroppen.Api.Repositories.Interfaces;
 using GylleneDroppen.Api.Services;
@@ -9,17 +11,27 @@ namespace GylleneDroppen.Api.Extensions;
 
 public static class DependencyInjectionExtensions
 {
+    private static readonly Dictionary<Type, Type> Mappers = new()
+    {
+        { typeof(IEventMapper), typeof(EventMapper) }
+    };
+    
      private static readonly Dictionary<Type, Type> Services = new()
      {
          { typeof(IAuthService), typeof(AuthService) },
          { typeof(IEmailService), typeof(EmailService) },
-         { typeof(IJwtService), typeof(JwtService) }
+         { typeof(IJwtService), typeof(JwtService) },
+         { typeof(IEventService), typeof(EventService) },
+         { typeof(ICookieService), typeof(CookieService) },
+         { typeof(IAdminService), typeof(AdminService) },
      };
      
      private static readonly Dictionary<Type, Type> Repositories = new()
      {
          { typeof(IUserRepository), typeof(UserRepository) },
-         {typeof(IRedisRepository), typeof(RedisRepository)}
+         {typeof(IRedisRepository), typeof(RedisRepository)},
+         {typeof(IEventRepository), typeof(EventRepository)},
+         {typeof(IParticipantRepository), typeof(ParticipantRepository)},
      };
      
      private static readonly Dictionary<Type, Type> Utilities = new()
@@ -33,6 +45,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped(Services);
         services.AddScoped(Repositories);
         services.AddSingleton(Utilities);
+        services.AddSingleton(Mappers);
     }
     
     private static void AddScoped(this IServiceCollection services, Dictionary<Type, Type> mappings)

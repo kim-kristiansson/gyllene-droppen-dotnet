@@ -16,7 +16,11 @@ builder.Services.AddDatabase();
 
 builder.Services.AddSmtpClient();
 
+builder.Services.AddCustomCors(builder.Configuration);
+
 builder.Services.AddRedis(builder.Configuration);
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDependencyInjections();
 
@@ -29,6 +33,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
+app.UseCustomCors();
 
 app.UseAuthentication();
 
