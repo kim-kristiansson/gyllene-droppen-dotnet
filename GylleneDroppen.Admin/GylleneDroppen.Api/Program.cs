@@ -1,5 +1,6 @@
 using DotNetEnv;
 using GylleneDroppen.Api.Extensions;
+using GylleneDroppen.Shared.Extensions;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +23,7 @@ builder.Services.AddRedis(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddDependencyInjections();
+builder.Services.AddApiServices();
 
 builder.Services.AddControllers();
 

@@ -1,8 +1,6 @@
 using System.Security.Claims;
-using GylleneDroppen.Api.Attributes;
-using GylleneDroppen.Api.Dtos;
-using GylleneDroppen.Api.Dtos.Auth;
-using GylleneDroppen.Api.Services.Interfaces;
+using GylleneDroppen.Core.Interfaces.Services;
+using GylleneDroppen.Shared.Dtos.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,14 +45,14 @@ public class AuthController(IAuthService authService) : ControllerBase
         var result = await authService.ConfirmEmailAsync(request);
         return result.ToActionResult();
     }
-    
+
     [Authorize]
     [HttpGet("me")]
     public IActionResult GetCurrentUser()
     {
-        if(User.Identity is not ClaimsIdentity claimsIdentity)
+        if (User.Identity is not ClaimsIdentity claimsIdentity)
             return Unauthorized("Invalid token.");
-        
+
         var claims = claimsIdentity.Claims
             .Select(c => new Claim(c.Type, c.Value))
             .ToList();
