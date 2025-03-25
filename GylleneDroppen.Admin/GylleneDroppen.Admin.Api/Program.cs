@@ -4,11 +4,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
-
 builder.Services.AddControllers();
 
 builder.Services.AddApiServices();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+var app = builder.Build();
+
 
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
@@ -23,3 +28,5 @@ app.MapControllers().RequireAuthorization(policy =>
     policy.RequireAuthenticatedUser();
     policy.RequireRole("Admin");
 });
+
+app.Run();

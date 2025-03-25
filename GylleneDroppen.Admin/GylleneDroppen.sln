@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Shared", "Gy
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Api", "GylleneDroppen.Admin.Api\GylleneDroppen.Admin.Api.csproj", "{9EAD48B7-936A-4211-AF0E-B207710D9044}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Shared.Web", "GylleneDroppen.Shared.Web\GylleneDroppen.Shared.Web.csproj", "{51B373E6-B870-4C90-9A77-4F3C65E366C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{9EAD48B7-936A-4211-AF0E-B207710D9044}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EAD48B7-936A-4211-AF0E-B207710D9044}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EAD48B7-936A-4211-AF0E-B207710D9044}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51B373E6-B870-4C90-9A77-4F3C65E366C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51B373E6-B870-4C90-9A77-4F3C65E366C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51B373E6-B870-4C90-9A77-4F3C65E366C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51B373E6-B870-4C90-9A77-4F3C65E366C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -7,8 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Dtos\WhiskyTasting\Admin\"/>
-        <Folder Include="Dtos\WhiskyTasting\Public\"/>
+        <ProjectReference Include="..\GylleneDroppen.Infrastructure\GylleneDroppen.Infrastructure.csproj"/>
     </ItemGroup>
-    
+
 </Project>

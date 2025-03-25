@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Builder;
 using GylleneDroppen.Infrastructure.Middlewares;
+using Microsoft.AspNetCore.Builder;
 
-namespace GylleneDroppen.Shared.Extensions;
+namespace GylleneDroppen.Shared.Web.Extensions;
 
 public static class MiddlewareExtensions
 {

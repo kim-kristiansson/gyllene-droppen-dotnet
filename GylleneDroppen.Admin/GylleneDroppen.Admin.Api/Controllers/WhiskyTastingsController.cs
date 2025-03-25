@@ -1,5 +1,6 @@
 using GylleneDroppen.Admin.Api.Dtos.WhiskyTasting;
 using GylleneDroppen.Admin.Api.Interfaces.Services;
+using GylleneDroppen.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GylleneDroppen.Api.Controllers;

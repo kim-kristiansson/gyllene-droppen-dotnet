@@ -2,8 +2,8 @@ using GylleneDroppen.Admin.Api.Dtos.WhiskyTasting;
 using GylleneDroppen.Admin.Api.Interfaces.Mappers;
 using GylleneDroppen.Admin.Api.Interfaces.Repositories;
 using GylleneDroppen.Admin.Api.Interfaces.Services;
-using GylleneDroppen.Shared.Dtos.Generic;
-using GylleneDroppen.Shared.Utils;
+using GylleneDroppen.Core.Common;
+using GylleneDroppen.Core.Dtos.Generic;
 
 namespace GylleneDroppen.Admin.Api.Services;
 
@@ -12,52 +12,52 @@ public class WhiskyTastingService(
     IWhiskyTastingMapper whiskyTastingMapper)
     : IWhiskyTastingService
 {
-    public async Task<ServiceResponse<MessageResponse>> CreateWhiskyTastingAsync(CreateWhiskyTastingRequest request)
+    public async Task<Result<MessageResponse>> CreateWhiskyTastingAsync(CreateWhiskyTastingRequest request)
     {
         if (request.EndTime <= request.StartTime)
-            return ServiceResponse<MessageResponse>.Failure("End time must be after start time.", 400);
+            return Result<MessageResponse>.Failure("End time must be after start time.", 400);
 
         if (request.Deadline >= request.StartTime)
-            return ServiceResponse<MessageResponse>.Failure("Deadline must be before whisky tasting start time.", 400);
+            return Result<MessageResponse>.Failure("Deadline must be before whisky tasting start time.", 400);
 
         var newWhiskyTasting = whiskyTastingMapper.ToWhiskyTasting(request);
 
         await whiskyTastingRepository.AddAsync(newWhiskyTasting);
         await whiskyTastingRepository.SaveChangesAsync();
 
-        return ServiceResponse<MessageResponse>.Success(
-            new MessageResponse("WhiskyTastingResponse created successfully."));
+        return Result<MessageResponse>.Success(
+            new MessageResponse("WhiskyTastingAdminResponse created successfully."));
     }
 
-    public async Task<ServiceResponse<List<WhiskyTastingResponse>>> GetUpcomingWhiskyTastingsAsync()
+    public async Task<Result<List<WhiskyTastingAdminResponse>>> GetUpcomingWhiskyTastingsAsync()
     {
         var queries = await whiskyTastingRepository.GetUpcomingWhiskyTastingAsync();
 
         var response = whiskyTastingMapper.ToWhiskyTastingResponse(queries);
 
-        return ServiceResponse<List<WhiskyTastingResponse>>.Success(response);
+        return Result<List<WhiskyTastingAdminResponse>>.Success(response);
     }
 
-    public async Task<ServiceResponse<List<WhiskyTastingResponse>>> GetAllWhiskyTastingsAsync()
+    public async Task<Result<List<WhiskyTastingAdminResponse>>> GetAllWhiskyTastingsAsync()
     {
         var whiskyTastings = await whiskyTastingRepository.GetAllAsync();
 
         var response = whiskyTastingMapper.ToWhiskyTastingResponse(whiskyTastings);
 
-        return ServiceResponse<List<WhiskyTastingResponse>>.Success(response);
+        return Result<List<WhiskyTastingAdminResponse>>.Success(response);
     }
 
-    public async Task<ServiceResponse<MessageResponse>> UpdateWhiskyTastingAsync(UpdateWhiskyTastingRequest request)
+    public async Task<Result<MessageResponse>> UpdateWhiskyTastingAsync(UpdateWhiskyTastingRequest request)
     {
         var existingWhiskyTasting = await whiskyTastingRepository.GetByIdAsync(request.Id);
         if (existingWhiskyTasting is null)
-            return ServiceResponse<MessageResponse>.Failure("whisky tasting not found.", 404);
+            return Result<MessageResponse>.Failure("whisky tasting not found.", 404);
 
         if (request.EndTime <= request.StartTime)
-            return ServiceResponse<MessageResponse>.Failure("End time must be after start time.", 400);
+            return Result<MessageResponse>.Failure("End time must be after start time.", 400);
 
         if (request.Deadline >= request.StartTime)
-            return ServiceResponse<MessageResponse>.Failure("Deadline must be before whisky tasting start time.", 400);
+            return Result<MessageResponse>.Failure("Deadline must be before whisky tasting start time.", 400);
 
         if (existingWhiskyTasting.Title != request.Title)
             existingWhiskyTasting.Title = request.Title;
@@ -89,6 +89,6 @@ public class WhiskyTastingService(
         whiskyTastingRepository.Update(existingWhiskyTasting);
         await whiskyTastingRepository.SaveChangesAsync();
 
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Successfully updated whisky tasting."));
+        return Result<MessageResponse>.Success(new MessageResponse("Successfully updated whisky tasting."));
     }
 }

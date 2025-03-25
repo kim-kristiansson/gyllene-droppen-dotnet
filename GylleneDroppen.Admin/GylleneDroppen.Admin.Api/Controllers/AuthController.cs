@@ -1,7 +1,8 @@
 using System.Security.Claims;
+using GylleneDroppen.Core.Dtos.Auth;
 using GylleneDroppen.Core.Enums;
 using GylleneDroppen.Core.Interfaces.Services;
-using GylleneDroppen.Shared.Dtos.Auth;
+using GylleneDroppen.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +17,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var response = await authService.LoginAsync(request);
 
-        if (response.IsSuccess && response.Data?.Role != RoleType.Admin.ToString())
+        if (response.IsSuccess && response.Value?.Role != RoleType.Admin.ToString())
             return Unauthorized(new { message = "Administrator access required" });
 
         return response.ToActionResult();

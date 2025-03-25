@@ -1,4 +1,4 @@
-using GylleneDroppen.Shared.Dtos.Generic;
+using GylleneDroppen.Core.Dtos.Generic;
 
 namespace GylleneDroppen.Api.Dtos.WhiskyTasting;
 

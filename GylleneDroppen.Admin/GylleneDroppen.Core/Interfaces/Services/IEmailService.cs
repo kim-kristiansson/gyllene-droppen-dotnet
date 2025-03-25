@@ -1,10 +1,10 @@
-using GylleneDroppen.Shared.Dtos.Generic;
-using GylleneDroppen.Shared.Utils;
+using GylleneDroppen.Core.Common;
+using GylleneDroppen.Core.Dtos.Generic;
 
 namespace GylleneDroppen.Core.Interfaces.Services;
 
 public interface IEmailService
 {
-    Task<ServiceResponse<MessageResponse>> SendEmailConfirmationCodeAsync(string email, string confirmationCode);
-    Task<ServiceResponse<MessageResponse>> SendPasswordResetEmailAsync(string email, string resetToken);
+    Task<Result<MessageResponse>> SendEmailConfirmationCodeAsync(string email, string confirmationCode);
+    Task<Result<MessageResponse>> SendPasswordResetEmailAsync(string email, string resetToken);
 }

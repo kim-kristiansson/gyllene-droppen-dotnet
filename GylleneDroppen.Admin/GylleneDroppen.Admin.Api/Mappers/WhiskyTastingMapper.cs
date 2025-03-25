@@ -1,10 +1,10 @@
 using GylleneDroppen.Admin.Api.Dtos.WhiskyTasting;
 using GylleneDroppen.Admin.Api.Interfaces.Mappers;
 using GylleneDroppen.Admin.Api.Queries.WhiskyTasting;
+using GylleneDroppen.Core.Dtos.Generic;
 using GylleneDroppen.Core.Entities;
-using GylleneDroppen.Shared.Dtos.Generic;
 
-namespace GylleneDroppen.Api.Mappers;
+namespace GylleneDroppen.Admin.Api.Mappers;
 
 public class WhiskyTastingMapper : IWhiskyTastingMapper
 {
@@ -13,19 +13,19 @@ public class WhiskyTastingMapper : IWhiskyTastingMapper
         throw new NotImplementedException();
     }
 
-    public WhiskyTastingResponse ToWhiskyTastingResponse(WhiskyTasting whiskyTasting)
+    public WhiskyTastingAdminResponse ToWhiskyTastingResponse(WhiskyTasting whiskyTasting)
     {
         throw new NotImplementedException();
     }
 
-    public List<WhiskyTastingResponse> ToWhiskyTastingResponse(List<WhiskyTasting> whiskyTastings)
+    public List<WhiskyTastingAdminResponse> ToWhiskyTastingResponse(List<WhiskyTasting> whiskyTastings)
     {
         throw new NotImplementedException();
     }
 
-    public WhiskyTastingResponse ToWhiskyTastingResponse(UpcomingWhiskyTastingQuery query)
+    public WhiskyTastingAdminResponse ToWhiskyTastingResponse(UpcomingWhiskyTastingQuery query)
     {
-        return new WhiskyTastingResponse
+        return new WhiskyTastingAdminResponse
         {
             Id = query.Id,
             Title = query.Title,
@@ -44,7 +44,7 @@ public class WhiskyTastingMapper : IWhiskyTastingMapper
         };
     }
 
-    public List<WhiskyTastingResponse> ToWhiskyTastingResponse(List<UpcomingWhiskyTastingQuery> queries)
+    public List<WhiskyTastingAdminResponse> ToWhiskyTastingResponse(List<UpcomingWhiskyTastingQuery> queries)
     {
         return queries.Select(ToWhiskyTastingResponse).ToList();
     }

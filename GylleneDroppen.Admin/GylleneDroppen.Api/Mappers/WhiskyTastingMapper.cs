@@ -1,7 +1,7 @@
 using GylleneDroppen.Api.Dtos.WhiskyTasting;
 using GylleneDroppen.Api.Interfaces.Mappers;
 using GylleneDroppen.Api.Queries.WhiskyTasting;
-using GylleneDroppen.Shared.Dtos.Generic;
+using GylleneDroppen.Core.Dtos.Generic;
 
 namespace GylleneDroppen.Api.Mappers;
 

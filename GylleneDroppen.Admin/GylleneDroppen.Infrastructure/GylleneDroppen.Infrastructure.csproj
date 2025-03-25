@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\GylleneDroppen.Core\GylleneDroppen.Core.csproj"/>
+        <ProjectReference Include="..\GylleneDroppen.Shared\GylleneDroppen.Shared.csproj"/>
     </ItemGroup>
 
 </Project>

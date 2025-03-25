@@ -1,5 +1,6 @@
 using GylleneDroppen.Admin.Api.Dtos.WhiskyTasting;
 using GylleneDroppen.Admin.Api.Queries.WhiskyTasting;
+using GylleneDroppen.Core.Dtos.WhiskyTasting.Shared;
 using GylleneDroppen.Core.Entities;
 
 namespace GylleneDroppen.Admin.Api.Interfaces.Mappers;
@@ -7,8 +8,8 @@ namespace GylleneDroppen.Admin.Api.Interfaces.Mappers;
 public interface IWhiskyTastingMapper
 {
     WhiskyTasting ToWhiskyTasting(CreateWhiskyTastingRequest request);
-    WhiskyTastingResponse ToWhiskyTastingResponse(WhiskyTasting whiskyTasting);
-    List<WhiskyTastingResponse> ToWhiskyTastingResponse(List<WhiskyTasting> whiskyTastings);
-    WhiskyTastingResponse ToWhiskyTastingResponse(UpcomingWhiskyTastingQuery query);
-    List<WhiskyTastingResponse> ToWhiskyTastingResponse(List<UpcomingWhiskyTastingQuery> queries);
+    WhiskyTastingAdminResponse ToWhiskyTastingResponse(WhiskyTasting whiskyTasting);
+    List<WhiskyTastingBaseResponse> ToWhiskyTastingResponse(List<WhiskyTasting> whiskyTastings);
+    WhiskyTastingBaseResponse ToWhiskyTastingResponse(UpcomingWhiskyTastingQuery query);
+    List<WhiskyTastingAdminResponse> ToWhiskyTastingResponse(List<UpcomingWhiskyTastingQuery> queries);
 }

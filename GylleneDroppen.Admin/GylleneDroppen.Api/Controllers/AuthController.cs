@@ -1,6 +1,7 @@
 using System.Security.Claims;
+using GylleneDroppen.Core.Dtos.Auth;
 using GylleneDroppen.Core.Interfaces.Services;
-using GylleneDroppen.Shared.Dtos.Auth;
+using GylleneDroppen.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

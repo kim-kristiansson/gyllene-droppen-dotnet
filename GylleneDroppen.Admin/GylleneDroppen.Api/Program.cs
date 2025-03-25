@@ -1,6 +1,6 @@
 using DotNetEnv;
-using GylleneDroppen.Api.Extensions;
 using GylleneDroppen.Shared.Extensions;
+using GylleneDroppen.Shared.Web.Extensions;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,19 +13,14 @@ builder.Services.AddConfigureOptions(builder.Configuration);
 
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
-builder.Services.AddDatabase();
-
-builder.Services.AddSmtpClient();
-
 builder.Services.AddCustomCors(builder.Configuration);
-
-builder.Services.AddRedis(builder.Configuration);
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddApiServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddControllers();
+
 
 var app = builder.Build();
 

@@ -1,13 +1,13 @@
 using GylleneDroppen.Api.Dtos.WhiskyTasting;
-using GylleneDroppen.Shared.Dtos.Generic;
-using GylleneDroppen.Shared.Utils;
+using GylleneDroppen.Core.Common;
+using GylleneDroppen.Core.Dtos.Generic;
 
 namespace GylleneDroppen.Api.Interfaces.Services;
 
 public interface IWhiskyTastingService
 {
-    Task<ServiceResponse<List<WhiskyTastingResponse>>> GetUpcomingEventsAsync();
+    Task<Result<List<WhiskyTastingResponse>>> GetUpcomingEventsAsync();
 
-    Task<ServiceResponse<MessageResponse>> RegisterForWhiskyTastingAsync(RegisterForWhiskyTastingRequest request,
+    Task<Result<MessageResponse>> RegisterForWhiskyTastingAsync(RegisterForWhiskyTastingRequest request,
         Guid userId);
 }

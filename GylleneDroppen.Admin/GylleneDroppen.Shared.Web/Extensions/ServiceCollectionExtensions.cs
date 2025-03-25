@@ -6,7 +6,7 @@ using GylleneDroppen.Infrastructure.Security;
 using GylleneDroppen.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace GylleneDroppen.Shared.Extensions;
+namespace GylleneDroppen.Shared.Web.Extensions;
 
 public static class ServiceCollectionExtensions
 {

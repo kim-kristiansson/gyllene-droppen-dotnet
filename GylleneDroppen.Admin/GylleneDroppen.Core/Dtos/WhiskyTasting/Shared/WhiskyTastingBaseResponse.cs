@@ -1,10 +1,10 @@
-using GylleneDroppen.Shared.Dtos.Generic;
+using GylleneDroppen.Core.Dtos.Generic;
 
-namespace GylleneDroppen.Admin.Api.Dtos.WhiskyTasting;
+namespace GylleneDroppen.Core.Dtos.WhiskyTasting.Shared;
 
-public abstract class WhiskyTastingResponse
+public class WhiskyTastingBaseResponse
 {
-    public abstract required Guid Id { init; }
+    public required Guid Id { get; init; }
     public required string Title { get; init; }
     public required string Description { get; init; }
     public required DateTime StartTime { get; init; }

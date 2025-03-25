@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Shared.Dtos.Generic;
+namespace GylleneDroppen.Core.Dtos.Generic;
 
 public class MessageResponse(string message)
 {

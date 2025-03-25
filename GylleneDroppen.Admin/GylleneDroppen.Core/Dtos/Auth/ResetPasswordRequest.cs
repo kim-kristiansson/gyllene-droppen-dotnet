@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Shared.Dtos.Auth;
+namespace GylleneDroppen.Core.Dtos.Auth;
 
 public class ResetPasswordRequest
 {

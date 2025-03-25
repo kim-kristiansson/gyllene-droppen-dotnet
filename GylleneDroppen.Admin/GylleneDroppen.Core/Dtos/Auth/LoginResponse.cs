@@ -1,6 +1,6 @@
-namespace GylleneDroppen.Shared.Dtos.Auth;
+namespace GylleneDroppen.Core.Dtos.Auth;
 
-public class CurrentUserResponse
+public class LoginResponse
 {
     public required Guid Id { get; set; }
     public required string Email { get; set; }
