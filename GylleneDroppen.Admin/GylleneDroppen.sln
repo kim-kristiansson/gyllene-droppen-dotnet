@@ -6,6 +6,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Infrastructu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Client.Api", "GylleneDroppen.Client.Api\GylleneDroppen.Client.Api.csproj", "{8C85302A-9598-464D-86A4-7F8F79184D41}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Application", "GylleneDroppen.Application\GylleneDroppen.Application.csproj", "{9F095212-7D6E-45DF-B66D-5A20CB0192C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Shared", "GylleneDroppen.Shared\GylleneDroppen.Shared.csproj", "{034EF2E6-2A01-47FC-A6C5-78EC31C7A327}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Application.Tests", "GylleneDroppen.Application.Tests\GylleneDroppen.Application.Tests.csproj", "{92461244-01A9-4FBB-A2FA-0E9F42DFA059}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Shared.Tests", "GylleneDroppen.Shared.Tests\GylleneDroppen.Shared.Tests.csproj", "{C9C407E2-B358-4EC3-BA94-C41A4B1C85EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +32,21 @@ Global
 		{8C85302A-9598-464D-86A4-7F8F79184D41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C85302A-9598-464D-86A4-7F8F79184D41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C85302A-9598-464D-86A4-7F8F79184D41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F095212-7D6E-45DF-B66D-5A20CB0192C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F095212-7D6E-45DF-B66D-5A20CB0192C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F095212-7D6E-45DF-B66D-5A20CB0192C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F095212-7D6E-45DF-B66D-5A20CB0192C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{034EF2E6-2A01-47FC-A6C5-78EC31C7A327}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{034EF2E6-2A01-47FC-A6C5-78EC31C7A327}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{034EF2E6-2A01-47FC-A6C5-78EC31C7A327}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{034EF2E6-2A01-47FC-A6C5-78EC31C7A327}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92461244-01A9-4FBB-A2FA-0E9F42DFA059}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92461244-01A9-4FBB-A2FA-0E9F42DFA059}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92461244-01A9-4FBB-A2FA-0E9F42DFA059}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92461244-01A9-4FBB-A2FA-0E9F42DFA059}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9C407E2-B358-4EC3-BA94-C41A4B1C85EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9C407E2-B358-4EC3-BA94-C41A4B1C85EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9C407E2-B358-4EC3-BA94-C41A4B1C85EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9C407E2-B358-4EC3-BA94-C41A4B1C85EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
