@@ -1,7 +1,7 @@
 using GylleneDroppen.Application.Common.Results;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GylleneDroppen.Shared.Extensions;
+namespace GylleneDroppen.Presentation.Utilities;
 
 public static class ResultExtensions
 {
