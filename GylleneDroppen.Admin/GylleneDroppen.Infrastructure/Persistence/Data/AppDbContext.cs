@@ -1,4 +1,4 @@
-using GylleneDroppen.Core.Domain.Entities;
+using GylleneDroppen.Domain.Domain.Entities;
 using GylleneDroppen.Infrastructure.Persistence.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 

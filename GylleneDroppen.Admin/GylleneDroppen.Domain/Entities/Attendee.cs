@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Core.Domain.Entities;
+namespace GylleneDroppen.Domain.Domain.Entities;
 
 public class Attendee
 {

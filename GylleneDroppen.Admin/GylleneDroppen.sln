@@ -2,11 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Infrastructure", "GylleneDroppen.Infrastructure\GylleneDroppen.Infrastructure.csproj", "{B83BAD4D-1BC7-4A61-89AA-306772C12466}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Client.Api", "GylleneDroppen.Client.Api\GylleneDroppen.Client.Api.csproj", "{8C85302A-9598-464D-86A4-7F8F79184D41}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Application", "GylleneDroppen.Application\GylleneDroppen.Application.csproj", "{9F095212-7D6E-45DF-B66D-5A20CB0192C0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Core", "GylleneDroppen.Core\GylleneDroppen.Core.csproj", "{D8DB5DFD-71EB-4B1B-A2F2-D0774074C9DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Domain", "GylleneDroppen.Domain\GylleneDroppen.Domain.csproj", "{D8DB5DFD-71EB-4B1B-A2F2-D0774074C9DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Presentation", "GylleneDroppen.Presentation\GylleneDroppen.Presentation.csproj", "{F9E9EB1B-24A9-4EBF-BD0F-7360862B98E3}"
 EndProject
@@ -20,10 +18,6 @@ Global
 		{B83BAD4D-1BC7-4A61-89AA-306772C12466}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B83BAD4D-1BC7-4A61-89AA-306772C12466}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B83BAD4D-1BC7-4A61-89AA-306772C12466}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8C85302A-9598-464D-86A4-7F8F79184D41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8C85302A-9598-464D-86A4-7F8F79184D41}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8C85302A-9598-464D-86A4-7F8F79184D41}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8C85302A-9598-464D-86A4-7F8F79184D41}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9F095212-7D6E-45DF-B66D-5A20CB0192C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9F095212-7D6E-45DF-B66D-5A20CB0192C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9F095212-7D6E-45DF-B66D-5A20CB0192C0}.Release|Any CPU.ActiveCfg = Release|Any CPU

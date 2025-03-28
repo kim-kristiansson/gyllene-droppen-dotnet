@@ -1,0 +1,7 @@
+namespace GylleneDroppen.Application.Interfaces.Repositories.Admin;
+
+public interface IUserRepository : IRepository<User>
+{
+    Task<User?> GetByEmailAsync(string email);
+    Task<List<User>> GetUsersByRoleAsync(RoleType role);
+}

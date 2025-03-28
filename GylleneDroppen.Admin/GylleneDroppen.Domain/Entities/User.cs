@@ -1,6 +1,6 @@
-using GylleneDroppen.Core.Domain.Enums;
+using GylleneDroppen.Domain.Domain.Enums;
 
-namespace GylleneDroppen.Core.Domain.Entities;
+namespace GylleneDroppen.Domain.Domain.Entities;
 
 public class User
 {

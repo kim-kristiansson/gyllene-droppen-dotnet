@@ -25,12 +25,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Email\"/>
+        <ProjectReference Include="..\GylleneDroppen.Application\GylleneDroppen.Application.csproj"/>
+        <ProjectReference Include="..\GylleneDroppen.Domain\GylleneDroppen.Domain.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GylleneDroppen.Application\GylleneDroppen.Application.csproj"/>
-        <ProjectReference Include="..\GylleneDroppen.Core\GylleneDroppen.Core.csproj"/>
+        <Folder Include="Caching\"/>
     </ItemGroup>
 
 </Project>
