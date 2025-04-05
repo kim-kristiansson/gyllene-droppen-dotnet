@@ -1,37 +1,18 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using GylleneDroppen.Domain.Domain.Entities;
+using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Services.Shared;
+using GylleneDroppen.Domain.Entities;
+using GylleneDroppen.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace GylleneDroppen.Infrastructure.Authentication;
 
-public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisRepository) : IJwtService
+public class JwtService(IOptions<JwtSettings> jwtSettings, IRedisRepository redisRepository) : IJwtService
 {
-    public string GenerateToken(User user)
-    {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Value.Secret));
-        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.Email),
-            new(ClaimTypes.Role, user.Role.ToString()),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-        var token = new JwtSecurityToken(
-            issuer: jwtOptions.Value.Issuer,
-            audience: jwtOptions.Value.Audience,
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(jwtOptions.Value.AccessTokenExpirationMinutes),
-            signingCredentials: credentials
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
     public async Task BlacklistAccessTokenAsync(string token)
     {
         var handler = new JwtSecurityTokenHandler();
@@ -62,7 +43,7 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisR
     public async Task SaveRefreshTokenAsync(Guid userId, string refreshToken)
     {
         await redisRepository.SaveAsync($"refresh:{userId}", refreshToken,
-            TimeSpan.FromDays(jwtOptions.Value.RefreshTokenExpirationDays));
+            TimeSpan.FromDays(jwtSettings.Value.RefreshTokenExpirationDays));
     }
 
     public async Task<string?> GetRefreshTokenAsync(Guid userId)
@@ -86,5 +67,29 @@ public class JwtService(IOptions<JwtOptions> jwtOptions, IRedisRepository redisR
         var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value;
 
         return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
+    }
+
+    public string GenerateToken(User user)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Value.Secret));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.Email),
+            new(ClaimTypes.Role, user.Role.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var token = new JwtSecurityToken(
+            jwtSettings.Value.Issuer,
+            jwtSettings.Value.Audience,
+            claims,
+            expires: DateTime.Now.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes),
+            signingCredentials: credentials
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

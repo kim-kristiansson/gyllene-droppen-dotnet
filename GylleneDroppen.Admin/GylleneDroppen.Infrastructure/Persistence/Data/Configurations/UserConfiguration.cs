@@ -1,4 +1,4 @@
-using GylleneDroppen.Domain.Domain.Entities;
+using GylleneDroppen.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

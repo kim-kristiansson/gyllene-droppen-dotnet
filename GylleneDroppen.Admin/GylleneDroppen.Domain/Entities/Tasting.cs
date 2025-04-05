@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Domain.Domain.Entities;
+namespace GylleneDroppen.Domain.Entities;
 
 public class Tasting
 {

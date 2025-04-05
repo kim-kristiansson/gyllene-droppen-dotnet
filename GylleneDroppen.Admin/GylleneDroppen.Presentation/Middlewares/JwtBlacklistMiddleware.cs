@@ -1,3 +1,7 @@
+using GylleneDroppen.Application.Services.Shared;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace GylleneDroppen.Presentation.Middlewares;
 
 public class JwtBlacklistMiddleware(RequestDelegate next)
@@ -7,16 +11,9 @@ public class JwtBlacklistMiddleware(RequestDelegate next)
         using var scope = serviceProvider.CreateScope();
         var jwtService = scope.ServiceProvider.GetRequiredService<IJwtService>();
 
-        var authorizationHeader = context.Request.Headers.Authorization.FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(authorizationHeader) || !authorizationHeader.StartsWith("Bearer "))
-        {
-            await next(context);
-            return;
-        }
+        var token = context.Request.Cookies["accessToken"];
 
-        var token = authorizationHeader.Split(" ").Last();
-
-        if (!string.IsNullOrEmpty(token))
+        if (!string.IsNullOrWhiteSpace(token))
         {
             var isBlacklisted = await jwtService.IsAccessTokenBlacklistedAsync(token);
 
@@ -28,6 +25,7 @@ public class JwtBlacklistMiddleware(RequestDelegate next)
             }
         }
 
+        // Move to the next middleware in the pipeline
         await next(context);
     }
 }

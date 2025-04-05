@@ -1,11 +1,15 @@
 using System.Net.Mail;
+using GylleneDroppen.Application.Common.Results;
+using GylleneDroppen.Application.Dtos.Common;
+using GylleneDroppen.Application.Services.Shared;
+using GylleneDroppen.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
 namespace GylleneDroppen.Infrastructure.Email;
 
-public class EmailService(SmtpClient smtpClient, IOptions<GlobalOptions> globalOptions) : IEmailService
+public class EmailService(SmtpClient smtpClient, IOptions<GlobalSettings> globalOptions) : IEmailService
 {
-    public async Task<ServiceResponse<MessageResponse>> SendEmailConfirmationCodeAsync(string email,
+    public async Task<Result<MessageResponse>> SendEmailConfirmationCodeAsync(string email,
         string confirmationCode)
     {
         var confirmationLink =
@@ -25,11 +29,11 @@ public class EmailService(SmtpClient smtpClient, IOptions<GlobalOptions> globalO
         message.To.Add(new MailAddress(email));
         await smtpClient.SendMailAsync(message);
 
-        return ServiceResponse<MessageResponse>.Success(
+        return Result<MessageResponse>.Success(
             new MessageResponse("Email verification code sent successfully"));
     }
 
-    public async Task<ServiceResponse<MessageResponse>> SendPasswordResetEmailAsync(string email, string resetToken)
+    public async Task<Result<MessageResponse>> SendPasswordResetEmailAsync(string email, string resetToken)
     {
         var confirmationLink = $"{globalOptions.Value.FrontendBaseUrl}/reset-password?email={email}&code={resetToken}";
 
@@ -47,7 +51,7 @@ public class EmailService(SmtpClient smtpClient, IOptions<GlobalOptions> globalO
         message.To.Add(new MailAddress(email));
         await smtpClient.SendMailAsync(message);
 
-        return ServiceResponse<MessageResponse>.Success(
+        return Result<MessageResponse>.Success(
             new MessageResponse("Email verification code sent successfully"));
     }
 }

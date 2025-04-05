@@ -1,8 +1,10 @@
+using GylleneDroppen.Application.Interfaces;
+using GylleneDroppen.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
 namespace GylleneDroppen.Presentation.Utilities;
 
-public class CookieManager(IHttpContextAccessor httpContextAccessor, IOptions<JwtOptions> jwtOptions) : ICookieManager
+public class CookieManager(IHttpContextAccessor httpContextAccessor, IOptions<JwtSettings> jwtSettings) : ICookieManager
 {
     private const string AccessTokenKey = "accessToken";
     private const string RefreshTokenKey = "refreshToken";
@@ -14,7 +16,7 @@ public class CookieManager(IHttpContextAccessor httpContextAccessor, IOptions<Jw
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(jwtOptions.Value.AccessTokenExpirationMinutes),
+            Expires = DateTime.UtcNow.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes),
             Path = "/"
         };
 
@@ -28,7 +30,7 @@ public class CookieManager(IHttpContextAccessor httpContextAccessor, IOptions<Jw
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddDays(jwtOptions.Value.RefreshTokenExpirationDays),
+            Expires = DateTime.UtcNow.AddDays(jwtSettings.Value.RefreshTokenExpirationDays),
             Path = "/"
         };
 

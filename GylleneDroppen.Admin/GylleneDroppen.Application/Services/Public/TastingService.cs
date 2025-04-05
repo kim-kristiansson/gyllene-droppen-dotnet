@@ -1,114 +1,125 @@
+using GylleneDroppen.Application.Common.Results;
+using GylleneDroppen.Application.Dtos.Common;
+using GylleneDroppen.Application.Dtos.Tasting;
+using GylleneDroppen.Application.Interfaces.Mappers.Admin;
+using GylleneDroppen.Application.Interfaces.Repositories.Public;
+using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Interfaces.Services.Admin;
+using GylleneDroppen.Domain.Entities;
+
 namespace GylleneDroppen.Application.Services.Public;
 
 public class TastingService(
-    IEventRepository eventRepository,
-    IEventMapper eventMapper,
-    IParticipantRepository participantRepository)
-    : IEventService
+    ITastingRepository tastingRepository,
+    ITastingMapper tastingMapper,
+    IAttendeeRepository attendeeRepository)
+    : ITastingService
 {
-    public async Task<ServiceResponse<MessageResponse>> CreateEventAsync(CreateEventRequest request)
+    public async Task<Result<MessageResponse>> CreateTastingAsync(CreateTastingRequest request)
     {
         if (request.EndTime <= request.StartTime)
-            return ServiceResponse<MessageResponse>.Failure("End time must be after start time.", 400);
+            return Result<MessageResponse>.Failure("End time must be after start time.", 400);
 
         if (request.Deadline >= request.StartTime)
-            return ServiceResponse<MessageResponse>.Failure("Deadline must be before event start time.", 400);
+            return Result<MessageResponse>.Failure("Deadline must be before tasting start time.", 400);
 
-        var newEvent = eventMapper.ToEvent(request);
+        var newTasting = tastingMapper.ToTasting(request);
 
-        await eventRepository.AddAsync(newEvent);
-        await eventRepository.SaveChangesAsync();
+        await tastingRepository.AddAsync(newTasting);
+        await tastingRepository.SaveChangesAsync();
 
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Event created successfully."));
+        return Result<MessageResponse>.Success(new MessageResponse("Tasting created successfully."));
     }
 
-    public async Task<ServiceResponse<List<EventUserResponse>>> GetUpcomingEventsAsync()
+    public async Task<Result<List<TastingUserResponse>>> GetUpcomingTastingsAsync()
     {
-        var response = await eventRepository.GetUpcomingEventsAsync();
+        var queries = await tastingRepository.GetUpcomingTastingsAsync();
 
-        return ServiceResponse<List<EventUserResponse>>.Success(response);
+        var response = tastingMapper.ToTastingUserResponse(queries);
+
+        return Result<List<TastingUserResponse>>.Success(response);
     }
 
-    public async Task<ServiceResponse<List<EventAdminResponse>>> GetAllEventsAsync()
+    public async Task<Result<List<TastingAdminResponse>>> GetAllTastingsAsync()
     {
-        var events = await eventRepository.GetAllAsync();
+        var tastings = await tastingRepository.GetAllAsync();
 
-        var response = eventMapper.ToEventAdminResponse(events);
+        var response = tastingMapper.ToTastingAdminResponse(tastings);
 
-        return ServiceResponse<List<EventAdminResponse>>.Success(response);
+        return Result<List<TastingAdminResponse>>.Success(response);
     }
 
-    public async Task<ServiceResponse<MessageResponse>> RegisterForEventAsync(RegisterForEventRequest request,
+    public async Task<Result<MessageResponse>> RegisterForTastingAsync(RegisterForTastingRequest request,
         Guid userId)
     {
-        var @event = await eventRepository.GetRegisterEventDataAsync(request.EventId);
+        var tasting = await tastingRepository.GetRegisterTastingDataAsync(request.TastingId);
 
-        if (@event == null)
-            return ServiceResponse<MessageResponse>.Failure("Event not found.", 404);
+        if (tasting == null)
+            return Result<MessageResponse>.Failure("Tasting not found.", 404);
 
-        if (DateTime.UtcNow > @event.Deadline)
-            return ServiceResponse<MessageResponse>.Failure("Registration deadline has passed.", 400);
+        if (DateTime.UtcNow > tasting.Deadline)
+            return Result<MessageResponse>.Failure("Registration deadline has passed.", 400);
 
-        if (@event.ParticipantCount >= @event.Capacity)
-            return ServiceResponse<MessageResponse>.Failure("This event is fully booked.", 400);
+        if (tasting.ParticipantCount >= tasting.Capacity)
+            return Result<MessageResponse>.Failure("This tasting is fully booked.", 400);
 
-        if (await participantRepository.IsUserRegisteredAsync(userId, request.EventId))
-            return ServiceResponse<MessageResponse>.Failure("You are already registered for this event.", 400);
+        if (await attendeeRepository.IsUserRegisteredAsync(userId, request.TastingId))
+            return Result<MessageResponse>.Failure("You are already registered for this tasting.", 400);
 
-        var registration = new Participant
+        var registration = new Attendee
         {
             UserId = userId,
-            EventId = request.EventId,
+            TastingId = request.TastingId,
             RegisteredAt = DateTime.UtcNow
         };
 
-        await participantRepository.AddAsync(registration);
+        await attendeeRepository.AddAsync(registration);
 
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Successfully registered for the event."));
+        return Result<MessageResponse>.Success(new MessageResponse("Successfully registered for the tasting."));
     }
 
-    public async Task<ServiceResponse<MessageResponse>> UpdateEventAsync(UpdateEventRequest eventRequest)
+    public async Task<Result<MessageResponse>> UpdateTastingAsync(UpdateTastingRequest tastingRequest)
     {
-        var existingEvent = await eventRepository.GetByIdAsync(eventRequest.Id);
-        if (existingEvent is null)
-            return ServiceResponse<MessageResponse>.Failure("Event not found.", 404);
+        var existingTasting = await tastingRepository.GetByIdAsync(tastingRequest.Id);
+        if (existingTasting is null)
+            return Result<MessageResponse>.Failure("Tasting not found.", 404);
 
-        if (eventRequest.EndTime <= eventRequest.StartTime)
-            return ServiceResponse<MessageResponse>.Failure("End time must be after start time.", 400);
+        if (tastingRequest.EndTime <= tastingRequest.StartTime)
+            return Result<MessageResponse>.Failure("End time must be after start time.", 400);
 
-        if (eventRequest.Deadline >= eventRequest.StartTime)
-            return ServiceResponse<MessageResponse>.Failure("Deadline must be before event start time.", 400);
+        if (tastingRequest.Deadline >= tastingRequest.StartTime)
+            return Result<MessageResponse>.Failure("Deadline must be before tasting start time.", 400);
 
-        if (existingEvent.Title != eventRequest.Title)
-            existingEvent.Title = eventRequest.Title;
+        if (existingTasting.Title != tastingRequest.Title)
+            existingTasting.Title = tastingRequest.Title;
 
-        if (existingEvent.Description != eventRequest.Description)
-            existingEvent.Description = eventRequest.Description;
+        if (existingTasting.Description != tastingRequest.Description)
+            existingTasting.Description = tastingRequest.Description;
 
-        if (existingEvent.Location != eventRequest.Location)
-            existingEvent.Location = eventRequest.Location;
+        if (existingTasting.Location != tastingRequest.Location)
+            existingTasting.Location = tastingRequest.Location;
 
-        if (existingEvent.StartTime != eventRequest.StartTime)
-            existingEvent.StartTime = eventRequest.StartTime;
+        if (existingTasting.StartTime != tastingRequest.StartTime)
+            existingTasting.StartTime = tastingRequest.StartTime;
 
-        if (existingEvent.EndTime != eventRequest.EndTime)
-            existingEvent.EndTime = eventRequest.EndTime;
+        if (existingTasting.EndTime != tastingRequest.EndTime)
+            existingTasting.EndTime = tastingRequest.EndTime;
 
-        if (existingEvent.Capacity != eventRequest.Capacity)
-            existingEvent.Capacity = eventRequest.Capacity;
+        if (existingTasting.Capacity != tastingRequest.Capacity)
+            existingTasting.Capacity = tastingRequest.Capacity;
 
-        if (existingEvent.Price != eventRequest.Price)
-            existingEvent.Price = eventRequest.Price;
+        if (existingTasting.Price != tastingRequest.Price)
+            existingTasting.Price = tastingRequest.Price;
 
-        if (existingEvent.Deadline != eventRequest.Deadline)
-            existingEvent.Deadline = eventRequest.Deadline;
+        if (existingTasting.Deadline != tastingRequest.Deadline)
+            existingTasting.Deadline = tastingRequest.Deadline;
 
-        if (existingEvent.OrganizerId != eventRequest.OrganizerId)
-            existingEvent.OrganizerId = eventRequest.OrganizerId;
+        if (existingTasting.OrganizerId != tastingRequest.OrganizerId)
+            existingTasting.OrganizerId = tastingRequest.OrganizerId;
 
-        eventRepository.Update(existingEvent);
-        await eventRepository.SaveChangesAsync();
+        tastingRepository.Update(existingTasting);
+        await tastingRepository.SaveChangesAsync();
 
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Successfully updated event."));
+        return Result<MessageResponse>.Success(new MessageResponse("Successfully updated tasting."));
     }
 }

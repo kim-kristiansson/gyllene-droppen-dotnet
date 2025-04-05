@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Mail;
-using GylleneDroppen.Infrastructure.Cofiguration.Settings;
+using GylleneDroppen.Infrastructure.Settings;
 
 namespace GylleneDroppen.Infrastructure.Email;
 

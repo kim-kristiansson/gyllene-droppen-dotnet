@@ -1,4 +1,7 @@
-namespace GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using Microsoft.Extensions.Caching.Distributed;
+
+namespace GylleneDroppen.Infrastructure.Redis;
 
 public class RedisRepository(IDistributedCache cache) : IRedisRepository
 {

@@ -1,6 +1,11 @@
-using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Interfaces.Repositories.Admin;
+using GylleneDroppen.Domain.Entities;
+using GylleneDroppen.Domain.Enums;
+using GylleneDroppen.Infrastructure.Persistence.Data;
+using GylleneDroppen.Infrastructure.Persistence.Repositories.Shared;
+using Microsoft.EntityFrameworkCore;
 
-namespace GylleneDroppen.Application.Interfaces.Repositories.Admin;
+namespace GylleneDroppen.Infrastructure.Persistence.Repositories.Admin;
 
 public class UserRepository(AppDbContext context) : Repository<User>(context), IUserRepository
 {

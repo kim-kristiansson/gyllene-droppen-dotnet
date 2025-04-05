@@ -1,40 +1,106 @@
 using System.Text.Json;
+using GylleneDroppen.Application.Common.Results;
+using GylleneDroppen.Application.Dtos.Auth;
+using GylleneDroppen.Application.Dtos.Common;
+using GylleneDroppen.Application.Dtos.Email;
+using GylleneDroppen.Application.Interfaces;
+using GylleneDroppen.Application.Interfaces.Repositories.Admin;
+using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Interfaces.Services.Security;
+using GylleneDroppen.Application.Interfaces.Services.Shared;
+using GylleneDroppen.Application.Utilities;
+using GylleneDroppen.Domain.Entities;
+using GylleneDroppen.Domain.Enums;
+using GylleneDroppen.Domain.Models;
 
 namespace GylleneDroppen.Application.Services.Shared;
 
 public class AuthService(
     IUserRepository userRepository,
-    IArgon2Hasher argon2Hasher,
+    IPasswordHasher argon2Hasher,
     IJwtService jwtService,
     IRedisRepository redisRepository,
     IEmailService emailService,
-    ICookieService cookieService) : IAuthService
+    ICookieManager cookieManager) : IAuthService
 {
-    public async Task<ServiceResponse<MessageResponse>> LoginAsync(LoginRequest request)
+    public async Task<Result<MessageResponse>> LogoutAsync()
+    {
+        var accessToken = cookieManager.GetAccessToken();
+
+        if (!string.IsNullOrEmpty(accessToken))
+        {
+            var userId = jwtService.GetUserIdFromToken(accessToken);
+
+            if (userId != Guid.Empty)
+            {
+                var storedRefreshToken = await jwtService.GetRefreshTokenAsync(userId);
+
+                if (!string.IsNullOrEmpty(storedRefreshToken)) await jwtService.RevokeTokensAsync(userId, accessToken);
+            }
+        }
+
+        cookieManager.RemoveAuthCookies();
+
+        return Result<MessageResponse>.Success(new MessageResponse("Logout successful"));
+    }
+
+    public async Task<Result<MessageResponse>> RefreshTokenAsync()
+    {
+        var accessToken = cookieManager.GetAccessToken();
+        var refreshToken = cookieManager.GetRefreshToken();
+
+        if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(refreshToken))
+            return Result<MessageResponse>.Failure("Invalid token.", 401);
+
+        var userId = jwtService.GetUserIdFromToken(accessToken);
+        if (userId == Guid.Empty)
+            return Result<MessageResponse>.Failure("Invalid access token.", 401);
+
+        var storedRefreshToken = await jwtService.GetRefreshTokenAsync(userId);
+        if (storedRefreshToken == null || storedRefreshToken != refreshToken)
+            return Result<MessageResponse>.Failure("Invalid refresh token.", 401);
+
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return Result<MessageResponse>.Failure("Invalid refresh token.", 401);
+
+        var newAccessToken = jwtService.GenerateToken(user);
+        var newRefreshToken = jwtService.GenerateRefreshToken(user.Id);
+
+        await jwtService.RevokeTokensAsync(userId, accessToken);
+        await jwtService.SaveRefreshTokenAsync(userId, refreshToken);
+
+        cookieManager.RemoveAuthCookies();
+        cookieManager.SetAuthTokens(newAccessToken, newRefreshToken);
+
+        return Result<MessageResponse>.Success(new MessageResponse("Refresh token successful"));
+    }
+
+    public async Task<Result<MessageResponse>> LoginAsync(LoginRequest request)
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
 
         if (user is null || !argon2Hasher.VerifyPassword(request.Password, user.PasswordHash, user.PasswordSalt))
-            return ServiceResponse<MessageResponse>.Failure("Invalid email or password.", 401);
+            return Result<MessageResponse>.Failure("Invalid email or password.", 401);
 
         var accessToken = jwtService.GenerateToken(user);
         var refreshToken = jwtService.GenerateRefreshToken(user.Id);
 
-        cookieService.SetAuthTokens(accessToken, refreshToken);
+        cookieManager.SetAuthTokens(accessToken, refreshToken);
 
         await jwtService.SaveRefreshTokenAsync(user.Id, refreshToken);
 
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Login successful"));
+        return Result<MessageResponse>.Success(new MessageResponse("Login successful"));
     }
 
-    public async Task<ServiceResponse<MessageResponse>> RegisterAsync(RegisterRequest request)
+    public async Task<Result<MessageResponse>> RegisterAsync(RegisterRequest request)
     {
         if (await userRepository.GetByEmailAsync(request.Email) is not null)
-            return ServiceResponse<MessageResponse>.Failure("Email already exists.", 400);
+            return Result<MessageResponse>.Failure("Email already exists.", 400);
 
         var existingPendingUser = await redisRepository.GetAsync($"pending_user:{request.Email}");
         if (existingPendingUser != null)
-            return ServiceResponse<MessageResponse>.Failure(
+            return Result<MessageResponse>.Failure(
                 "A verification code has already been sent. Please check your email.", 400);
 
         var (hash, salt) = argon2Hasher.HashPassword(request.Password);
@@ -52,7 +118,7 @@ public class AuthService(
 
         var confirmationCode = CodeGenerator.GenerateConfirmationCode(6);
 
-        var pendingUser = new PendingUser
+        var pendingUser = new PendingUserModel
         {
             User = user,
             ConfirmationCode = confirmationCode
@@ -65,71 +131,18 @@ public class AuthService(
         return await emailService.SendEmailConfirmationCodeAsync(user.Email, confirmationCode);
     }
 
-    public async Task<ServiceResponse<MessageResponse>> LogoutAsync()
-    {
-        var accessToken = cookieService.GetAccessToken();
-
-        if (!string.IsNullOrEmpty(accessToken))
-        {
-            var userId = jwtService.GetUserIdFromToken(accessToken);
-
-            if (userId != Guid.Empty)
-            {
-                var storedRefreshToken = await jwtService.GetRefreshTokenAsync(userId);
-
-                if (!string.IsNullOrEmpty(storedRefreshToken)) await jwtService.RevokeTokensAsync(userId, accessToken);
-            }
-        }
-
-        cookieService.RemoveAuthCookies();
-
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Logout successful"));
-    }
-
-    public async Task<ServiceResponse<MessageResponse>> RefreshTokenAsync()
-    {
-        var accessToken = cookieService.GetAccessToken();
-        var refreshToken = cookieService.GetRefreshToken();
-
-        if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(refreshToken))
-            return ServiceResponse<MessageResponse>.Failure("Invalid token.", 401);
-
-        var userId = jwtService.GetUserIdFromToken(accessToken);
-        if (userId == Guid.Empty)
-            return ServiceResponse<MessageResponse>.Failure("Invalid access token.", 401);
-
-        var storedRefreshToken = await jwtService.GetRefreshTokenAsync(userId);
-        if (storedRefreshToken == null || storedRefreshToken != refreshToken)
-            return ServiceResponse<MessageResponse>.Failure("Invalid refresh token.", 401);
-
-        var user = await userRepository.GetByIdAsync(userId);
-        if (user == null)
-            return ServiceResponse<MessageResponse>.Failure("Invalid refresh token.", 401);
-
-        var newAccessToken = jwtService.GenerateToken(user);
-        var newRefreshToken = jwtService.GenerateRefreshToken(user.Id);
-
-        await jwtService.RevokeTokensAsync(userId, accessToken);
-        await jwtService.SaveRefreshTokenAsync(userId, refreshToken);
-
-        cookieService.RemoveAuthCookies();
-        cookieService.SetAuthTokens(newAccessToken, newRefreshToken);
-
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Refresh token successful"));
-    }
-
-    public async Task<ServiceResponse<MessageResponse>> ConfirmEmailAsync(ConfirmEmailRequest request)
+    public async Task<Result<MessageResponse>> ConfirmEmailAsync(ConfirmEmailRequest request)
     {
         var pendingUserJson = await redisRepository.GetAsync($"pending_user:{request.Email}");
 
         if (pendingUserJson is null)
-            return ServiceResponse<MessageResponse>.Failure("Confirmation code expired or invalid.", 400);
+            return Result<MessageResponse>.Failure("Confirmation code expired or invalid.", 400);
 
-        var pendingUser = JsonSerializer.Deserialize<PendingUser>(pendingUserJson);
+        var pendingUser = JsonSerializer.Deserialize<PendingUserModel>(pendingUserJson);
 
         if (pendingUser is null ||
             !pendingUser.ConfirmationCode.Equals(request.ConfirmationCode, StringComparison.OrdinalIgnoreCase))
-            return ServiceResponse<MessageResponse>.Failure("Invalid confirmation code.", 400);
+            return Result<MessageResponse>.Failure("Invalid confirmation code.", 400);
 
         await userRepository.AddAsync(pendingUser.User);
 
@@ -137,18 +150,18 @@ public class AuthService(
 
         await redisRepository.DeleteAsync($"pending_user:{request.Email}");
 
-        return ServiceResponse<MessageResponse>.Success(
+        return Result<MessageResponse>.Success(
             new MessageResponse("Email successfully verified. You can now log in."));
     }
 
-    public async Task<ServiceResponse<MessageResponse>> RequestPasswordResetAsync(PasswordResetRequest request)
+    public async Task<Result<MessageResponse>> RequestPasswordResetAsync(PasswordResetRequest request)
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
         if (user is null)
-            return ServiceResponse<MessageResponse>.Failure("Email not found", 400);
+            return Result<MessageResponse>.Failure("Email not found", 400);
 
         var resetToken = CodeGenerator.GenerateConfirmationCode(6);
-        var tokenEntry = new PasswordResetToken
+        var tokenEntry = new PasswordResetModel
         {
             Email = request.Email,
             Token = resetToken
@@ -160,21 +173,21 @@ public class AuthService(
         return await emailService.SendPasswordResetEmailAsync(user.Email, resetToken);
     }
 
-    public async Task<ServiceResponse<MessageResponse>> ResetPasswordAsync(ResetPasswordRequest request)
+    public async Task<Result<MessageResponse>> ResetPasswordAsync(ResetPasswordRequest request)
     {
         var tokenJson = await redisRepository.GetAsync($"password_reset:{request.Email}");
         if (tokenJson is null)
-            return ServiceResponse<MessageResponse>.Failure("Invalid token.", 400);
+            return Result<MessageResponse>.Failure("Invalid token.", 400);
 
-        var tokenEntry = JsonSerializer.Deserialize<PasswordResetToken>(tokenJson);
+        var tokenEntry = JsonSerializer.Deserialize<PasswordResetModel>(tokenJson);
         if (tokenEntry is null || tokenEntry.Token != request.Token)
-            return ServiceResponse<MessageResponse>.Failure("Invalid token.", 400);
+            return Result<MessageResponse>.Failure("Invalid token.", 400);
 
         var (hash, salt) = argon2Hasher.HashPassword(request.Email);
 
         var user = await userRepository.GetByEmailAsync(request.Email);
         if (user == null)
-            return ServiceResponse<MessageResponse>.Failure("Email not found", 400);
+            return Result<MessageResponse>.Failure("Email not found", 400);
 
         user.PasswordHash = hash;
         user.PasswordSalt = salt;
@@ -183,6 +196,6 @@ public class AuthService(
 
         await redisRepository.DeleteAsync($"password_reset:{user.Email}");
 
-        return ServiceResponse<MessageResponse>.Success(new MessageResponse("Password reset successfully."));
+        return Result<MessageResponse>.Success(new MessageResponse("Password reset successfully."));
     }
 }

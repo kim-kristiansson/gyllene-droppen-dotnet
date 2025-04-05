@@ -1,3 +1,5 @@
+using GylleneDroppen.Domain.Entities;
+
 namespace GylleneDroppen.Application.Services.Shared;
 
 public interface IJwtService

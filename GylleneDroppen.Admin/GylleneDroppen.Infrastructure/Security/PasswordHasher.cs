@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using GylleneDroppen.Application.Interfaces.Security.Cryptography;
+using GylleneDroppen.Application.Interfaces.Services.Security;
 using Konscious.Security.Cryptography;
 
 namespace GylleneDroppen.Infrastructure.Security;

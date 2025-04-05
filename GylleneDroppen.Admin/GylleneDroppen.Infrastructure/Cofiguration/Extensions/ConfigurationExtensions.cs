@@ -1,5 +1,5 @@
 using System.Reflection;
-using GylleneDroppen.Infrastructure.Cofiguration.Settings;
+using GylleneDroppen.Infrastructure.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,4 +1,4 @@
-using GylleneDroppen.Domain.Domain.Entities;
+using GylleneDroppen.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -59,7 +59,7 @@ public class TastingConfiguration : IEntityTypeConfiguration<Tasting>
 
         builder.HasMany(e => e.Attendees)
             .WithOne(p => p.Tasting)
-            .HasForeignKey(p => p.EventId)
+            .HasForeignKey(p => p.TastingId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

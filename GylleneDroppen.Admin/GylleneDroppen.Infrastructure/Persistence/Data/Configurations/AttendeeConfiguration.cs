@@ -1,4 +1,4 @@
-using GylleneDroppen.Domain.Domain.Entities;
+using GylleneDroppen.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -8,7 +8,7 @@ public class AttendeeConfiguration : IEntityTypeConfiguration<Attendee>
 {
     public void Configure(EntityTypeBuilder<Attendee> builder)
     {
-        builder.HasKey(p => new { p.UserId, p.EventId });
+        builder.HasKey(p => new { p.UserId, p.TastingId });
 
         builder.HasOne(p => p.User)
             .WithMany(u => u.Attendees)
@@ -17,7 +17,7 @@ public class AttendeeConfiguration : IEntityTypeConfiguration<Attendee>
 
         builder.HasOne(p => p.Tasting)
             .WithMany(e => e.Attendees)
-            .HasForeignKey(p => p.EventId)
+            .HasForeignKey(p => p.TastingId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

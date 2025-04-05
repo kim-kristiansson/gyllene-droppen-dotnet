@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Application.Interfaces.Security.Cryptography;
+namespace GylleneDroppen.Application.Interfaces.Services.Security;
 
 public interface IPasswordHasher
 {

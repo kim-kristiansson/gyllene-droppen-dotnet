@@ -1,0 +1,6 @@
+@GylleneDroppen.Api_HostAddress = http://localhost:5063
+
+GET {{GylleneDroppen.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

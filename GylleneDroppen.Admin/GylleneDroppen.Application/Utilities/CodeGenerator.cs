@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace GylleneDroppen.Infrastructure.Common.Utilities;
+namespace GylleneDroppen.Application.Utilities;
 
 public static class CodeGenerator
 {

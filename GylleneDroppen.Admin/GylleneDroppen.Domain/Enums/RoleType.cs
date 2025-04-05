@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Domain.Domain.Enums;
+namespace GylleneDroppen.Domain.Enums;
 
 public enum RoleType
 {

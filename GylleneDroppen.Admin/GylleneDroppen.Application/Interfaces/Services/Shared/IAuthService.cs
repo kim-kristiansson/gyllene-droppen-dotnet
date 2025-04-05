@@ -1,12 +1,17 @@
-namespace GylleneDroppen.Application.Interfaces.Shared;
+using GylleneDroppen.Application.Common.Results;
+using GylleneDroppen.Application.Dtos.Auth;
+using GylleneDroppen.Application.Dtos.Common;
+using GylleneDroppen.Application.Dtos.Email;
+
+namespace GylleneDroppen.Application.Interfaces.Services.Shared;
 
 public interface IAuthService
 {
-    Task<ServiceResponse<MessageResponse>> LoginAsync(LoginRequest request);
-    Task<ServiceResponse<MessageResponse>> RegisterAsync(RegisterRequest request);
-    Task<ServiceResponse<MessageResponse>> LogoutAsync();
-    Task<ServiceResponse<MessageResponse>> RefreshTokenAsync();
-    Task<ServiceResponse<MessageResponse>> ConfirmEmailAsync(ConfirmEmailRequest request);
-    Task<ServiceResponse<MessageResponse>> RequestPasswordResetAsync(PasswordResetRequest request);
-    Task<ServiceResponse<MessageResponse>> ResetPasswordAsync(ResetPasswordRequest request);
+    Task<Result<MessageResponse>> LoginAsync(LoginRequest request);
+    Task<Result<MessageResponse>> RegisterAsync(RegisterRequest request);
+    Task<Result<MessageResponse>> LogoutAsync();
+    Task<Result<MessageResponse>> RefreshTokenAsync();
+    Task<Result<MessageResponse>> ConfirmEmailAsync(ConfirmEmailRequest request);
+    Task<Result<MessageResponse>> RequestPasswordResetAsync(PasswordResetRequest request);
+    Task<Result<MessageResponse>> ResetPasswordAsync(ResetPasswordRequest request);
 }

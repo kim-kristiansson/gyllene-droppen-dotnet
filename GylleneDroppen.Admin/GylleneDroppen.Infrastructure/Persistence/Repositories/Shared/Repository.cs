@@ -1,6 +1,9 @@
 using System.Linq.Expressions;
+using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Infrastructure.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
 
-namespace GylleneDroppen.Application.Interfaces.Repositories.Shared;
+namespace GylleneDroppen.Infrastructure.Persistence.Repositories.Shared;
 
 public class Repository<T> : IRepository<T> where T : class
 {
