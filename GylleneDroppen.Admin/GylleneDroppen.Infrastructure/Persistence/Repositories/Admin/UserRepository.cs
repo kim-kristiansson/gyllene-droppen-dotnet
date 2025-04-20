@@ -1,4 +1,4 @@
-using GylleneDroppen.Application.Interfaces.Repositories.Admin;
+using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Domain.Entities;
 using GylleneDroppen.Domain.Enums;
 using GylleneDroppen.Infrastructure.Persistence.Data;

@@ -1,5 +1,5 @@
 using System.Linq.Expressions;
-using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 

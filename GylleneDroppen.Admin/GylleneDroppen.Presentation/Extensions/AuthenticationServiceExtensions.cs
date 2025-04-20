@@ -1,31 +1,42 @@
-using System.Reflection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using System.Text;
+using GylleneDroppen.Infrastructure.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 namespace GylleneDroppen.Presentation.Extensions;
 
-public static class ConfigureOptionsExtensions
+public static class AuthenticationServiceExtensions
 {
-    public static void AddConfigureOptions(this IServiceCollection services, IConfiguration configuration)
+    public static void AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
-            .GetMethods()
-            .First(m => m.Name == nameof(OptionsConfigurationServiceCollectionExtensions.Configure)
-                        && m.GetGenericArguments().Length == 1
-                        && m.GetParameters().Length == 2
-                        && m.GetParameters()[1].ParameterType == typeof(IConfiguration));
+        var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>();
 
-        var optionTypes = Assembly.GetExecutingAssembly()
-            .GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false } &&
-                        t.GetProperties().Any(p => p.SetMethod is not null))
-            .ToList();
+        if (jwtSettings == null || string.IsNullOrWhiteSpace(jwtSettings.Secret))
+            throw new ArgumentException("JWT Secret is missing in configuration.");
 
-        foreach (var configType in optionTypes)
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
-            var sectionName = configType.Name;
-            var genericMethod = configureMethod.MakeGenericMethod(configType);
-            genericMethod.Invoke(null, [services, configuration.GetSection(sectionName)]);
-        }
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = !string.IsNullOrWhiteSpace(jwtSettings.Issuer),
+                ValidateAudience = !string.IsNullOrWhiteSpace(jwtSettings.Audience),
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    if (context.Request.Cookies.TryGetValue("accessToken", out var token)) context.Token = token;
+
+                    return Task.CompletedTask;
+                }
+            };
+        });
     }
 }

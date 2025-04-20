@@ -1,4 +1,4 @@
-using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace GylleneDroppen.Infrastructure.Redis;

@@ -2,9 +2,9 @@ using GylleneDroppen.Application.Dtos.Tasting;
 using GylleneDroppen.Application.Queries;
 using GylleneDroppen.Domain.Entities;
 
-namespace GylleneDroppen.Application.Interfaces.Mappers.Admin;
+namespace GylleneDroppen.Application.Interfaces.Admin.Mappers;
 
-public interface ITastingMapper
+public interface IAdminTastingMapper
 {
     Tasting ToTasting(CreateTastingRequest request);
     TastingAdminResponse ToTastingAdminResponse(Tasting tasting);

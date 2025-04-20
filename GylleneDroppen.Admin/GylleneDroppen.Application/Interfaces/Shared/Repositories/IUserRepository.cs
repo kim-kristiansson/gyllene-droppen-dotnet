@@ -1,8 +1,7 @@
-using GylleneDroppen.Application.Interfaces.Repositories.Shared;
 using GylleneDroppen.Domain.Entities;
 using GylleneDroppen.Domain.Enums;
 
-namespace GylleneDroppen.Application.Interfaces.Repositories.Admin;
+namespace GylleneDroppen.Application.Interfaces.Shared.Repositories;
 
 public interface IUserRepository : IRepository<User>
 {

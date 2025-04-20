@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Application.Interfaces.Repositories.Shared;
+namespace GylleneDroppen.Application.Interfaces.Shared.Repositories;
 
 public interface IRedisRepository
 {

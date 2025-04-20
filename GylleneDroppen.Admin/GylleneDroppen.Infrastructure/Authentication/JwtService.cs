@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Application.Services.Shared;
 using GylleneDroppen.Domain.Entities;
 using GylleneDroppen.Infrastructure.Settings;

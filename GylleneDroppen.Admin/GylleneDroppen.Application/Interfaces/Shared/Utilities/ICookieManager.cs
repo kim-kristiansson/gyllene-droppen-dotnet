@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Application.Interfaces;
+namespace GylleneDroppen.Application.Interfaces.Shared.Utilities;
 
 public interface ICookieManager
 {

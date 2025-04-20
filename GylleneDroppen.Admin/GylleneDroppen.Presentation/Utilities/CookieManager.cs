@@ -1,4 +1,4 @@
-using GylleneDroppen.Application.Interfaces;
+using GylleneDroppen.Application.Interfaces.Shared.Utilities;
 using GylleneDroppen.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 

@@ -1,0 +1,32 @@
+using GylleneDroppen.Application.Dtos.Admin.Admin;
+using GylleneDroppen.Application.Interfaces.Admin.Services;
+using GylleneDroppen.Presentation.Utilities;
+using Microsoft.AspNetCore.Mvc;
+
+namespace GylleneDroppen.Admin.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AdminController(IAdminService adminService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<IActionResult> GetAllAdmins()
+    {
+        var result = await adminService.GetAllAdminsAsync();
+        return result.ToActionResult();
+    }
+
+    [HttpPost("promote/{userId:guid}")]
+    public async Task<IActionResult> PromoteUserToAdmin(Guid userId)
+    {
+        var result = await adminService.PromoteUserToAdminAsync(userId);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("demote")]
+    public async Task<IActionResult> DemoteAdmin([FromBody] DemoteAdminRequest request)
+    {
+        var result = await adminService.DemoteUserToAdminAsync(request);
+        return result.ToActionResult();
+    }
+}

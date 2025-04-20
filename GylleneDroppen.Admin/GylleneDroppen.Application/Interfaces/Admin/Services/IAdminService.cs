@@ -1,9 +1,8 @@
 using GylleneDroppen.Application.Common.Results;
-using GylleneDroppen.Application.Dtos.Admin;
 using GylleneDroppen.Application.Dtos.Admin.Admin;
 using GylleneDroppen.Application.Dtos.Common;
 
-namespace GylleneDroppen.Application.Interfaces.Services.Admin;
+namespace GylleneDroppen.Application.Interfaces.Admin.Services;
 
 public interface IAdminService
 {

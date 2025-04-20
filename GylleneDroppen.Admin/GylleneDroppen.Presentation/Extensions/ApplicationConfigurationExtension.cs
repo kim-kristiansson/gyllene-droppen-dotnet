@@ -1,12 +1,10 @@
 using System.Reflection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace GylleneDroppen.Presentation.Extensions;
 
-public static class ConfigureSettingsExtensions
+public static class ApplicationConfigurationExtension
 {
-    public static void AddConfigureOptions(this IServiceCollection services, IConfiguration configuration)
+    public static void AddApplicationConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
             .GetMethods()

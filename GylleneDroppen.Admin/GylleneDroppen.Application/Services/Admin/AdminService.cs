@@ -1,9 +1,8 @@
 using GylleneDroppen.Application.Common.Results;
-using GylleneDroppen.Application.Dtos.Admin;
 using GylleneDroppen.Application.Dtos.Admin.Admin;
 using GylleneDroppen.Application.Dtos.Common;
-using GylleneDroppen.Application.Interfaces.Repositories.Admin;
-using GylleneDroppen.Application.Interfaces.Services.Admin;
+using GylleneDroppen.Application.Interfaces.Admin.Services;
+using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Domain.Enums;
 
 namespace GylleneDroppen.Application.Services.Admin;

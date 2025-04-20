@@ -1,4 +1,4 @@
-using GylleneDroppen.Application.Interfaces.Repositories.Shared;
+using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Domain.Entities;
 using GylleneDroppen.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;

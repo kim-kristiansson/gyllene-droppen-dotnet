@@ -3,7 +3,7 @@ using GylleneDroppen.Application.Dtos.Auth;
 using GylleneDroppen.Application.Dtos.Common;
 using GylleneDroppen.Application.Dtos.Email;
 
-namespace GylleneDroppen.Application.Interfaces.Services.Shared;
+namespace GylleneDroppen.Application.Interfaces.Shared.Services;
 
 public interface IAuthService
 {
@@ -14,4 +14,5 @@ public interface IAuthService
     Task<Result<MessageResponse>> ConfirmEmailAsync(ConfirmEmailRequest request);
     Task<Result<MessageResponse>> RequestPasswordResetAsync(PasswordResetRequest request);
     Task<Result<MessageResponse>> ResetPasswordAsync(ResetPasswordRequest request);
+    Task<Result<CurrentUserResponse>> GetCurrentUserAsync();
 }

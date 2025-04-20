@@ -3,11 +3,10 @@ using GylleneDroppen.Application.Common.Results;
 using GylleneDroppen.Application.Dtos.Auth;
 using GylleneDroppen.Application.Dtos.Common;
 using GylleneDroppen.Application.Dtos.Email;
-using GylleneDroppen.Application.Interfaces;
-using GylleneDroppen.Application.Interfaces.Repositories.Admin;
-using GylleneDroppen.Application.Interfaces.Repositories.Shared;
-using GylleneDroppen.Application.Interfaces.Services.Security;
-using GylleneDroppen.Application.Interfaces.Services.Shared;
+using GylleneDroppen.Application.Interfaces.Shared.Repositories;
+using GylleneDroppen.Application.Interfaces.Shared.Security;
+using GylleneDroppen.Application.Interfaces.Shared.Services;
+using GylleneDroppen.Application.Interfaces.Shared.Utilities;
 using GylleneDroppen.Application.Utilities;
 using GylleneDroppen.Domain.Entities;
 using GylleneDroppen.Domain.Enums;
@@ -197,5 +196,32 @@ public class AuthService(
         await redisRepository.DeleteAsync($"password_reset:{user.Email}");
 
         return Result<MessageResponse>.Success(new MessageResponse("Password reset successfully."));
+    }
+
+    public async Task<Result<CurrentUserResponse>> GetCurrentUserAsync()
+    {
+        var accessToken = cookieManager.GetAccessToken();
+
+        if (string.IsNullOrEmpty(accessToken))
+            return Result<CurrentUserResponse>.Failure("Access token is invalid.", 401);
+
+        var userId = jwtService.GetUserIdFromToken(accessToken);
+
+        if (userId == Guid.Empty)
+            return Result<CurrentUserResponse>.Failure("Access token is invalid.", 401);
+
+        var user = await userRepository.GetByIdAsync(userId);
+
+        if (user is null)
+            return Result<CurrentUserResponse>.Failure("User does not exist.", 404);
+
+        var currentUser = new CurrentUserResponse
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Role = user.Role.ToString()
+        };
+
+        return Result<CurrentUserResponse>.Success(currentUser);
     }
 }

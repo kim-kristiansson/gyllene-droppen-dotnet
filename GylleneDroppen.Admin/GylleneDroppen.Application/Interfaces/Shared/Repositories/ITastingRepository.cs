@@ -1,8 +1,7 @@
-using GylleneDroppen.Application.Interfaces.Repositories.Shared;
 using GylleneDroppen.Application.Queries;
 using GylleneDroppen.Domain.Entities;
 
-namespace GylleneDroppen.Application.Interfaces.Repositories.Public;
+namespace GylleneDroppen.Application.Interfaces.Shared.Repositories;
 
 public interface ITastingRepository : IRepository<Tasting>
 {
