@@ -1,12 +1,69 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@using Microsoft.AspNetCore.Components.Authorization
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            @if (routeData.PageType.Name == "Login")
+            {
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+            }
+            else
+            {
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <NotAuthorized>
+                        @if (context.User.Identity?.IsAuthenticated != true)
+                        {
+                            <App.RedirectToLogin/>
+                        }
+                        else
+                        {
+                            <div class="container mt-5">
+                                <div class="alert alert-danger" role="alert">
+                                    <h4 class="alert-heading">Åtkomst nekad</h4>
+                                    <p>Du har inte behörighet att visa denna sida.</p>
+                                </div>
+                            </div>
+                        }
+                    </NotAuthorized>
+                    <Authorizing>
+                        <div class="d-flex justify-content-center align-items-center vh-100">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Laddar...</span>
+                            </div>
+                        </div>
+                    </Authorizing>
+                </AuthorizeRouteView>
+            }
+            <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
+        </Found>
+        <NotFound>
+            <PageTitle>Sidan hittades inte</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <div class="container mt-5">
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">Sidan kunde inte hittas</h4>
+                        <p>Sidan du söker finns tyvärr inte.</p>
+                        <hr>
+                        <p class="mb-0">
+                            <a href="/" class="alert-link">Återgå till startsidan</a>
+                        </p>
+                    </div>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+
+    public class RedirectToLogin : ComponentBase
+    {
+        [Inject] protected NavigationManager NavigationManager { get; set; } = default!;
+
+        protected override void OnInitialized()
+        {
+            var returnUrl = Uri.EscapeDataString(NavigationManager.Uri);
+            NavigationManager.NavigateTo($"/login?returnUrl={returnUrl}");
+        }
+    }
+
+}
