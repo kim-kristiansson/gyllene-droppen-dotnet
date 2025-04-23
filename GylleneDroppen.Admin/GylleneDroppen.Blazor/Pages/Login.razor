@@ -1,0 +1,120 @@
+@page "/login"
+@inject NavigationManager NavigationManager
+
+<div class="login-container">
+    <div class="golden-card">
+        <div class="card-content">
+            <div class="logo-circle">
+                <span class="logo-text font-great-vibes">GD</span>
+            </div>
+            <h1 class="title font-geist-sans">Gyllene Droppen</h1>
+
+            <p class="subtitle">Logga in</p>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="error-message">
+                    @errorMessage
+                    <button type="button" class="close-button" @onclick="DismissError">×</button>
+                </div>
+            }
+
+            <form @onsubmit="HandleLogin">
+                <div class="input-group">
+                    <input type="email" id="email" @bind="email" placeholder="E-postadress" required/>
+                    <label for="email">E-postadress</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="@(showPassword ? "text" : "password")" id="password" @bind="password"
+                           placeholder="Lösenord" required/>
+                    <label for="password">Lösenord</label>
+                    <button type="button" class="toggle-password" @onclick="TogglePasswordVisibility">
+                        @(showPassword ? "Dölj" : "Visa")
+                    </button>
+                </div>
+
+                <button type="submit" class="submit-button" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span>Loggar in...</span>
+                    }
+                    else
+                    {
+                        <span>Logga in</span>
+                    }
+                </button>
+            </form>
+
+            <div class="divider"></div>
+
+            <div class="social-links">
+                <p>Följ eller kontakta oss</p>
+                <div class="links">
+                    <a href="mailto:info@gyllenedroppen.se" target="_blank" rel="noopener noreferrer"
+                       class="social-link">
+                        <i class="email-icon"></i>
+                    </a>
+                    <a href="https://www.instagram.com/gyllene_droppen" target="_blank" rel="noopener noreferrer"
+                       class="social-link">
+                        <i class="instagram-icon"></i>
+                    </a>
+                </div>
+            </div>
+
+            <footer>
+                <p class="copyright">© @DateTime.Now.Year Gyllene Droppen</p>
+            </footer>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string email = "";
+    private string password = "";
+    private bool showPassword;
+    private bool isLoading;
+    private string errorMessage = "";
+
+    private void DismissError()
+    {
+        errorMessage = "";
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private async Task HandleLogin()
+    {
+        isLoading = true;
+        errorMessage = "";
+
+        try
+        {
+            // Replace with your actual authentication logic
+            await Task.Delay(1000); // Simulate network request
+
+            // For demonstration
+            if (email.ToLower() == "test@example.com" && password == "password")
+            {
+                NavigationManager.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Ogiltiga inloggningsuppgifter. Kontrollera e-post och lösenord.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Ett fel uppstod. Försök igen senare.";
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+}
