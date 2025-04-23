@@ -1,4 +1,5 @@
 @page "/login"
+@layout MainLayout
 @inject AuthService AuthService
 @inject NavigationManager NavigationManager
 @using GylleneDroppen.Admin.Blazor.Services
@@ -7,8 +8,8 @@
 
 <PageTitle>Logga in - Gyllene Droppen Admin</PageTitle>
 
-<div class="container login-container">
-    <div class="row justify-content-center">
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="row justify-content-center w-100">
         <div class="col-md-6 col-lg-4">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white text-center py-3">
@@ -41,7 +42,7 @@
                                            @bind-Value="_loginModel.Password" placeholder="Ange ditt lösenord"/>
                                 <button class="btn btn-outline-secondary" type="button"
                                         @onclick="TogglePasswordVisibility" tabindex="-1">
-                                    <i class="oi @(_showPassword ? "oi-eye-closed" : "oi-eye")"></i>
+                                    <i class="bi @(_showPassword ? "bi-eye-slash" : "bi-eye")"></i>
                                 </button>
                             </div>
                             <ValidationMessage For="@(() => _loginModel.Password)" class="text-danger"/>

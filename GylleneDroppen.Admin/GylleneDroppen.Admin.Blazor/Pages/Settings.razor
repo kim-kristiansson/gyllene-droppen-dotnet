@@ -1,0 +1,67 @@
+@page "/settings"
+@attribute [Authorize(Policy = "RequireAdminRole")]
+
+<PageTitle>Inställningar - Gyllene Droppen Admin</PageTitle>
+
+<h1>Inställningar</h1>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Applikationsinställningar</h5>
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="siteName" class="form-label">Sidans namn</label>
+                        <input type="text" class="form-control" id="siteName" value="Gyllene Droppen"/>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contactEmail" class="form-label">Kontakt e-post</label>
+                        <input type="email" class="form-control" id="contactEmail" value="info@gyllenedroppen.se"/>
+                    </div>
+                    <button type="button" class="btn btn-primary">Spara ändringar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Systemvärden</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">API Status</h6>
+                        <small class="text-muted">Anslutningsstatus till API</small>
+                    </div>
+                    <span class="badge bg-success rounded-pill">Ansluten</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Databas</h6>
+                        <small class="text-muted">Databasanslutning</small>
+                    </div>
+                    <span class="badge bg-success rounded-pill">Ansluten</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">API Version</h6>
+                        <small class="text-muted">Versionen av API:et</small>
+                    </div>
+                    <span>1.0.0</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Admin Version</h6>
+                        <small class="text-muted">Versionen av admin-panelen</small>
+                    </div>
+                    <span>1.0.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

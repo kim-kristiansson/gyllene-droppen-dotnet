@@ -1,13 +1,16 @@
 using System.Net;
 using System.Net.Http.Json;
+using GylleneDroppen.Admin.Blazor.Auth;
 using GylleneDroppen.Application.Dtos.Auth;
 using GylleneDroppen.Application.Dtos.Common;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace GylleneDroppen.Admin.Blazor.Services;
 
 public class AuthService
 {
+    private readonly AuthenticationStateProvider _authStateProvider;
     private readonly AppConfigService _configService;
     private readonly HttpClient _httpClient;
     private readonly ILogger<AuthService> _logger;
@@ -19,12 +22,14 @@ public class AuthService
         HttpClient httpClient,
         NavigationManager navigationManager,
         ILogger<AuthService> logger,
-        AppConfigService configService)
+        AppConfigService configService,
+        AuthenticationStateProvider authStateProvider)
     {
         _httpClient = httpClient;
         _navigationManager = navigationManager;
         _logger = logger;
         _configService = configService;
+        _authStateProvider = authStateProvider;
     }
 
     private async Task EnsureInitializedAsync()
@@ -49,6 +54,11 @@ public class AuthService
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Login successful for user: {Email}", request.Email);
+
+                // Refresh the authentication state
+                if (_authStateProvider is CustomAuthStateProvider customAuthProvider)
+                    await customAuthProvider.RefreshAuthenticationStateAsync();
+
                 return new AuthResult { Success = true };
             }
 
@@ -134,6 +144,9 @@ public class AuthService
 
             _logger.LogInformation("Logging out current user");
             await _httpClient.PostAsync("api/auth/logout", null);
+
+            // Clear the authentication state
+            if (_authStateProvider is CustomAuthStateProvider customAuthProvider) customAuthProvider.NotifyUserLogout();
 
             // Always redirect to login page
             _navigationManager.NavigateTo("/login", true);

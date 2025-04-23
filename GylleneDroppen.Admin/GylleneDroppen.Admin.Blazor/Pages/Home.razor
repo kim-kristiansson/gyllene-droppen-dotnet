@@ -1,7 +1,38 @@
 ﻿@page "/"
+@attribute [Authorize(Policy = "RequireAdminRole")]
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Översikt - Gyllene Droppen Admin</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Välkommen till Gyllene Droppen Admin</h1>
 
-Welcome to your new app.
+<div class="mt-4">
+    <div class="row">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Kommande provningar</h5>
+                    <p class="card-text display-4 text-center my-4">0</p>
+                    <a href="tastings" class="btn btn-primary btn-sm">Visa alla</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Användare</h5>
+                    <p class="card-text display-4 text-center my-4">0</p>
+                    <a href="users" class="btn btn-primary btn-sm">Hantera användare</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Administratörer</h5>
+                    <p class="card-text display-4 text-center my-4">0</p>
+                    <a href="admins" class="btn btn-primary btn-sm">Hantera administratörer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

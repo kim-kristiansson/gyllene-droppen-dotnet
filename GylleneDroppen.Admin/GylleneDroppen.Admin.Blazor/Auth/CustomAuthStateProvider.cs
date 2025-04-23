@@ -51,10 +51,11 @@ public class CustomAuthStateProvider(AuthService authService) : AuthenticationSt
                 return new AuthenticationState(user);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // On any error, clear the cached user
             _cachedUser = null;
+            Console.WriteLine($"Authentication error: {ex.Message}");
         }
         finally
         {
@@ -70,5 +71,14 @@ public class CustomAuthStateProvider(AuthService authService) : AuthenticationSt
         var authState = await GetAuthenticationStateInternalAsync(true);
         NotifyAuthenticationStateChanged(Task.FromResult(authState));
         return authState;
+    }
+    
+    public void NotifyUserLogout()
+    {
+        _cachedUser = null;
+        _lastCheck = DateTime.MinValue;
+        var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
+        var authState = Task.FromResult(new AuthenticationState(anonymousUser));
+        NotifyAuthenticationStateChanged(authState);
     }
 }
