@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Api", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Blazor", "GylleneDroppen.Admin.Blazor\GylleneDroppen.Admin.Blazor.csproj", "{01BCFBC2-463C-4CB6-8643-25A1609974EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor", "GylleneDroppen.Blazor\GylleneDroppen.Blazor.csproj", "{62883318-1A6E-46DE-A373-353C6B289818}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{01BCFBC2-463C-4CB6-8643-25A1609974EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01BCFBC2-463C-4CB6-8643-25A1609974EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01BCFBC2-463C-4CB6-8643-25A1609974EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62883318-1A6E-46DE-A373-353C6B289818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62883318-1A6E-46DE-A373-353C6B289818}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62883318-1A6E-46DE-A373-353C6B289818}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62883318-1A6E-46DE-A373-353C6B289818}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
