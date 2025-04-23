@@ -262,3 +262,17 @@ input:not(:placeholder-shown) + label {
         font-size: 2rem;
     }
 }
+
+.logo-text {
+    font-family: 'Great Vibes', cursive !important;
+    font-size: 2.5rem;
+    color: var(--color-gold);
+    font-weight: bold;
+}
+
+/* Typography */
+.title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-family: 'Geist Sans', Arial, sans-serif !important;
+}

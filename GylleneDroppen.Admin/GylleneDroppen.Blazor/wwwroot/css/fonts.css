@@ -29,15 +29,15 @@
 
 /* Font classes */
 .font-great-vibes {
-    font-family: 'Great Vibes', cursive;
+    font-family: 'Great Vibes', cursive, serif;
 }
 
 .font-geist-sans {
-    font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
 }
 
 .font-geist-mono {
-    font-family: 'Geist Mono', monospace;
+    font-family: 'Geist Mono', 'Courier New', monospace;
 }
 
 /* Adding font styles for specific elements */
