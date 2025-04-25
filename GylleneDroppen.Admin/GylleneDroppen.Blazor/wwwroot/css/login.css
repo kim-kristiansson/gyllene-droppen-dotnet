@@ -25,6 +25,48 @@ body {
     align-items: center;
 }
 
+/* Font definitions */
+@font-face {
+    font-family: 'Great Vibes';
+    src: url('../fonts/GreatVibes-Regular.woff2') format('woff2'),
+    url('../fonts/GreatVibes-Regular.woff') format('woff'),
+    url('../fonts/GreatVibes-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist Sans';
+    src: url('../fonts/GeistVF.woff2') format('woff2'),
+    url('../fonts/GeistVF.woff') format('woff');
+    font-weight: 100 900; /* Variable font */
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geist Mono';
+    src: url('../fonts/GeistMonoVF.woff2') format('woff2'),
+    url('../fonts/GeistMonoVF.woff') format('woff');
+    font-weight: 100 900; /* Variable font */
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Font classes */
+.font-great-vibes {
+    font-family: 'Great Vibes', cursive, serif;
+}
+
+.font-geist-sans {
+    font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+}
+
+.font-geist-mono {
+    font-family: 'Geist Mono', 'Courier New', monospace;
+}
+
 /* Login Container */
 .login-container {
     display: flex;
@@ -66,7 +108,6 @@ body {
 }
 
 .logo-text {
-    font-family: serif;
     font-size: 2.5rem;
     color: var(--color-gold);
     font-weight: bold;
@@ -76,7 +117,6 @@ body {
 .title {
     font-size: 2.5rem;
     margin-bottom: 1rem;
-    font-family: serif;
 }
 
 .subtitle {
@@ -261,18 +301,4 @@ input:not(:placeholder-shown) + label {
     .title {
         font-size: 2rem;
     }
-}
-
-.logo-text {
-    font-family: 'Great Vibes', cursive !important;
-    font-size: 2.5rem;
-    color: var(--color-gold);
-    font-weight: bold;
-}
-
-/* Typography */
-.title {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    font-family: 'Geist Sans', Arial, sans-serif !important;
 }

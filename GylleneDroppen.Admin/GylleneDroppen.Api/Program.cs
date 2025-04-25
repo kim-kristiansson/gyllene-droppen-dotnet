@@ -54,7 +54,6 @@ builder.Services.AddScoped<ICookieManager, CookieManager>();
 // Add application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITastingService, TastingService>();
-builder.Services.AddScoped<IProfileService, ProfileService>();
 
 // Add authentication and authorization
 builder.Services.AddJwtAuthentication(builder.Configuration);

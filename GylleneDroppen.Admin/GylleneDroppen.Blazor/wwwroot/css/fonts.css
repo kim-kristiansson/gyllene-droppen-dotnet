@@ -27,20 +27,15 @@
     font-display: swap;
 }
 
-/* Font classes */
+/* Font utility classes */
 .font-great-vibes {
-    font-family: 'Great Vibes', cursive, serif;
+    font-family: 'Great Vibes', cursive, serif !important;
 }
 
 .font-geist-sans {
-    font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    font-family: 'Geist Sans', -apple-system, BlinkMacSystemFont, Arial, sans-serif !important;
 }
 
 .font-geist-mono {
-    font-family: 'Geist Mono', 'Courier New', monospace;
-}
-
-/* Adding font styles for specific elements */
-.logo-text {
-    font-family: 'Great Vibes', cursive;
+    font-family: 'Geist Mono', 'Courier New', monospace !important;
 }
