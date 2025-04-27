@@ -4,17 +4,17 @@ namespace GylleneDroppen.Application.Dtos.Auth;
 
 public class RegisterRequest
 {
-    [EmailAddress] public required string Email { get; init; }
+    [EmailAddress] public required string Email { get; set; }
 
-    [MaxLength(100)] public required string FirstName { get; init; }
+    [MaxLength(100)] public required string FirstName { get; set; }
 
-    [MaxLength(100)] public required string LastName { get; init; }
+    [MaxLength(100)] public required string LastName { get; set; }
 
     [DataType(DataType.Password)]
     [MinLength(6)]
-    public required string Password { get; init; }
+    public required string Password { get; set; }
 
     [DataType(DataType.Password)]
     [Compare("Password")]
-    public required string ConfirmPassword { get; init; }
+    public required string ConfirmPassword { get; set; }
 }

@@ -1,0 +1,194 @@
+@page "/verify-email"
+@using GylleneDroppen.Application.Dtos.Email
+@using GylleneDroppen.Blazor.Services
+@inject VerificationService VerificationService
+@inject NavigationManager NavigationManager
+@inject ILogger<VerifyEmail> Logger
+
+<div class="verify-container">
+    <div class="golden-card">
+        <div class="card-content">
+            <div class="logo-circle">
+                <span class="logo-text font-great-vibes">GD</span>
+            </div>
+            <h1 class="title font-geist-sans">Gyllene Droppen</h1>
+
+            <p class="subtitle">Verifiera e-post</p>
+
+            @if (_isVerifying)
+            {
+                <div class="verification-loading">
+                    <div class="spinner"></div>
+                    <p>Verifierar din e-postadress...</p>
+                </div>
+            }
+            else if (_isSuccess)
+            {
+                <div class="success-message">
+                    <p>Din e-postadress har verifierats!</p>
+                    <p>Du kan nu logga in på ditt konto.</p>
+                    <button class="submit-button" @onclick="NavigateToLogin">
+                        Gå till inloggning
+                    </button>
+                </div>
+            }
+            else if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="error-message">
+                    <p>@_errorMessage</p>
+                    <div class="action-buttons">
+                        <button class="secondary-button" @onclick="NavigateToRegister">
+                            Registrera på nytt
+                        </button>
+                        <button class="submit-button" @onclick="TryVerifyAgain">
+                            Försök igen
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="manual-verification">
+                    <p>Ange din e-postadress och verifieringskod nedan:</p>
+                    <div class="input-group">
+                        <input type="email" id="email" @bind="_email" placeholder="E-postadress"/>
+                        <label for="email">E-postadress</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="code" @bind="_code" placeholder="Verifieringskod"/>
+                        <label for="code">Verifieringskod</label>
+                    </div>
+
+                    <button class="submit-button" @onclick="VerifyManually" disabled="@_isLoading">
+                        @if (_isLoading)
+                        {
+                            <span>Verifierar...</span>
+                        }
+                        else
+                        {
+                            <span>Verifiera</span>
+                        }
+                    </button>
+                </div>
+            }
+
+            <div class="divider"></div>
+
+            <div class="social-links">
+                <p>Följ eller kontakta oss</p>
+                <div class="links">
+                    <a href="mailto:info@gyllenedroppen.se" target="_blank" rel="noopener noreferrer"
+                       class="social-link">
+                        <i class="email-icon"></i>
+                    </a>
+                    <a href="https://www.instagram.com/gyllene_droppen" target="_blank" rel="noopener noreferrer"
+                       class="social-link">
+                        <i class="instagram-icon"></i>
+                    </a>
+                </div>
+            </div>
+
+            <footer>
+                <p class="copyright">© @DateTime.Now.Year Gyllene Droppen</p>
+            </footer>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool _isVerifying;
+    private bool _isSuccess;
+    private bool _isLoading;
+    private string _errorMessage = "";
+    private string _email = "";
+    private string _code = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var parameters = VerificationService.ExtractVerificationParameters();
+            _email = parameters.Email;
+            _code = parameters.Code;
+
+            // Auto-verify if both email and code are present
+            if (!string.IsNullOrEmpty(_email) && !string.IsNullOrEmpty(_code))
+            {
+                await ProcessVerification(_email, _code);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing verification page");
+            _errorMessage = "Ett fel uppstod vid initiering av verifieringssidan.";
+        }
+    }
+
+    private async Task ProcessVerification(string emailAddress, string verificationCode)
+    {
+        _isVerifying = true;
+        _errorMessage = "";
+
+        try
+        {
+            var request = new ConfirmEmailRequest
+            {
+                Email = emailAddress,
+                ConfirmationCode = verificationCode
+            };
+
+            var result = await VerificationService.VerifyEmailAsync(request);
+
+            if (result.Success)
+            {
+                _isSuccess = true;
+            }
+            else
+            {
+                _errorMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error verifying email");
+            _errorMessage = "Ett tekniskt fel uppstod. Vänligen försök igen senare.";
+        }
+        finally
+        {
+            _isVerifying = false;
+            _isLoading = false;
+        }
+    }
+
+    private async Task VerifyManually()
+    {
+        if (string.IsNullOrEmpty(_email) || string.IsNullOrEmpty(_code))
+        {
+            _errorMessage = "Vänligen ange både e-postadress och verifieringskod.";
+            return;
+        }
+
+        _isLoading = true;
+        await ProcessVerification(_email, _code);
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login?verified=true");
+    }
+
+    private void NavigateToRegister()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
+
+    private async Task TryVerifyAgain()
+    {
+        if (!string.IsNullOrEmpty(_email) && !string.IsNullOrEmpty(_code))
+        {
+            await ProcessVerification(_email, _code);
+        }
+    }
+
+}

@@ -1,41 +1,44 @@
 @page "/login"
+@using System.Web
+@using GylleneDroppen.Blazor.Services
+@inject AuthService AuthService
 @inject NavigationManager NavigationManager
 
 <div class="login-container">
     <div class="golden-card">
         <div class="card-content">
             <div class="logo-circle">
-                <span class="logo-text @FontGreatVibes">GD</span>
+                <span class="logo-text font-great-vibes">GD</span>
             </div>
-            <h1 class="title @FontGeistSans">Gyllene Droppen</h1>
+            <h1 class="title font-geist-sans">Gyllene Droppen</h1>
 
             <p class="subtitle">Logga in</p>
 
-            @if (!string.IsNullOrEmpty(errorMessage))
+            @if (!string.IsNullOrEmpty(_errorMessage))
             {
                 <div class="error-message">
-                    @errorMessage
+                    @_errorMessage
                     <button type="button" class="close-button" @onclick="DismissError">×</button>
                 </div>
             }
 
             <form @onsubmit="HandleLogin">
                 <div class="input-group">
-                    <input type="email" id="email" @bind="email" placeholder="E-postadress" required/>
+                    <input type="email" id="email" @bind="_email" placeholder="E-postadress"/>
                     <label for="email">E-postadress</label>
                 </div>
 
                 <div class="input-group">
-                    <input type="@(showPassword ? "text" : "password")" id="password" @bind="password"
-                           placeholder="Lösenord" required/>
+                    <input type="@(_showPassword ? "text" : "password")" id="password" @bind="_password"
+                           placeholder="Lösenord"/>
                     <label for="password">Lösenord</label>
                     <button type="button" class="toggle-password" @onclick="TogglePasswordVisibility">
-                        @(showPassword ? "Dölj" : "Visa")
+                        @(_showPassword ? "Dölj" : "Visa")
                     </button>
                 </div>
 
-                <button type="submit" class="submit-button" disabled="@isLoading">
-                    @if (isLoading)
+                <button type="submit" class="submit-button" disabled="@_isLoading">
+                    @if (_isLoading)
                     {
                         <span>Loggar in...</span>
                     }
@@ -45,6 +48,10 @@
                     }
                 </button>
             </form>
+
+            <div class="register-link">
+                Har du inget konto? <a href="/register">Registrera dig här</a>
+            </div>
 
             <div class="divider"></div>
 
@@ -70,50 +77,72 @@
 </div>
 
 @code {
-    private string email = "";
-    private string password = "";
-    private bool showPassword;
-    private bool isLoading;
-    private string errorMessage = "";
+    private string _email = "";
+    private string _password = "";
+    private bool _showPassword;
+    private bool _isLoading;
+    private string _errorMessage = "";
+
+    protected override Task OnInitializedAsync()
+    {
+        // Check if we need to show a message after verification
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var queryParameters = HttpUtility.ParseQueryString(uri.Query);
+
+        if (queryParameters["verified"] == "true")
+        {
+            _errorMessage = "Din e-post har verifierats. Du kan nu logga in.";
+        }
+
+        return Task.CompletedTask;
+    }
 
     private void DismissError()
     {
-        errorMessage = "";
+        _errorMessage = "";
     }
 
     private void TogglePasswordVisibility()
     {
-        showPassword = !showPassword;
+        _showPassword = !_showPassword;
     }
 
     private async Task HandleLogin()
     {
-        isLoading = true;
-        errorMessage = "";
-
         try
         {
-            // Replace with your actual authentication logic
-            await Task.Delay(1000); // Simulate network request
+            _isLoading = true;
+            _errorMessage = "";
 
-            // For demonstration
-            if (email.ToLower() == "test@example.com" && password == "password")
+            var result = await AuthService.LoginAsync(_email, _password);
+
+            if (result.Success)
             {
-                NavigationManager.NavigateTo("/");
+                // Check for return URL in the query string
+                var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+                var queryParameters = HttpUtility.ParseQueryString(uri.Query);
+
+                if (queryParameters["returnUrl"] != null && !string.IsNullOrEmpty(queryParameters["returnUrl"]))
+                {
+                    NavigationManager.NavigateTo(queryParameters["returnUrl"] ?? string.Empty);
+                }
+                else
+                {
+                    NavigationManager.NavigateTo("/", true);
+                }
             }
             else
             {
-                errorMessage = "Ogiltiga inloggningsuppgifter. Kontrollera e-post och lösenord.";
+                _errorMessage = result.ErrorMessage;
             }
         }
         catch (Exception ex)
         {
-            errorMessage = "Ett fel uppstod. Försök igen senare.";
-            Console.WriteLine(ex.Message);
+            _errorMessage = "Ett tekniskt fel inträffade: " + ex.Message;
         }
         finally
         {
-            isLoading = false;
+            _isLoading = false;
         }
     }
 

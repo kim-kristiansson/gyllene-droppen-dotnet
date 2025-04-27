@@ -1,0 +1,182 @@
+@page "/register"
+@using GylleneDroppen.Application.Dtos.Auth
+@using GylleneDroppen.Blazor.Services
+@inject RegisterService RegisterService
+@inject NavigationManager NavigationManager
+
+<div class="register-container">
+    <div class="golden-card">
+        <div class="card-content">
+            <div class="logo-circle">
+                <span class="logo-text font-great-vibes">GD</span>
+            </div>
+            <h1 class="title font-geist-sans">Gyllene Droppen</h1>
+
+            <p class="subtitle">Skapa konto</p>
+
+            @if (_showSuccessMessage)
+            {
+                <div class="success-message">
+                    <p>@_successMessage</p>
+                    <button type="button" class="btn-link" @onclick="NavigateToLogin">Gå till inloggning</button>
+                </div>
+            }
+            else
+            {
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="error-message">
+                        @_errorMessage
+                        <button type="button" class="close-button" @onclick="DismissError">×</button>
+                    </div>
+                }
+
+                <EditForm Model="@_registerModel" OnValidSubmit="HandleRegister" id="registerForm">
+                    <DataAnnotationsValidator/>
+
+                    <div class="input-group">
+                        <InputText id="firstName" @bind-Value="_registerModel.FirstName" placeholder="Förnamn"/>
+                        <label for="firstName">Förnamn</label>
+                        <ValidationMessage For="@(() => _registerModel.FirstName)" class="validation-error"/>
+                    </div>
+
+                    <div class="input-group">
+                        <InputText id="lastName" @bind-Value="_registerModel.LastName" placeholder="Efternamn"/>
+                        <label for="lastName">Efternamn</label>
+                        <ValidationMessage For="@(() => _registerModel.LastName)" class="validation-error"/>
+                    </div>
+
+                    <div class="input-group">
+                        <InputText id="email" @bind-Value="_registerModel.Email" placeholder="E-postadress"/>
+                        <label for="email">E-postadress</label>
+                        <ValidationMessage For="@(() => _registerModel.Email)" class="validation-error"/>
+                    </div>
+
+                    <div class="input-group">
+                        <InputText type="@(_showPassword ? "text" : "password")" id="password"
+                                   @bind-Value="_registerModel.Password" placeholder="Lösenord"/>
+                        <label for="password">Lösenord</label>
+                        <button type="button" class="toggle-password" @onclick="TogglePasswordVisibility">
+                            @(_showPassword ? "Dölj" : "Visa")
+                        </button>
+                        <ValidationMessage For="@(() => _registerModel.Password)" class="validation-error"/>
+                    </div>
+
+                    <div class="input-group">
+                        <InputText type="@(_showConfirmPassword ? "text" : "password")" id="confirmPassword"
+                                   @bind-Value="_registerModel.ConfirmPassword" placeholder="Bekräfta lösenord"/>
+                        <label for="confirmPassword">Bekräfta lösenord</label>
+                        <button type="button" class="toggle-password" @onclick="ToggleConfirmPasswordVisibility">
+                            @(_showConfirmPassword ? "Dölj" : "Visa")
+                        </button>
+                        <ValidationMessage For="@(() => _registerModel.ConfirmPassword)" class="validation-error"/>
+                    </div>
+
+                    <button type="submit" class="submit-button" disabled="@_isLoading">
+                        @if (_isLoading)
+                        {
+                            <span>Registrerar...</span>
+                        }
+                        else
+                        {
+                            <span>Registrera</span>
+                        }
+                    </button>
+                </EditForm>
+
+                <div class="login-link">
+                    Har du redan ett konto? <a href="/login">Logga in här</a>
+                </div>
+            }
+
+            <div class="divider"></div>
+
+            <div class="social-links">
+                <p>Följ eller kontakta oss</p>
+                <div class="links">
+                    <a href="mailto:info@gyllenedroppen.se" target="_blank" rel="noopener noreferrer"
+                       class="social-link">
+                        <i class="email-icon"></i>
+                    </a>
+                    <a href="https://www.instagram.com/gyllene_droppen" target="_blank" rel="noopener noreferrer"
+                       class="social-link">
+                        <i class="instagram-icon"></i>
+                    </a>
+                </div>
+            </div>
+
+            <footer>
+                <p class="copyright">© @DateTime.Now.Year Gyllene Droppen</p>
+            </footer>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private readonly RegisterRequest _registerModel = new()
+    {
+        FirstName = "",
+        LastName = "",
+        Email = "",
+        Password = "",
+        ConfirmPassword = ""
+    };
+
+    private bool _isLoading;
+    private bool _showPassword;
+    private bool _showConfirmPassword;
+    private string _errorMessage = "";
+    private bool _showSuccessMessage;
+    private string _successMessage = "";
+
+    private void DismissError()
+    {
+        _errorMessage = "";
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        _showPassword = !_showPassword;
+    }
+
+    private void ToggleConfirmPasswordVisibility()
+    {
+        _showConfirmPassword = !_showConfirmPassword;
+    }
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = "";
+
+            var result = await RegisterService.RegisterAsync(_registerModel);
+
+            if (result.Success)
+            {
+                _showSuccessMessage = true;
+                _successMessage = result.Message;
+            }
+            else
+            {
+                _errorMessage = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Ett tekniskt fel inträffade: " + ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+
+}
