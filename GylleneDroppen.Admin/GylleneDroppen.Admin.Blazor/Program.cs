@@ -10,17 +10,11 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Register HttpClient
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+// Register HttpClient factory
+builder.Services.AddHttpClient("AuthAPI");
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient());
 
-// Register Services
-builder.Services.AddScoped<AppConfigService>();
-builder.Services.AddScoped<AuthService>();
-
-// Configure Logging
-builder.Logging.SetMinimumLevel(LogLevel.Information);
-
-// Register Authentication and Authorization
+// Configure Authentication and Authorization
 builder.Services.AddAuthorizationCore(options =>
 {
     // Add a specific policy for admin users
@@ -32,6 +26,15 @@ builder.Services.AddAuthorizationCore(options =>
         .RequireAuthenticatedUser()
         .Build();
 });
+
+// Register AuthProvider first
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+
+// Then register services
+builder.Services.AddScoped<AppConfigService>();
+builder.Services.AddScoped<AuthService>();
+
+// Configure Logging
+builder.Logging.SetMinimumLevel(LogLevel.Information);
 
 await builder.Build().RunAsync();

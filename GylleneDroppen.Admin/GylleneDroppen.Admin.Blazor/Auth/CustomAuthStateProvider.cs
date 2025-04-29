@@ -5,16 +5,39 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 namespace GylleneDroppen.Admin.Blazor.Auth;
 
-public class CustomAuthStateProvider(AuthService authService) : AuthenticationStateProvider
+public class CustomAuthStateProvider : AuthenticationStateProvider
 {
     private readonly TimeSpan _cacheTime = TimeSpan.FromMinutes(5);
+    private readonly AppConfigService _configService;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private string _apiBaseUrl = string.Empty;
     private CurrentUserResponse? _cachedUser;
+    private bool _isInitialized;
     private DateTime _lastCheck = DateTime.MinValue;
+
+    public CustomAuthStateProvider(IHttpClientFactory httpClientFactory, AppConfigService configService)
+    {
+        _httpClientFactory = httpClientFactory;
+        _configService = configService;
+    }
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         return await GetAuthenticationStateInternalAsync();
+    }
+
+    private async Task<HttpClient> GetHttpClientAsync()
+    {
+        if (!_isInitialized)
+        {
+            _apiBaseUrl = await _configService.GetApiBaseUrlAsync();
+            _isInitialized = true;
+        }
+
+        var client = _httpClientFactory.CreateClient("AuthAPI");
+        client.BaseAddress = new Uri(_apiBaseUrl);
+        return client;
     }
 
     private async Task<AuthenticationState> GetAuthenticationStateInternalAsync(bool forceRefresh = false)
@@ -29,10 +52,25 @@ public class CustomAuthStateProvider(AuthService authService) : AuthenticationSt
             var needsRefresh = forceRefresh || _cachedUser == null || now - _lastCheck > _cacheTime;
 
             if (needsRefresh)
-            {
-                _cachedUser = await authService.GetCurrentUserAsync();
-                _lastCheck = now;
-            }
+                try
+                {
+                    var httpClient = await GetHttpClientAsync();
+                    var response = await httpClient.GetAsync("api/auth/current-user");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        _cachedUser = await response.Content.ReadFromJsonAsync<CurrentUserResponse>();
+                        _lastCheck = now;
+                    }
+                    else
+                    {
+                        _cachedUser = null;
+                    }
+                }
+                catch
+                {
+                    _cachedUser = null;
+                }
 
             // Create the authentication state
             if (_cachedUser != null)
@@ -72,7 +110,7 @@ public class CustomAuthStateProvider(AuthService authService) : AuthenticationSt
         NotifyAuthenticationStateChanged(Task.FromResult(authState));
         return authState;
     }
-    
+
     public void NotifyUserLogout()
     {
         _cachedUser = null;
