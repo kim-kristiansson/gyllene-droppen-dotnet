@@ -5,7 +5,7 @@ using GylleneDroppen.Domain.Entities;
 
 namespace GylleneDroppen.Presentation.Mappers.Admin;
 
-public class AdminAdminTastingMapper : IAdminTastingMapper
+public class AdminTastingMapper : IAdminTastingMapper
 {
     public Tasting ToTasting(CreateTastingRequest request)
     {

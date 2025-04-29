@@ -21,4 +21,12 @@ public class BaseAuthController(IAuthService authService) : ControllerBase
         var result = await authService.RefreshTokenAsync();
         return result.ToActionResult();
     }
+
+    [HttpGet("validate-token")]
+    public async Task<IActionResult> ValidateToken()
+    {
+        var result = await authService.GetCurrentUserAsync();
+        if (result.IsSuccess) return Ok(new { isValid = true });
+        return Unauthorized(new { isValid = false });
+    }
 }

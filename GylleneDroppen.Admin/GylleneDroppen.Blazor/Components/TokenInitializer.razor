@@ -1,0 +1,27 @@
+@using GylleneDroppen.Blazor.Services
+@inject ILogger<TokenInitializer> Logger
+@inject TokenRefreshService TokenRefreshService
+
+@code {
+    private bool _initialized;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!_initialized)
+        {
+            try
+            {
+                Logger.LogInformation("Initializing token refresh service");
+                await TokenRefreshService.Initialize();
+                _initialized = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error initializing token refresh service");
+            }
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+}

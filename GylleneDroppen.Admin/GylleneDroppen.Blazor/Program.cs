@@ -7,12 +7,33 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// Register Services
+// Register the auth handler
+builder.Services.AddScoped<AuthenticationHandler>();
+
+// Register Services (ensure AuthService is registered before TokenRefreshService)
 builder.Services.AddScoped<RegisterService>();
 builder.Services.AddScoped<VerificationService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<TokenRefreshService>();
 
-// Register HttpClient
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+// Configure HttpClient with the auth handler
+builder.Services.AddScoped(sp =>
+{
+    var handler = sp.GetRequiredService<AuthenticationHandler>();
 
-await builder.Build().RunAsync();
+    // Create HttpClient with auth handler
+    var httpClient = new HttpClient(handler)
+    {
+        BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
+    };
+
+    return httpClient;
+});
+
+var host = builder.Build();
+
+// Initialize token refresh on app start
+var tokenService = host.Services.GetRequiredService<TokenRefreshService>();
+await tokenService.Initialize();
+
+await host.RunAsync();

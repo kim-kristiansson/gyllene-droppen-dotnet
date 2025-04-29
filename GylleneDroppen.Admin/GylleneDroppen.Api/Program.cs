@@ -1,4 +1,5 @@
 using GylleneDroppen.Admin.Api.Extensions;
+using GylleneDroppen.Application.Interfaces.Public.Mappers;
 using GylleneDroppen.Application.Interfaces.Public.Services;
 using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Application.Interfaces.Shared.Security;
@@ -14,6 +15,7 @@ using GylleneDroppen.Infrastructure.Persistence.Repositories.Shared;
 using GylleneDroppen.Infrastructure.Redis;
 using GylleneDroppen.Infrastructure.Security;
 using GylleneDroppen.Presentation.Extensions;
+using GylleneDroppen.Presentation.Mappers.Public;
 using GylleneDroppen.Presentation.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +48,9 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 
 // Add email service
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+// Add mapper services
+builder.Services.AddScoped<ITastingMapper, TastingMapper>();
 
 // Add utilities
 builder.Services.AddHttpContextAccessor();
