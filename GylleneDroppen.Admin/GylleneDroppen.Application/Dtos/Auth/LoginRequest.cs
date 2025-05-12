@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GylleneDroppen.Application.Dtos.Auth;
+namespace GylleneDroppen.Application.Dtos.Shared.Auth;
 
 public class LoginRequest
 {

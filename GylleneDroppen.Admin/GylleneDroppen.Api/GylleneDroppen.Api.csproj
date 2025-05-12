@@ -11,6 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\GylleneDroppen.Admin.Application\GylleneDroppen.Admin.Application.csproj"/>
         <ProjectReference Include="..\GylleneDroppen.Presentation\GylleneDroppen.Presentation.csproj"/>
     </ItemGroup>
 

@@ -1,5 +1,5 @@
-using GylleneDroppen.Application.Dtos.Admin.Admin;
-using GylleneDroppen.Application.Interfaces.Admin.Services;
+using GylleneDroppen.Admin.Application.Dtos.Admin;
+using GylleneDroppen.Admin.Application.Interfaces.Services;
 using GylleneDroppen.Presentation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 

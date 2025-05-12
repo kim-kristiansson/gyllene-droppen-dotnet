@@ -1,5 +1,5 @@
+using GylleneDroppen.Admin.Application.Interfaces.Services;
 using GylleneDroppen.Application.Dtos.Tasting;
-using GylleneDroppen.Application.Interfaces.Admin.Services;
 using GylleneDroppen.Presentation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 

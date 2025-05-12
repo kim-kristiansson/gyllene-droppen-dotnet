@@ -1,4 +1,4 @@
-using GylleneDroppen.Application.Interfaces.Shared.Repositories;
+using GylleneDroppen.Application.Interfaces.Repositories;
 using GylleneDroppen.Domain.Entities;
 using GylleneDroppen.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
@@ -11,5 +11,10 @@ public class AttendeeRepository(AppDbContext context) : Repository<Attendee>(con
     {
         return await DbSet
             .AnyAsync(p => p.UserId == userId && p.TastingId == eventId);
+    }
+
+    public async Task<int> CountUserAttendancesAsync(Guid userId)
+    {
+        return await DbSet.CountAsync(a => a.UserId == userId);
     }
 }

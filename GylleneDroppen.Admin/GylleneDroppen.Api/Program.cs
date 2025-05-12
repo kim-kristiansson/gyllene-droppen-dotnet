@@ -1,5 +1,6 @@
 using GylleneDroppen.Application.Interfaces.Public.Mappers;
 using GylleneDroppen.Application.Interfaces.Public.Services;
+using GylleneDroppen.Application.Interfaces.Repositories;
 using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Application.Interfaces.Shared.Security;
 using GylleneDroppen.Application.Interfaces.Shared.Services;

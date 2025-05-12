@@ -1,5 +1,6 @@
-using GylleneDroppen.Application.Dtos.Auth;
+using System.Security.Claims;
 using GylleneDroppen.Application.Dtos.Email;
+using GylleneDroppen.Application.Dtos.Shared.Auth;
 using GylleneDroppen.Application.Interfaces.Shared.Services;
 using GylleneDroppen.Presentation.Controllers;
 using GylleneDroppen.Presentation.Utilities;
@@ -58,6 +59,17 @@ public class AuthController(IAuthService authService) : BaseAuthController(authS
     public async Task<IActionResult> GetCurrentUser()
     {
         var result = await _authService.GetCurrentUserAsync();
+        return result.ToActionResult();
+    }
+
+    [HttpDelete("delete-account")]
+    public async Task<IActionResult> DeleteAccount([FromBody] DeleteAccountRequest request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            return Unauthorized();
+
+        var result = await _authService.DeleteAccountAsync(userId, request.Password);
         return result.ToActionResult();
     }
 }

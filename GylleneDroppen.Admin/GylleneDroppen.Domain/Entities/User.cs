@@ -12,5 +12,6 @@ public class User
     public required string PasswordSalt { get; set; }
     public required RoleType Role { get; set; } = RoleType.User;
     public List<Attendee> Attendees { get; init; } = [];
+    public Membership? Membership { get; init; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
 }

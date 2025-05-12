@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Presentation
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Api", "GylleneDroppen.Api\GylleneDroppen.Api.csproj", "{1821B481-54AA-4FA9-9857-56952CB9CF8E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Application", "GylleneDroppen.Admin.Application\GylleneDroppen.Admin.Application.csproj", "{C43C8346-7D7B-4996-84E9-087ED32C6C01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Presentation", "GylleneDroppen.Admin.Presentation\GylleneDroppen.Admin.Presentation.csproj", "{C870422F-F5F2-452E-B1EB-99AEB3E342AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +40,13 @@ Global
 		{1821B481-54AA-4FA9-9857-56952CB9CF8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1821B481-54AA-4FA9-9857-56952CB9CF8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1821B481-54AA-4FA9-9857-56952CB9CF8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C43C8346-7D7B-4996-84E9-087ED32C6C01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C43C8346-7D7B-4996-84E9-087ED32C6C01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C43C8346-7D7B-4996-84E9-087ED32C6C01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C43C8346-7D7B-4996-84E9-087ED32C6C01}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C870422F-F5F2-452E-B1EB-99AEB3E342AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C870422F-F5F2-452E-B1EB-99AEB3E342AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C870422F-F5F2-452E-B1EB-99AEB3E342AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C870422F-F5F2-452E-B1EB-99AEB3E342AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,4 @@
-using GylleneDroppen.Application.Dtos.Auth;
+using GylleneDroppen.Application.Dtos.Shared.Auth;
 using GylleneDroppen.Application.Interfaces.Shared.Services;
 using GylleneDroppen.Presentation.Controllers;
 using GylleneDroppen.Presentation.Utilities;
