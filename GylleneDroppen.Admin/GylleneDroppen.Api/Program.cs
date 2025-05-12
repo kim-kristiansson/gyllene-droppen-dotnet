@@ -1,4 +1,3 @@
-using GylleneDroppen.Admin.Api.Extensions;
 using GylleneDroppen.Application.Interfaces.Public.Mappers;
 using GylleneDroppen.Application.Interfaces.Public.Services;
 using GylleneDroppen.Application.Interfaces.Shared.Repositories;
@@ -22,7 +21,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddOpenApi();
-builder.Services.AddServices();
 
 // Add application configuration
 builder.Services.AddApplicationConfiguration(builder.Configuration);
@@ -34,7 +32,7 @@ builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddDatabase();
 
 // Add SmtpClient
-builder.Services.AddSmtpClient();
+builder.Services.AddSmtpClient(builder.Configuration);
 
 // Add repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();

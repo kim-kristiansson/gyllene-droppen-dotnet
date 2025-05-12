@@ -11,8 +11,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GylleneDroppen.Admin.Api\GylleneDroppen.Admin.Api.csproj"/>
         <ProjectReference Include="..\GylleneDroppen.Presentation\GylleneDroppen.Presentation.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

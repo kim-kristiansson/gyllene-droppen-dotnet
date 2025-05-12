@@ -5,10 +5,10 @@ using GylleneDroppen.Presentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace GylleneDroppen.Admin.Api.Controllers;
+namespace GylleneDroppen.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/admin/[controller]")]
 public class AuthController(IAuthService authService) : BaseAuthController(authService)
 {
     private readonly IAuthService _authService = authService;

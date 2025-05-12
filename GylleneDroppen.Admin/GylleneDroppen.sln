@@ -10,12 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Presentation
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Api", "GylleneDroppen.Api\GylleneDroppen.Api.csproj", "{1821B481-54AA-4FA9-9857-56952CB9CF8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Api", "GylleneDroppen.Admin.Api\GylleneDroppen.Admin.Api.csproj", "{90FBE038-A991-4BCF-9387-C4E49AC13578}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Blazor", "GylleneDroppen.Admin.Blazor\GylleneDroppen.Admin.Blazor.csproj", "{01BCFBC2-463C-4CB6-8643-25A1609974EC}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor", "GylleneDroppen.Blazor\GylleneDroppen.Blazor.csproj", "{62883318-1A6E-46DE-A373-353C6B289818}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,17 +36,5 @@ Global
 		{1821B481-54AA-4FA9-9857-56952CB9CF8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1821B481-54AA-4FA9-9857-56952CB9CF8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1821B481-54AA-4FA9-9857-56952CB9CF8E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{90FBE038-A991-4BCF-9387-C4E49AC13578}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{90FBE038-A991-4BCF-9387-C4E49AC13578}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{90FBE038-A991-4BCF-9387-C4E49AC13578}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{90FBE038-A991-4BCF-9387-C4E49AC13578}.Release|Any CPU.Build.0 = Release|Any CPU
-		{01BCFBC2-463C-4CB6-8643-25A1609974EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{01BCFBC2-463C-4CB6-8643-25A1609974EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{01BCFBC2-463C-4CB6-8643-25A1609974EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{01BCFBC2-463C-4CB6-8643-25A1609974EC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{62883318-1A6E-46DE-A373-353C6B289818}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{62883318-1A6E-46DE-A373-353C6B289818}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{62883318-1A6E-46DE-A373-353C6B289818}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{62883318-1A6E-46DE-A373-353C6B289818}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
