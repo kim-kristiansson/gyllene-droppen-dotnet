@@ -14,9 +14,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Applic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Admin.Presentation", "GylleneDroppen.Admin.Presentation\GylleneDroppen.Admin.Presentation.csproj", "{C870422F-F5F2-452E-B1EB-99AEB3E342AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor", "GylleneDroppen.Blazor\GylleneDroppen.Blazor\GylleneDroppen.Blazor.csproj", "{6E6E1606-35EF-4EA9-BCC4-1D2EC4FE1489}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor", "GylleneDroppen.Blazor\GylleneDroppen.Blazor\GylleneDroppen.Blazor.csproj", "{76F1526B-1D62-4AE0-BA18-9EA7952EA3F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor.Client", "GylleneDroppen.Blazor\GylleneDroppen.Blazor.Client\GylleneDroppen.Blazor.Client.csproj", "{79940CC9-8536-4C53-967B-ADB652AE518D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor.Client", "GylleneDroppen.Blazor\GylleneDroppen.Blazor.Client\GylleneDroppen.Blazor.Client.csproj", "{E225D6FB-D216-4953-A9FC-9AFA7D63E764}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,13 +52,13 @@ Global
 		{C870422F-F5F2-452E-B1EB-99AEB3E342AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C870422F-F5F2-452E-B1EB-99AEB3E342AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C870422F-F5F2-452E-B1EB-99AEB3E342AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E6E1606-35EF-4EA9-BCC4-1D2EC4FE1489}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E6E1606-35EF-4EA9-BCC4-1D2EC4FE1489}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E6E1606-35EF-4EA9-BCC4-1D2EC4FE1489}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E6E1606-35EF-4EA9-BCC4-1D2EC4FE1489}.Release|Any CPU.Build.0 = Release|Any CPU
-		{79940CC9-8536-4C53-967B-ADB652AE518D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{79940CC9-8536-4C53-967B-ADB652AE518D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{79940CC9-8536-4C53-967B-ADB652AE518D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{79940CC9-8536-4C53-967B-ADB652AE518D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76F1526B-1D62-4AE0-BA18-9EA7952EA3F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76F1526B-1D62-4AE0-BA18-9EA7952EA3F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76F1526B-1D62-4AE0-BA18-9EA7952EA3F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76F1526B-1D62-4AE0-BA18-9EA7952EA3F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E225D6FB-D216-4953-A9FC-9AFA7D63E764}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E225D6FB-D216-4953-A9FC-9AFA7D63E764}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E225D6FB-D216-4953-A9FC-9AFA7D63E764}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E225D6FB-D216-4953-A9FC-9AFA7D63E764}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

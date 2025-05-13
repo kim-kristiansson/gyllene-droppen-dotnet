@@ -1,5 +1,5 @@
+using GylleneDroppen.Blazor.Client.Pages;
 using GylleneDroppen.Blazor.Components;
-using _Imports = GylleneDroppen.Blazor.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +17,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Error", true);
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -31,6 +31,6 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(_Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(GylleneDroppen.Blazor.Client._Imports).Assembly);
 
 app.Run();
