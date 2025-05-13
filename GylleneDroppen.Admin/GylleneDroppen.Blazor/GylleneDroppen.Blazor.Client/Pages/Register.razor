@@ -1,0 +1,132 @@
+﻿@page "/register"
+@using GylleneDroppen.Application.Dtos.Shared.Auth
+@rendermode InteractiveAuto
+@inject HttpClient Http
+
+<PageTitle>Registrera</PageTitle>
+
+<h1>Registrera</h1>
+
+<EditForm Model="@registerRequest" OnValidSubmit="HandleRegistration">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <div>
+        <label for="firstName">Förnamn</label>
+        <InputText id="firstName" @bind-Value="registerRequest.FirstName"/>
+        <ValidationMessage For="() => registerRequest.FirstName"/>
+    </div>
+
+    <div>
+        <label for="lastName">Efternamn</label>
+        <InputText id="lastName" @bind-Value="registerRequest.LastName"/>
+        <ValidationMessage For="() => registerRequest.LastName"/>
+    </div>
+
+    <div>
+        <label for="email">E-post</label>
+        <InputText id="email" @bind-Value="registerRequest.Email"/>
+        <ValidationMessage For="() => registerRequest.Email"/>
+    </div>
+
+    <div>
+        <label for="password">Lösenord</label>
+        <InputText id="password" type="password" @bind-Value="registerRequest.Password"/>
+        <ValidationMessage For="() => registerRequest.Password"/>
+    </div>
+
+    <div>
+        <label for="confirmPassword">Bekräfta lösenord</label>
+        <InputText id="confirmPassword" type="password" @bind-Value="registerRequest.ConfirmPassword"/>
+        <ValidationMessage For="() => registerRequest.ConfirmPassword"/>
+    </div>
+
+    <button type="submit" disabled="@isRegistering">
+        @if (isRegistering)
+        {
+            <span>Registrerar...</span>
+        }
+        else
+        {
+            <span>Registrera</span>
+        }
+    </button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div>
+        @errorMessage
+    </div>
+}
+
+@if (registrationSuccess)
+{
+    <div>
+        Registreringen lyckades! Vänligen kontrollera din e-post för att bekräfta ditt konto.
+    </div>
+}
+
+<div>
+    <p>Har du redan ett konto? <a href="/login">Logga in</a></p>
+</div>
+
+@code {
+
+    private RegisterRequest registerRequest = new()
+    {
+        Email = string.Empty,
+        FirstName = string.Empty,
+        LastName = string.Empty,
+        Password = string.Empty,
+        ConfirmPassword = string.Empty
+    };
+
+    private bool isRegistering;
+    private bool registrationSuccess;
+    private string? errorMessage;
+
+    private async Task HandleRegistration()
+    {
+        isRegistering = true;
+        errorMessage = null;
+        registrationSuccess = false;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/register", registerRequest);
+
+            if (response.IsSuccessStatusCode)
+            {
+                registrationSuccess = true;
+                registerRequest = new RegisterRequest
+                {
+                    Email = string.Empty,
+                    FirstName = string.Empty,
+                    LastName = string.Empty,
+                    Password = string.Empty,
+                    ConfirmPassword = string.Empty
+                }; // Reset form
+            }
+            else
+            {
+                var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                errorMessage = errorResult?.Message ?? "Registreringen misslyckades. Vänligen försök igen.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ett fel inträffade: {ex.Message}";
+        }
+        finally
+        {
+            isRegistering = false;
+        }
+    }
+
+    private class ErrorResponse
+    {
+        public string? Message { get; set; }
+    }
+
+}
