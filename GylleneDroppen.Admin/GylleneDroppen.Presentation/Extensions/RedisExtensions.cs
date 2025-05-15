@@ -12,7 +12,6 @@ public static class RedisExtensions
         {
             var redisSettings = configuration.GetSection("RedisSettings").Get<RedisSettings>();
             options.Configuration = redisSettings?.ConnectionString;
-            options.InstanceName = redisSettings?.InstanceName;
         });
     }
 }

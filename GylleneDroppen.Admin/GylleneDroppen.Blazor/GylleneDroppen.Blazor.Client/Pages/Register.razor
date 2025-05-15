@@ -106,6 +106,12 @@
 
 @code {
 
+    private readonly Dictionary<string, string> _serverErrorTranslations = new()
+    {
+        ["Email already exists."] = "E-postadressen används redan av ett annat konto.",
+        ["A verification code has already been sent. Please check your email."] = "En verifieringskod har redan skickats. Vänligen kontrollera din e-post."
+    };
+
     private RegisterRequest _registerRequest = new()
     {
         Email = string.Empty,
@@ -133,18 +139,18 @@
         tempValidator.Validate();
 
         // Update the main validator's errors for this field
-        if (_validator.HasErrors(fieldName))
+        if (_validator != null && _validator.HasErrors(fieldName))
         {
             _validator.GetAllErrors()[fieldName] = tempValidator.GetErrors(fieldName);
         }
         else if (tempValidator.HasErrors(fieldName))
         {
-            if (!_validator.GetAllErrors().ContainsKey(fieldName))
+            if (_validator != null && !_validator.GetAllErrors().ContainsKey(fieldName))
             {
-                _validator.GetAllErrors()[fieldName] = new List<string>();
+                _validator.GetAllErrors()[fieldName] = [];
             }
 
-            _validator.GetAllErrors()[fieldName] = tempValidator.GetErrors(fieldName);
+            if (_validator != null) _validator.GetAllErrors()[fieldName] = tempValidator.GetErrors(fieldName);
         }
     }
 
@@ -170,9 +176,6 @@
 
         try
         {
-            // Log the API URL to help with debugging
-            Console.WriteLine($"API Base URL: {Http.BaseAddress}");
-
             var response = await Http.PostAsJsonAsync("api/auth/register", _registerRequest);
 
             if (response.IsSuccessStatusCode)
@@ -190,12 +193,16 @@
             else
             {
                 var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-                _errorMessage = errorResult?.Message ?? "Registreringen misslyckades. Vänligen försök igen.";
+                var errorMessage = errorResult?.Detail;
+
+                _errorMessage = errorMessage != null && _serverErrorTranslations.TryGetValue(errorMessage, out var translation)
+                    ? translation
+                    : errorMessage ?? "Registreringen misslyckades. Vänligen försök igen.";
             }
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Ett fel inträffade: {ex.Message}";
+            _errorMessage = "Ett fel inträffade vid anslutning till servern. Vänligen försök igen senare.";
             Console.WriteLine($"Exception details: {ex}");
         }
         finally
@@ -206,7 +213,8 @@
 
     private class ErrorResponse
     {
-        public string? Message { get; set; }
+        public string? Detail { get; set; }
+        public int? Status { get; set; }
     }
 
 }
