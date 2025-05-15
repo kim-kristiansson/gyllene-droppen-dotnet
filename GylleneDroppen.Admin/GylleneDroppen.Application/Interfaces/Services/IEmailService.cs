@@ -1,7 +1,7 @@
 using GylleneDroppen.Application.Common.Results;
 using GylleneDroppen.Application.Dtos.Common;
 
-namespace GylleneDroppen.Application.Services.Shared;
+namespace GylleneDroppen.Application.Interfaces.Services;
 
 public interface IEmailService
 {

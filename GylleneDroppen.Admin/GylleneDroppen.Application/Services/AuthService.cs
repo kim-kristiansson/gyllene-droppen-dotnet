@@ -3,6 +3,7 @@ using GylleneDroppen.Application.Common.Results;
 using GylleneDroppen.Application.Dtos.Common;
 using GylleneDroppen.Application.Dtos.Email;
 using GylleneDroppen.Application.Dtos.Shared.Auth;
+using GylleneDroppen.Application.Interfaces.Services;
 using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Application.Interfaces.Shared.Security;
 using GylleneDroppen.Application.Interfaces.Shared.Services;
@@ -115,19 +116,19 @@ public class AuthService(
             Role = RoleType.User
         };
 
-        var confirmationCode = CodeGenerator.GenerateConfirmationCode(6);
+        var verificationToken = CodeGenerator.GenerateSecureToken();
 
         var pendingUser = new PendingUserModel
         {
             User = user,
-            ConfirmationCode = confirmationCode
+            ConfirmationCode = verificationToken
         };
 
         var pendingUserJson = JsonSerializer.Serialize(pendingUser);
 
-        await redisRepository.SaveAsync($"pending_user:{user.Email}", pendingUserJson, TimeSpan.FromMinutes(15));
+        await redisRepository.SaveAsync($"pending_user:{user.Email}", pendingUserJson, TimeSpan.FromHours(24));
 
-        return await emailService.SendEmailConfirmationCodeAsync(user.Email, confirmationCode);
+        return await emailService.SendEmailConfirmationCodeAsync(user.Email, verificationToken);
     }
 
     public async Task<Result<MessageResponse>> ConfirmEmailAsync(ConfirmEmailRequest request)
@@ -159,7 +160,7 @@ public class AuthService(
         if (user is null)
             return Result<MessageResponse>.Failure("Email not found", 400);
 
-        var resetToken = CodeGenerator.GenerateConfirmationCode(6);
+        var resetToken = CodeGenerator.GenerateSecureToken();
         var tokenEntry = new PasswordResetModel
         {
             Email = request.Email,
@@ -167,7 +168,7 @@ public class AuthService(
         };
 
         var serializedToken = JsonSerializer.Serialize(tokenEntry);
-        await redisRepository.SaveAsync($"password_reset:{user.Email}", serializedToken, TimeSpan.FromMinutes(15));
+        await redisRepository.SaveAsync($"password_reset:{user.Email}", serializedToken, TimeSpan.FromHours(4));
 
         return await emailService.SendPasswordResetEmailAsync(user.Email, resetToken);
     }

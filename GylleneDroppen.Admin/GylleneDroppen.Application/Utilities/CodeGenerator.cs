@@ -4,14 +4,21 @@ namespace GylleneDroppen.Application.Utilities;
 
 public static class CodeGenerator
 {
-    public static string GenerateConfirmationCode(int length)
+    public static string GenerateSecureToken()
     {
-        if (length <= 0)
-            return string.Empty;
+        var tokenBytes = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(tokenBytes);
 
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        return new string(Enumerable.Range(0, length)
-            .Select(_ => chars[RandomNumberGenerator.GetInt32(0, chars.Length)])
-            .ToArray());
+        var base64Token = Convert.ToBase64String(tokenBytes);
+        return MakeBase64UrlSafe(base64Token);
+    }
+
+    private static string MakeBase64UrlSafe(string base64)
+    {
+        return base64
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
     }
 }
