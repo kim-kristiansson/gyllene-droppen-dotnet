@@ -1,4 +1,4 @@
-using System.Reflection;
+using GylleneDroppen.Infrastructure.Settings;
 
 namespace GylleneDroppen.Presentation.Extensions;
 
@@ -6,24 +6,15 @@ public static class ApplicationConfigurationExtension
 {
     public static void AddApplicationConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
-        var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
-            .GetMethods()
-            .First(m => m.Name == nameof(OptionsConfigurationServiceCollectionExtensions.Configure)
-                        && m.GetGenericArguments().Length == 1
-                        && m.GetParameters().Length == 2
-                        && m.GetParameters()[1].ParameterType == typeof(IConfiguration));
+        services.Configure<DatabaseSettings>(configuration.GetSection("DatabaseSettings"));
+        services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+        services.Configure<RedisSettings>(configuration.GetSection("RedisSettings"));
+        services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
+        services.Configure<GlobalSettings>(configuration.GetSection("GlobalSettings"));
 
-        var optionTypes = Assembly.GetExecutingAssembly()
-            .GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false } &&
-                        t.GetProperties().Any(p => p.SetMethod is not null))
-            .ToList();
-
-        foreach (var configType in optionTypes)
-        {
-            var sectionName = configType.Name;
-            var genericMethod = configureMethod.MakeGenericMethod(configType);
-            genericMethod.Invoke(null, [services, configuration.GetSection(sectionName)]);
-        }
+        var databaseSettings = configuration.GetSection("DatabaseSettings").Get<DatabaseSettings>();
+        Console.WriteLine(databaseSettings != null
+            ? $"Configuring DatabaseSettings with connection string: {databaseSettings.ConnectionString?[..Math.Min(20, databaseSettings.ConnectionString?.Length ?? 0)]}..."
+            : "WARNING: DatabaseSettings section is missing or empty in configuration!");
     }
 }

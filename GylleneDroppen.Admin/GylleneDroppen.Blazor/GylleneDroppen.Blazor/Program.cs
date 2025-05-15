@@ -1,5 +1,3 @@
-// GylleneDroppen.Blazor/Program.cs - update with the following
-
 using GylleneDroppen.Blazor.Components;
 using _Imports = GylleneDroppen.Blazor.Client._Imports;
 
@@ -10,10 +8,20 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-// Add HttpClient service
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri(builder.Configuration["GlobalSettings:ApiBaseUrl"] ?? "http://localhost:5063/")
+    BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5088/")
+});
+
+builder.Services.AddSingleton(services =>
+{
+    // Create a new configuration dictionary with only the values needed by the client
+    var configForWasm = new Dictionary<string, string>
+    {
+        ["ApiBaseUrl"] = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5088/"
+    };
+
+    return configForWasm;
 });
 
 var app = builder.Build();

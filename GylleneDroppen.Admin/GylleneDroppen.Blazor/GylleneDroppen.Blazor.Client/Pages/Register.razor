@@ -1,5 +1,6 @@
 @page "/register"
 @using GylleneDroppen.Application.Dtos.Shared.Auth
+@using GylleneDroppen.Blazor.Client.Validators
 @rendermode InteractiveAuto
 @inject HttpClient Http
 
@@ -7,42 +8,74 @@
 
 <h1>Registrera</h1>
 
-<EditForm Model="@registerRequest" OnValidSubmit="HandleRegistration">
-    <DataAnnotationsValidator/>
-    <ValidationSummary/>
-
+<EditForm Model="@_registerRequest" OnValidSubmit="HandleRegistration" FormName="registerForm">
     <div>
         <label for="firstName">Förnamn</label>
-        <InputText id="firstName" @bind-Value="registerRequest.FirstName"/>
-        <ValidationMessage For="() => registerRequest.FirstName"/>
+        <InputText id="firstName" @bind-Value="_registerRequest.FirstName"
+                   @onblur="() => ValidateField(nameof(_registerRequest.FirstName))"/>
+        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.FirstName)))
+        {
+            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.FirstName)))
+            {
+                <div>@error</div>
+            }
+        }
     </div>
 
     <div>
         <label for="lastName">Efternamn</label>
-        <InputText id="lastName" @bind-Value="registerRequest.LastName"/>
-        <ValidationMessage For="() => registerRequest.LastName"/>
+        <InputText id="lastName" @bind-Value="_registerRequest.LastName"
+                   @onblur="() => ValidateField(nameof(_registerRequest.LastName))"/>
+        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.LastName)))
+        {
+            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.LastName)))
+            {
+                <div>@error</div>
+            }
+        }
     </div>
 
     <div>
         <label for="email">E-post</label>
-        <InputText id="email" @bind-Value="registerRequest.Email"/>
-        <ValidationMessage For="() => registerRequest.Email"/>
+        <InputText id="email" @bind-Value="_registerRequest.Email"
+                   @onblur="() => ValidateField(nameof(_registerRequest.Email))"/>
+        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.Email)))
+        {
+            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.Email)))
+            {
+                <div>@error</div>
+            }
+        }
     </div>
 
     <div>
         <label for="password">Lösenord</label>
-        <InputText id="password" type="password" @bind-Value="registerRequest.Password"/>
-        <ValidationMessage For="() => registerRequest.Password"/>
+        <InputText id="password" type="password" @bind-Value="_registerRequest.Password"
+                   @onblur="() => ValidateField(nameof(_registerRequest.Password))"/>
+        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.Password)))
+        {
+            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.Password)))
+            {
+                <div>@error</div>
+            }
+        }
     </div>
 
     <div>
         <label for="confirmPassword">Bekräfta lösenord</label>
-        <InputText id="confirmPassword" type="password" @bind-Value="registerRequest.ConfirmPassword"/>
-        <ValidationMessage For="() => registerRequest.ConfirmPassword"/>
+        <InputText id="confirmPassword" type="password" @bind-Value="_registerRequest.ConfirmPassword"
+                   @onblur="() => ValidateField(nameof(_registerRequest.ConfirmPassword))"/>
+        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.ConfirmPassword)))
+        {
+            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.ConfirmPassword)))
+            {
+                <div>@error</div>
+            }
+        }
     </div>
 
-    <button type="submit" disabled="@isRegistering">
-        @if (isRegistering)
+    <button type="submit" disabled="@_isRegistering" @onclick="ValidateForm">
+        @if (_isRegistering)
         {
             <span>Registrerar...</span>
         }
@@ -53,14 +86,14 @@
     </button>
 </EditForm>
 
-@if (!string.IsNullOrEmpty(errorMessage))
+@if (!string.IsNullOrEmpty(_errorMessage))
 {
     <div>
-        @errorMessage
+        @_errorMessage
     </div>
 }
 
-@if (registrationSuccess)
+@if (_registrationSuccess)
 {
     <div>
         Registreringen lyckades! Vänligen kontrollera din e-post för att bekräfta ditt konto.
@@ -73,7 +106,7 @@
 
 @code {
 
-    private RegisterRequest registerRequest = new()
+    private RegisterRequest _registerRequest = new()
     {
         Email = string.Empty,
         FirstName = string.Empty,
@@ -82,24 +115,70 @@
         ConfirmPassword = string.Empty
     };
 
-    private bool isRegistering;
-    private bool registrationSuccess;
-    private string? errorMessage;
+    private RegisterValidator? _validator;
+    private bool _isRegistering;
+    private bool _registrationSuccess;
+    private string? _errorMessage;
+    private bool _formIsValid;
+
+    protected override void OnInitialized()
+    {
+        _validator = new RegisterValidator(_registerRequest);
+    }
+
+    private void ValidateField(string fieldName)
+    {
+        // This will validate just one field for immediate feedback
+        var tempValidator = new RegisterValidator(_registerRequest);
+        tempValidator.Validate();
+
+        // Update the main validator's errors for this field
+        if (_validator.HasErrors(fieldName))
+        {
+            _validator.GetAllErrors()[fieldName] = tempValidator.GetErrors(fieldName);
+        }
+        else if (tempValidator.HasErrors(fieldName))
+        {
+            if (!_validator.GetAllErrors().ContainsKey(fieldName))
+            {
+                _validator.GetAllErrors()[fieldName] = new List<string>();
+            }
+
+            _validator.GetAllErrors()[fieldName] = tempValidator.GetErrors(fieldName);
+        }
+    }
+
+    private void ValidateForm()
+    {
+        _validator = new RegisterValidator(_registerRequest);
+        _formIsValid = _validator.Validate();
+        StateHasChanged();
+    }
 
     private async Task HandleRegistration()
     {
-        isRegistering = true;
-        errorMessage = null;
-        registrationSuccess = false;
+        // First validate entire form again
+        _validator = new RegisterValidator(_registerRequest);
+        if (!_validator.Validate())
+        {
+            return; // Don't proceed if validation fails
+        }
+
+        _isRegistering = true;
+        _errorMessage = null;
+        _registrationSuccess = false;
 
         try
         {
-            var response = await Http.PostAsJsonAsync("api/auth/register", registerRequest);
+            // Log the API URL to help with debugging
+            Console.WriteLine($"API Base URL: {Http.BaseAddress}");
+
+            var response = await Http.PostAsJsonAsync("api/auth/register", _registerRequest);
 
             if (response.IsSuccessStatusCode)
             {
-                registrationSuccess = true;
-                registerRequest = new RegisterRequest
+                _registrationSuccess = true;
+                _registerRequest = new RegisterRequest
                 {
                     Email = string.Empty,
                     FirstName = string.Empty,
@@ -111,16 +190,17 @@
             else
             {
                 var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-                errorMessage = errorResult?.Message ?? "Registreringen misslyckades. Vänligen försök igen.";
+                _errorMessage = errorResult?.Message ?? "Registreringen misslyckades. Vänligen försök igen.";
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Ett fel inträffade: {ex.Message}";
+            _errorMessage = $"Ett fel inträffade: {ex.Message}";
+            Console.WriteLine($"Exception details: {ex}");
         }
         finally
         {
-            isRegistering = false;
+            _isRegistering = false;
         }
     }
 

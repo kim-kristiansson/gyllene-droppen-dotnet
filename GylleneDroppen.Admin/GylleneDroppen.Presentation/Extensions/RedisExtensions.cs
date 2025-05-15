@@ -10,7 +10,7 @@ public static class RedisExtensions
 
         services.AddStackExchangeRedisCache(options =>
         {
-            var redisSettings = configuration.GetSection("RedisOptions").Get<RedisSettings>();
+            var redisSettings = configuration.GetSection("RedisSettings").Get<RedisSettings>();
             options.Configuration = redisSettings?.ConnectionString;
             options.InstanceName = redisSettings?.InstanceName;
         });
