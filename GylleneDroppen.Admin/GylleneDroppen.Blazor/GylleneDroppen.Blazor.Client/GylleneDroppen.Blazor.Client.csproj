@@ -16,4 +16,10 @@
         <ProjectReference Include="..\..\GylleneDroppen.Application\GylleneDroppen.Application.csproj"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <Reference Include="Microsoft.AspNetCore.WebUtilities">
+            <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\9.0.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
 </Project>
