@@ -1,4 +1,7 @@
 using GylleneDroppen.Blazor.Components;
+using GylleneDroppen.Blazor.Client.Services;
+using GylleneDroppen.Blazor.Client.Authentication;
+using Microsoft.AspNetCore.Components.Authorization;
 using _Imports = GylleneDroppen.Blazor.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +15,11 @@ builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5088/")
 });
+
+// Register client services
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+builder.Services.AddAuthorizationCore();
 
 builder.Services.AddSingleton(services =>
 {

@@ -1,9 +1,11 @@
 @page "/logga-in"
 @using System.Net.Mail
 @using GylleneDroppen.Application.Dtos.Shared.Auth
+@using GylleneDroppen.Blazor.Client.Services
 @rendermode InteractiveAuto
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject AuthService AuthService
 
 <PageTitle>Logga in</PageTitle>
 
@@ -108,21 +110,16 @@
 
         try
         {
-            var response = await Http.PostAsJsonAsync("api/auth/login", _loginRequest);
+            var success = await AuthService.LoginAsync(_loginRequest);
 
-            if (response.IsSuccessStatusCode)
+            if (success)
             {
                 // Redirect to home page after successful login
                 Navigation.NavigateTo("/");
             }
             else
             {
-                var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-                var errorMessage = errorResult?.Detail;
-
-                _errorMessage = errorMessage != null && _serverErrorTranslations.TryGetValue(errorMessage, out var translation)
-                    ? translation
-                    : errorMessage ?? "Inloggningen misslyckades. Kontrollera dina uppgifter och försök igen.";
+                _errorMessage = "Inloggningen misslyckades. Kontrollera dina uppgifter och försök igen.";
             }
         }
         catch (Exception ex)
