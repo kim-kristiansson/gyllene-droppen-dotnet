@@ -1,0 +1,158 @@
+@page "/logga-in"
+@using System.Net.Mail
+@using GylleneDroppen.Application.Dtos.Shared.Auth
+@rendermode InteractiveAuto
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Logga in</PageTitle>
+
+<h1>Logga in</h1>
+
+<EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin" FormName="loginForm">
+    <div>
+        <label for="email">E-post</label>
+        <InputText id="email" @bind-Value="_loginRequest.Email"/>
+        @if (!string.IsNullOrEmpty(_emailError))
+        {
+            <div>@_emailError</div>
+        }
+    </div>
+
+    <div>
+        <label for="password">Lösenord</label>
+        <InputText id="password" type="password" @bind-Value="_loginRequest.Password"/>
+        @if (!string.IsNullOrEmpty(_passwordError))
+        {
+            <div>@_passwordError</div>
+        }
+    </div>
+
+    <button type="submit" disabled="@_isLoggingIn">
+        @if (_isLoggingIn)
+        {
+            <span>Loggar in...</span>
+        }
+        else
+        {
+            <span>Logga in</span>
+        }
+    </button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div>
+        @_errorMessage
+    </div>
+}
+
+<div>
+    <p>Har du inget konto? <a href="/registrera">Registrera dig</a></p>
+    <p><a href="/aterstall-losenord">Glömt lösenord?</a></p>
+</div>
+
+@code {
+
+    private readonly Dictionary<string, string> _serverErrorTranslations = new()
+    {
+        ["Invalid email or password."] = "Ogiltig e-post eller lösenord.",
+        ["You don't have permission to access the admin area."] = "Du har inte behörighet att komma åt adminområdet.",
+        ["User not found"] = "Användaren hittades inte."
+    };
+
+    private readonly LoginRequest _loginRequest = new()
+    {
+        Email = string.Empty,
+        Password = string.Empty
+    };
+
+    private bool _isLoggingIn;
+    private string? _errorMessage;
+    private string? _emailError;
+    private string? _passwordError;
+
+    private async Task HandleLogin()
+    {
+        // Reset error messages
+        _errorMessage = null;
+        _emailError = null;
+        _passwordError = null;
+
+        // Basic validation
+        var isValid = true;
+
+        if (string.IsNullOrWhiteSpace(_loginRequest.Email))
+        {
+            _emailError = "E-post är obligatoriskt.";
+            isValid = false;
+        }
+        else if (!IsValidEmail(_loginRequest.Email))
+        {
+            _emailError = "Ogiltig e-postadress.";
+            isValid = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(_loginRequest.Password))
+        {
+            _passwordError = "Lösenord är obligatoriskt.";
+            isValid = false;
+        }
+
+        if (!isValid)
+        {
+            return;
+        }
+
+        _isLoggingIn = true;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/login", _loginRequest);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Redirect to home page after successful login
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                var errorResult = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+                var errorMessage = errorResult?.Detail;
+
+                _errorMessage = errorMessage != null && _serverErrorTranslations.TryGetValue(errorMessage, out var translation)
+                    ? translation
+                    : errorMessage ?? "Inloggningen misslyckades. Kontrollera dina uppgifter och försök igen.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Ett fel inträffade vid anslutning till servern. Vänligen försök igen senare.";
+            Console.WriteLine($"Exception details: {ex}");
+        }
+        finally
+        {
+            _isLoggingIn = false;
+        }
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        try
+        {
+            var addr = new MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private class ErrorResponse
+    {
+        public string? Detail { get; set; }
+        public int? Status { get; set; }
+    }
+
+}

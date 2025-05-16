@@ -1,5 +1,5 @@
 using GylleneDroppen.Application.Dtos.Shared.Auth;
-using GylleneDroppen.Application.Interfaces.Shared.Services;
+using GylleneDroppen.Application.Interfaces.Services;
 using GylleneDroppen.Presentation.Controllers;
 using GylleneDroppen.Presentation.Utilities;
 using Microsoft.AspNetCore.Authorization;

@@ -1,4 +1,4 @@
-using GylleneDroppen.Application.Interfaces.Shared.Services;
+using GylleneDroppen.Application.Interfaces.Services;
 using GylleneDroppen.Presentation.Utilities;
 using Microsoft.AspNetCore.Mvc;
 

@@ -3,7 +3,7 @@ using GylleneDroppen.Application.Dtos.Common;
 using GylleneDroppen.Application.Dtos.Email;
 using GylleneDroppen.Application.Dtos.Shared.Auth;
 
-namespace GylleneDroppen.Application.Interfaces.Shared.Services;
+namespace GylleneDroppen.Application.Interfaces.Services;
 
 public interface IAuthService
 {
