@@ -6,13 +6,14 @@ using GylleneDroppen.Application.Dtos.Shared.Auth;
 using GylleneDroppen.Application.Interfaces.Services;
 using GylleneDroppen.Application.Interfaces.Shared.Repositories;
 using GylleneDroppen.Application.Interfaces.Shared.Security;
-using GylleneDroppen.Application.Interfaces.Shared.Utilities;
+using GylleneDroppen.Application.Interfaces.Utilities;
+using GylleneDroppen.Application.Services.Shared;
 using GylleneDroppen.Application.Utilities;
 using GylleneDroppen.Domain.Entities;
 using GylleneDroppen.Domain.Enums;
 using GylleneDroppen.Domain.Models;
 
-namespace GylleneDroppen.Application.Services.Shared;
+namespace GylleneDroppen.Application.Services;
 
 public class AuthService(
     IUserRepository userRepository,

@@ -1,4 +1,4 @@
-using GylleneDroppen.Application.Interfaces.Shared.Utilities;
+using GylleneDroppen.Application.Interfaces.Utilities;
 using GylleneDroppen.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 
@@ -8,34 +8,6 @@ public class CookieManager(IHttpContextAccessor httpContextAccessor, IOptions<Jw
 {
     private const string AccessTokenKey = "accessToken";
     private const string RefreshTokenKey = "refreshToken";
-
-    public void SetAccessToken(string token)
-    {
-        var options = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes),
-            Path = "/"
-        };
-
-        httpContextAccessor.HttpContext?.Response.Cookies.Append(AccessTokenKey, token, options);
-    }
-
-    public void SetRefreshToken(string token)
-    {
-        var options = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddDays(jwtSettings.Value.RefreshTokenExpirationDays),
-            Path = "/"
-        };
-
-        httpContextAccessor.HttpContext?.Response.Cookies.Append(RefreshTokenKey, token, options);
-    }
 
     public string? GetAccessToken()
     {
@@ -57,5 +29,33 @@ public class CookieManager(IHttpContextAccessor httpContextAccessor, IOptions<Jw
     {
         SetAccessToken(accessToken);
         SetRefreshToken(refreshToken);
+    }
+
+    private void SetAccessToken(string token)
+    {
+        var options = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddMinutes(jwtSettings.Value.AccessTokenExpirationMinutes),
+            Path = "/"
+        };
+
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(AccessTokenKey, token, options);
+    }
+
+    private void SetRefreshToken(string token)
+    {
+        var options = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddDays(jwtSettings.Value.RefreshTokenExpirationDays),
+            Path = "/"
+        };
+
+        httpContextAccessor.HttpContext?.Response.Cookies.Append(RefreshTokenKey, token, options);
     }
 }

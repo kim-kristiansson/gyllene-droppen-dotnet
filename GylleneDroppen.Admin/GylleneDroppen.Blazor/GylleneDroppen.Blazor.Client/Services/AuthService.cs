@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using GylleneDroppen.Application.Dtos.Shared.Auth;
+using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.JSInterop;
 
 namespace GylleneDroppen.Blazor.Client.Services;
@@ -13,6 +14,8 @@ public class AuthService
         _httpClient = httpClient;
     }
 
+    // GylleneDroppen.Blazor.Client/Services/AuthService.cs
+
     public async Task<bool> LoginAsync(LoginRequest loginRequest)
     {
         try
@@ -23,8 +26,11 @@ public class AuthService
                 Content = JsonContent.Create(loginRequest)
             };
 
+            // Ensure credentials are included
+            requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+
             // Set credentials inclusion
-            var response = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+            var response = await _httpClient.SendAsync(requestMessage);
 
             Console.WriteLine($"Login status code: {response.StatusCode}");
 
