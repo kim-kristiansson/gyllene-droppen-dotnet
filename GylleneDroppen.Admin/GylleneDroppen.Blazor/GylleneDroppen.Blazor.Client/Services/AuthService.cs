@@ -1,21 +1,11 @@
 using System.Net.Http.Json;
 using GylleneDroppen.Application.Dtos.Shared.Auth;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
-using Microsoft.JSInterop;
 
 namespace GylleneDroppen.Blazor.Client.Services;
 
-public class AuthService
+public class AuthService(HttpClient httpClient)
 {
-    private readonly HttpClient _httpClient;
-
-    public AuthService(HttpClient httpClient, IJSRuntime jsRuntime)
-    {
-        _httpClient = httpClient;
-    }
-
-    // GylleneDroppen.Blazor.Client/Services/AuthService.cs
-
     public async Task<bool> LoginAsync(LoginRequest loginRequest)
     {
         try
@@ -30,7 +20,7 @@ public class AuthService
             requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
 
             // Set credentials inclusion
-            var response = await _httpClient.SendAsync(requestMessage);
+            var response = await httpClient.SendAsync(requestMessage);
 
             Console.WriteLine($"Login status code: {response.StatusCode}");
 
@@ -45,28 +35,24 @@ public class AuthService
 
     public async Task<bool> LogoutAsync()
     {
-        var response = await _httpClient.PostAsync("api/auth/logout", null);
+        var response = await httpClient.PostAsync("api/auth/logout", null);
         return response.IsSuccessStatusCode;
     }
 
-    // In GylleneDroppen.Blazor.Client/Services/AuthService.cs
     public async Task<CurrentUserResponse?> GetCurrentUserAsync()
     {
         try
         {
             // Create a message with explicit credential inclusion
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, "api/auth/current-user");
-        
+
             // Ensure credentials are included
             requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-        
-            var response = await _httpClient.SendAsync(requestMessage);
-        
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<CurrentUserResponse>();
-            }
-        
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<CurrentUserResponse>();
+
             return null;
         }
         catch
@@ -74,4 +60,57 @@ public class AuthService
             return null;
         }
     }
+
+    // Add the method to request a password reset
+    public async Task<bool> RequestPasswordResetAsync(string email)
+    {
+        try
+        {
+            var resetRequest = new PasswordResetRequest { Email = email };
+            var response = await httpClient.PostAsJsonAsync("api/auth/request-password-reset", resetRequest);
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"RequestPasswordReset error: {ex.Message}");
+            return false;
+        }
+    }
+
+    // Add the method to reset a password with a token
+    public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+    {
+        try
+        {
+            var resetRequest = new ResetPasswordRequest
+            {
+                Email = email,
+                Token = token,
+                NewPassword = newPassword
+            };
+
+            var response = await httpClient.PostAsJsonAsync("api/auth/reset-password", resetRequest);
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ResetPassword error: {ex.Message}");
+            return false;
+        }
+    }
+}
+
+// Define the request models if needed (you may already have these elsewhere)
+public class PasswordResetRequest
+{
+    public required string Email { get; set; }
+}
+
+public class ResetPasswordRequest
+{
+    public required string Email { get; set; }
+    public required string Token { get; set; }
+    public required string NewPassword { get; set; }
 }

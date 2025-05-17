@@ -183,7 +183,7 @@ public class AuthService(
         if (tokenEntry is null || tokenEntry.Token != request.Token)
             return Result<MessageResponse>.Failure("Invalid token.", 400);
 
-        var (hash, salt) = argon2Hasher.HashPassword(request.Email);
+        var (hash, salt) = argon2Hasher.HashPassword(request.NewPassword);
 
         var user = await userRepository.GetByEmailAsync(request.Email);
         if (user == null)
@@ -193,6 +193,7 @@ public class AuthService(
         user.PasswordSalt = salt;
 
         userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
 
         await redisRepository.DeleteAsync($"password_reset:{user.Email}");
 
