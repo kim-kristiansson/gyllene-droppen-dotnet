@@ -1,35 +1,16 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Gyllene Droppen</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Hem
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="me">
-                <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Min Profil
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="logga-in">
-                <span class="bi bi-door-open-fill-nav-menu" aria-hidden="true"></span> Logga In
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="registrera">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Registrera
-            </NavLink>
-        </div>
-    </nav>
-</div>
+﻿<nav>
+    <ul>
+        <li>
+            <NavLink href="" Match="NavLinkMatch.All">Hem</NavLink>
+        </li>
+        <li>
+            <NavLink href="me">Min Profil</NavLink>
+        </li>
+        <li>
+            <NavLink href="logga-in">Logga In</NavLink>
+        </li>
+        <li>
+            <NavLink href="registrera">Registrera</NavLink>
+        </li>
+    </ul>
+</nav>

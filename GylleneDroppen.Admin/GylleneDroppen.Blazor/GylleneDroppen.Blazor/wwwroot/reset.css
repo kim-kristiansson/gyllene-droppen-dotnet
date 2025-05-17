@@ -1,0 +1,31 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Only the absolute bare minimum for functional UI */
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.4;
+}
+
+main {
+    padding: 16px;
+}
+
+/* Super minimal error UI - only what's absolutely required */
+#blazor-error-ui {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 10px;
+    background-color: #ffffe0;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+}
