@@ -1,0 +1,23 @@
+@using GylleneDroppen.Blazor.Client.Services
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            // User is already authenticated, redirect to home
+            Navigation.NavigateTo("/");
+        }
+    }
+
+}
+
+@ChildContent

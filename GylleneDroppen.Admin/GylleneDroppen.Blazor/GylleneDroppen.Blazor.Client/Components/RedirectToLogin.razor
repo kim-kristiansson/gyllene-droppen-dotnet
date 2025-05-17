@@ -1,0 +1,17 @@
+@inject NavigationManager Navigation
+
+<div class="redirect-message">
+    <p>Du måste logga in för att se denna sida.</p>
+    <button @onclick="NavigateToLoginPage">Logga in</button>
+</div>
+
+@code {
+    [Parameter] public string? ReturnUrl { get; set; }
+
+    private void NavigateToLoginPage()
+    {
+        var returnUrlEncoded = string.IsNullOrEmpty(ReturnUrl) ? "" : $"?returnUrl={Uri.EscapeDataString(ReturnUrl)}";
+        Navigation.NavigateTo($"/logga-in{returnUrlEncoded}");
+    }
+
+}

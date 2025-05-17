@@ -2,59 +2,64 @@
 @using System.Net.Mail
 @using GylleneDroppen.Application.Dtos.Shared.Auth
 @using GylleneDroppen.Blazor.Client.Services
+@using Microsoft.AspNetCore.WebUtilities
 @rendermode InteractiveAuto
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject AuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Logga in</PageTitle>
 
-<h1>Logga in</h1>
+<RedirectToHome>
+    <h1>Logga in</h1>
 
-<EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin" FormName="loginForm">
+    <EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin" FormName="loginForm">
+        <div>
+            <label for="email">E-post</label>
+            <InputText id="email" @bind-Value="_loginRequest.Email"/>
+            @if (!string.IsNullOrEmpty(_emailError))
+            {
+                <div>@_emailError</div>
+            }
+        </div>
+
+        <div>
+            <label for="password">Lösenord</label>
+            <InputText id="password" type="password" @bind-Value="_loginRequest.Password"/>
+            @if (!string.IsNullOrEmpty(_passwordError))
+            {
+                <div>@_passwordError</div>
+            }
+        </div>
+
+        <button type="submit" disabled="@_isLoggingIn">
+            @if (_isLoggingIn)
+            {
+                <span>Loggar in...</span>
+            }
+            else
+            {
+                <span>Logga in</span>
+            }
+        </button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div>
+            @_errorMessage
+        </div>
+    }
+
     <div>
-        <label for="email">E-post</label>
-        <InputText id="email" @bind-Value="_loginRequest.Email"/>
-        @if (!string.IsNullOrEmpty(_emailError))
-        {
-            <div>@_emailError</div>
-        }
+        <p>Har du inget konto? <a href="/registrera">Registrera dig</a></p>
+        <p><a href="/glomt-losenord">Glömt lösenord?</a></p>
     </div>
-
-    <div>
-        <label for="password">Lösenord</label>
-        <InputText id="password" type="password" @bind-Value="_loginRequest.Password"/>
-        @if (!string.IsNullOrEmpty(_passwordError))
-        {
-            <div>@_passwordError</div>
-        }
-    </div>
-
-    <button type="submit" disabled="@_isLoggingIn">
-        @if (_isLoggingIn)
-        {
-            <span>Loggar in...</span>
-        }
-        else
-        {
-            <span>Logga in</span>
-        }
-    </button>
-</EditForm>
-
-@if (!string.IsNullOrEmpty(_errorMessage))
-{
-    <div>
-        @_errorMessage
-    </div>
-}
-
-<div>
-    <p>Har du inget konto? <a href="/registrera">Registrera dig</a></p>
-    <p><a href="/glomt-losenord">Glömt lösenord?</a></p>
-</div>
+</RedirectToHome>
 
 @code {
+    private string? _returnUrl;
 
     private readonly Dictionary<string, string> _serverErrorTranslations = new()
     {
@@ -73,6 +78,15 @@
     private string? _errorMessage;
     private string? _emailError;
     private string? _passwordError;
+
+    protected override void OnInitialized()
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnUrl", out var returnUrl))
+        {
+            _returnUrl = returnUrl;
+        }
+    }
 
     private async Task HandleLogin()
     {
@@ -114,8 +128,15 @@
 
             if (success)
             {
-                // Redirect to home page after successful login
-                Navigation.NavigateTo("/");
+                // Redirect to return URL or home page after successful login
+                if (!string.IsNullOrEmpty(_returnUrl))
+                {
+                    Navigation.NavigateTo(_returnUrl);
+                }
+                else
+                {
+                    Navigation.NavigateTo("/");
+                }
             }
             else
             {

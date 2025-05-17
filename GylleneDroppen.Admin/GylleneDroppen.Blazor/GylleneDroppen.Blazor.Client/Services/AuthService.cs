@@ -1,10 +1,11 @@
 using System.Net.Http.Json;
 using GylleneDroppen.Application.Dtos.Shared.Auth;
+using GylleneDroppen.Blazor.Client.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace GylleneDroppen.Blazor.Client.Services;
 
-public class AuthService(HttpClient httpClient)
+public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider authStateProvider)
 {
     public async Task<bool> LoginAsync(LoginRequest loginRequest)
     {
@@ -24,7 +25,17 @@ public class AuthService(HttpClient httpClient)
 
             Console.WriteLine($"Login status code: {response.StatusCode}");
 
-            return response.IsSuccessStatusCode;
+            if (response.IsSuccessStatusCode)
+            {
+                // Get the current user data
+                var user = await GetCurrentUserAsync();
+                if (user != null)
+                    // Notify the authentication state provider
+                    authStateProvider.NotifyUserAuthentication(user);
+                return true;
+            }
+
+            return false;
         }
         catch (Exception ex)
         {
@@ -35,8 +46,25 @@ public class AuthService(HttpClient httpClient)
 
     public async Task<bool> LogoutAsync()
     {
-        var response = await httpClient.PostAsync("api/auth/logout", null);
-        return response.IsSuccessStatusCode;
+        try
+        {
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "api/auth/logout");
+            requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+
+            var response = await httpClient.SendAsync(requestMessage);
+
+            // Notify the authentication state provider regardless of response
+            authStateProvider.NotifyUserLogout();
+
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Logout error: {ex.Message}");
+            // Still notify logout even if there's an error with the request
+            authStateProvider.NotifyUserLogout();
+            return false;
+        }
     }
 
     public async Task<CurrentUserResponse?> GetCurrentUserAsync()

@@ -1,108 +1,111 @@
 @page "/registrera"
 @using GylleneDroppen.Application.Dtos.Shared.Auth
+@using GylleneDroppen.Blazor.Client.Components
 @using GylleneDroppen.Blazor.Client.Validators
 @rendermode InteractiveAuto
 @inject HttpClient Http
 
 <PageTitle>Registrera</PageTitle>
 
-<h1>Registrera</h1>
+<RedirectToHome>
+    <h1>Registrera</h1>
 
-<EditForm Model="@_registerRequest" OnValidSubmit="HandleRegistration" FormName="registerForm">
-    <div>
-        <label for="firstName">Förnamn</label>
-        <InputText id="firstName" @bind-Value="_registerRequest.FirstName"
-                   @onblur="() => ValidateField(nameof(_registerRequest.FirstName))"/>
-        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.FirstName)))
-        {
-            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.FirstName)))
+    <EditForm Model="@_registerRequest" OnValidSubmit="HandleRegistration" FormName="registerForm">
+        <div>
+            <label for="firstName">Förnamn</label>
+            <InputText id="firstName" @bind-Value="_registerRequest.FirstName"
+                       @onblur="() => ValidateField(nameof(_registerRequest.FirstName))"/>
+            @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.FirstName)))
             {
-                <div>@error</div>
+                @foreach (var error in _validator.GetErrors(nameof(_registerRequest.FirstName)))
+                {
+                    <div>@error</div>
+                }
             }
-        }
-    </div>
+        </div>
 
-    <div>
-        <label for="lastName">Efternamn</label>
-        <InputText id="lastName" @bind-Value="_registerRequest.LastName"
-                   @onblur="() => ValidateField(nameof(_registerRequest.LastName))"/>
-        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.LastName)))
-        {
-            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.LastName)))
+        <div>
+            <label for="lastName">Efternamn</label>
+            <InputText id="lastName" @bind-Value="_registerRequest.LastName"
+                       @onblur="() => ValidateField(nameof(_registerRequest.LastName))"/>
+            @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.LastName)))
             {
-                <div>@error</div>
+                @foreach (var error in _validator.GetErrors(nameof(_registerRequest.LastName)))
+                {
+                    <div>@error</div>
+                }
             }
-        }
-    </div>
+        </div>
 
-    <div>
-        <label for="email">E-post</label>
-        <InputText id="email" @bind-Value="_registerRequest.Email"
-                   @onblur="() => ValidateField(nameof(_registerRequest.Email))"/>
-        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.Email)))
-        {
-            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.Email)))
+        <div>
+            <label for="email">E-post</label>
+            <InputText id="email" @bind-Value="_registerRequest.Email"
+                       @onblur="() => ValidateField(nameof(_registerRequest.Email))"/>
+            @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.Email)))
             {
-                <div>@error</div>
+                @foreach (var error in _validator.GetErrors(nameof(_registerRequest.Email)))
+                {
+                    <div>@error</div>
+                }
             }
-        }
-    </div>
+        </div>
 
-    <div>
-        <label for="password">Lösenord</label>
-        <InputText id="password" type="password" @bind-Value="_registerRequest.Password"
-                   @onblur="() => ValidateField(nameof(_registerRequest.Password))"/>
-        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.Password)))
-        {
-            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.Password)))
+        <div>
+            <label for="password">Lösenord</label>
+            <InputText id="password" type="password" @bind-Value="_registerRequest.Password"
+                       @onblur="() => ValidateField(nameof(_registerRequest.Password))"/>
+            @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.Password)))
             {
-                <div>@error</div>
+                @foreach (var error in _validator.GetErrors(nameof(_registerRequest.Password)))
+                {
+                    <div>@error</div>
+                }
             }
-        }
-    </div>
+        </div>
 
-    <div>
-        <label for="confirmPassword">Bekräfta lösenord</label>
-        <InputText id="confirmPassword" type="password" @bind-Value="_registerRequest.ConfirmPassword"
-                   @onblur="() => ValidateField(nameof(_registerRequest.ConfirmPassword))"/>
-        @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.ConfirmPassword)))
-        {
-            @foreach (var error in _validator.GetErrors(nameof(_registerRequest.ConfirmPassword)))
+        <div>
+            <label for="confirmPassword">Bekräfta lösenord</label>
+            <InputText id="confirmPassword" type="password" @bind-Value="_registerRequest.ConfirmPassword"
+                       @onblur="() => ValidateField(nameof(_registerRequest.ConfirmPassword))"/>
+            @if (_validator != null && _validator.HasErrors(nameof(_registerRequest.ConfirmPassword)))
             {
-                <div>@error</div>
+                @foreach (var error in _validator.GetErrors(nameof(_registerRequest.ConfirmPassword)))
+                {
+                    <div>@error</div>
+                }
             }
-        }
-    </div>
+        </div>
 
-    <button type="submit" disabled="@_isRegistering" @onclick="ValidateForm">
-        @if (_isRegistering)
-        {
-            <span>Registrerar...</span>
-        }
-        else
-        {
-            <span>Registrera</span>
-        }
-    </button>
-</EditForm>
+        <button type="submit" disabled="@_isRegistering" @onclick="ValidateForm">
+            @if (_isRegistering)
+            {
+                <span>Registrerar...</span>
+            }
+            else
+            {
+                <span>Registrera</span>
+            }
+        </button>
+    </EditForm>
 
-@if (!string.IsNullOrEmpty(_errorMessage))
-{
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div>
+            @_errorMessage
+        </div>
+    }
+
+    @if (_registrationSuccess)
+    {
+        <div>
+            Registreringen lyckades! Vänligen kontrollera din e-post för att bekräfta ditt konto.
+        </div>
+    }
+
     <div>
-        @_errorMessage
+        <p>Har du redan ett konto? <a href="/logga-in">Logga in</a></p>
     </div>
-}
-
-@if (_registrationSuccess)
-{
-    <div>
-        Registreringen lyckades! Vänligen kontrollera din e-post för att bekräfta ditt konto.
-    </div>
-}
-
-<div>
-    <p>Har du redan ett konto? <a href="/logga-in">Logga in</a></p>
-</div>
+</RedirectToHome>
 
 @code {
 

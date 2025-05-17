@@ -13,8 +13,14 @@ builder.Services.AddScoped(sp => new HttpClient
     }
     .EnableCookies());
 
+// Register AuthenticationStateProvider first
+builder.Services.AddScoped<ApiAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
+    provider.GetRequiredService<ApiAuthenticationStateProvider>());
+
+// Then register AuthService
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<AuthenticationStateProvider, ApiAuthenticationStateProvider>();
+
 builder.Services.AddAuthorizationCore();
 
 await builder.Build().RunAsync();
