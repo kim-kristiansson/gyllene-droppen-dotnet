@@ -1,58 +1,52 @@
 @page "/me"
 @using GylleneDroppen.Application.Dtos.Shared.Auth
+@using GylleneDroppen.Blazor.Client.Services
+@inject AuthService AuthService
 @inject HttpClient Http
 @rendermode InteractiveAuto
 
-<PageTitle>Authorization Test</PageTitle>
+<PageTitle>Behörighetstest</PageTitle>
 
-<div class="container mt-4">
-    <h1>Authorization Test</h1>
+<h1>Behörighetstest</h1>
 
-    <div class="card">
-        <div class="card-header">
-            <h5>Test Authorization</h5>
-        </div>
-        <div class="card-body">
-            <button @onclick="TestAuthorization" class="btn btn-primary">Test Server Authorization</button>
+<section>
+    <h2>Testa behörighet</h2>
+    <button @onclick="TestAuthorization">Testa serverbehörighet</button>
 
-            @if (_isLoading)
-            {
-                <div class="mt-3">Testing authorization...</div>
-            }
-            else if (_testPerformed)
-            {
-                <div class="mt-3">
-                    @if (_isAuthorized)
-                    {
-                        <div class="alert alert-success">
-                            <strong>✅ AUTHORIZED</strong>
-                            <p>Successfully accessed protected endpoint!</p>
-                        </div>
+    @if (_isLoading)
+    {
+        <p>Testar behörighet...</p>
+    }
+    else if (_testPerformed)
+    {
+        @if (_isAuthorized)
+        {
+            <section>
+                <h3>✅ BEHÖRIGHET GODKÄND</h3>
+                <p>Skyddad slutpunkt åtkomstd!</p>
 
-                        @if (_currentUser != null)
-                        {
-                            <div>
-                                <h6>Your user details:</h6>
-                                <ul>
-                                    <li><strong>Email:</strong> @_currentUser.Email</li>
-                                    <li><strong>User ID:</strong> @_currentUser.Id</li>
-                                    <li><strong>Role:</strong> @_currentUser.Role</li>
-                                </ul>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="alert alert-danger">
-                            <strong>❌ NOT AUTHORIZED</strong>
-                            <p>@_errorMessage</p>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-    </div>
-</div>
+                @if (_currentUser != null)
+                {
+                    <div>
+                        <h4>Dina användaruppgifter:</h4>
+                        <ul>
+                            <li><strong>E-post:</strong> @_currentUser.Email</li>
+                            <li><strong>Användar-ID:</strong> @_currentUser.Id</li>
+                            <li><strong>Roll:</strong> @_currentUser.Role</li>
+                        </ul>
+                    </div>
+                }
+            </section>
+        }
+        else
+        {
+            <section>
+                <h3>❌ INGEN BEHÖRIGHET</h3>
+                <p>@_errorMessage</p>
+            </section>
+        }
+    }
+</section>
 
 @code {
     private bool _isLoading;
@@ -71,38 +65,22 @@
 
         try
         {
-            // Try to access a protected endpoint
-            var response = await Http.GetAsync("api/auth/current-user");
+            _currentUser = await AuthService.GetCurrentUserAsync();
 
-            if (response.IsSuccessStatusCode)
+            if (_currentUser != null)
             {
                 _isAuthorized = true;
-                _currentUser = await response.Content.ReadFromJsonAsync<CurrentUserResponse>();
             }
             else
             {
                 _isAuthorized = false;
-                _errorMessage = $"Failed to access protected endpoint. Status code: {response.StatusCode}";
-
-                // Try to read error details
-                try
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    if (!string.IsNullOrEmpty(errorContent))
-                    {
-                        _errorMessage += $"\nDetails: {errorContent}";
-                    }
-                }
-                catch
-                {
-                    // Ignore error reading content
-                }
+                _errorMessage = "Kunde inte hämta användare. Du är kanske inte inloggad.";
             }
         }
         catch (Exception ex)
         {
             _isAuthorized = false;
-            _errorMessage = $"Error testing authorization: {ex.Message}";
+            _errorMessage = $"Fel vid test av behörighet: {ex.Message}";
         }
         finally
         {

@@ -49,11 +49,25 @@ public class AuthService
         return response.IsSuccessStatusCode;
     }
 
+    // In GylleneDroppen.Blazor.Client/Services/AuthService.cs
     public async Task<CurrentUserResponse?> GetCurrentUserAsync()
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<CurrentUserResponse>("api/auth/current-user");
+            // Create a message with explicit credential inclusion
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "api/auth/current-user");
+        
+            // Ensure credentials are included
+            requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        
+            var response = await _httpClient.SendAsync(requestMessage);
+        
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<CurrentUserResponse>();
+            }
+        
+            return null;
         }
         catch
         {
