@@ -1,23 +1,25 @@
-@using GylleneDroppen.Blazor.Client.Services
 @inject NavigationManager Navigation
-@inject AuthService AuthService
-@inject AuthenticationStateProvider AuthStateProvider
+@inject ILogger<RedirectToHome> Logger
+
+@ChildContent
 
 @code {
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
 
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (AuthState == null) return;
+
+        var authState = await AuthState;
         var user = authState.User;
 
         if (user.Identity?.IsAuthenticated == true)
         {
-            // User is already authenticated, redirect to home
+            Logger.LogInformation("User is authenticated, redirecting from restricted page to home");
             Navigation.NavigateTo("/");
         }
     }
 
 }
-
-@ChildContent

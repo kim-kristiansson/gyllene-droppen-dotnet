@@ -8,23 +8,24 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
 {
     private CurrentUserResponse? _cachedUser;
 
-    // Remove the AuthService dependency
-
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        if (_cachedUser == null)
-            // Return an empty, unauthenticated state if no user is cached
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-
-        var claims = new List<Claim>
+        // If we have a cached user, return an authenticated state
+        if (_cachedUser != null)
         {
-            new(ClaimTypes.Name, _cachedUser.Email),
-            new(ClaimTypes.NameIdentifier, _cachedUser.Id.ToString()),
-            new(ClaimTypes.Role, _cachedUser.Role)
-        };
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.Name, _cachedUser.Email),
+                new(ClaimTypes.NameIdentifier, _cachedUser.Id.ToString()),
+                new(ClaimTypes.Role, _cachedUser.Role)
+            };
 
-        var identity = new ClaimsIdentity(claims, "api");
-        return new AuthenticationState(new ClaimsPrincipal(identity));
+            var identity = new ClaimsIdentity(claims, "api");
+            return new AuthenticationState(new ClaimsPrincipal(identity));
+        }
+
+        // Otherwise return an unauthenticated state
+        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
     }
 
     public void NotifyUserAuthentication(CurrentUserResponse user)

@@ -25,17 +25,13 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
 
             Console.WriteLine($"Login status code: {response.StatusCode}");
 
-            if (response.IsSuccessStatusCode)
-            {
-                // Get the current user data
-                var user = await GetCurrentUserAsync();
-                if (user != null)
-                    // Notify the authentication state provider
-                    authStateProvider.NotifyUserAuthentication(user);
-                return true;
-            }
-
-            return false;
+            if (!response.IsSuccessStatusCode) return false;
+            // Get the current user data immediately after successful login
+            var user = await GetCurrentUserAsync();
+            if (user == null) return false;
+            // Notify the authentication state provider
+            authStateProvider.NotifyUserAuthentication(user);
+            return true;
         }
         catch (Exception ex)
         {
@@ -44,6 +40,7 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
         }
     }
 
+// Update to your AuthService.cs LogoutAsync method
     public async Task<bool> LogoutAsync()
     {
         try
@@ -53,7 +50,7 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
 
             var response = await httpClient.SendAsync(requestMessage);
 
-            // Notify the authentication state provider regardless of response
+            // Always notify the auth state provider of logout, regardless of response
             authStateProvider.NotifyUserLogout();
 
             return response.IsSuccessStatusCode;
