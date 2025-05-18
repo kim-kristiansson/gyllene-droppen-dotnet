@@ -25,4 +25,11 @@
         </Reference>
     </ItemGroup>
 
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="Components\RedirectIfAuthenticated.razor"/>
+        <_ContentIncludedByDefault Remove="Components\RedirectToHome.razor"/>
+        <_ContentIncludedByDefault Remove="Components\RedirectToLogin.razor"/>
+        <_ContentIncludedByDefault Remove="Components\_Imports.razor"/>
+    </ItemGroup>
+
 </Project>
