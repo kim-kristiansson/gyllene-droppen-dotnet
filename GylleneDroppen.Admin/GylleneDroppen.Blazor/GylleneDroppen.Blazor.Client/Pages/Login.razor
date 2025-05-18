@@ -11,52 +11,54 @@
 
 <PageTitle>Logga in</PageTitle>
 
-<RedirectToHome>
-    <h1>Logga in</h1>
+<CascadingAuthenticationState>
+    <RedirectIfAuthenticated/>
+</CascadingAuthenticationState>
 
-    <EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin" FormName="loginForm">
-        <div>
-            <label for="email">E-post</label>
-            <InputText id="email" @bind-Value="_loginRequest.Email"/>
-            @if (!string.IsNullOrEmpty(_emailError))
-            {
-                <div>@_emailError</div>
-            }
-        </div>
+<h1>Logga in</h1>
 
-        <div>
-            <label for="password">Lösenord</label>
-            <InputText id="password" type="password" @bind-Value="_loginRequest.Password"/>
-            @if (!string.IsNullOrEmpty(_passwordError))
-            {
-                <div>@_passwordError</div>
-            }
-        </div>
-
-        <button type="submit" disabled="@_isLoggingIn">
-            @if (_isLoggingIn)
-            {
-                <span>Loggar in...</span>
-            }
-            else
-            {
-                <span>Logga in</span>
-            }
-        </button>
-    </EditForm>
-
-    @if (!string.IsNullOrEmpty(_errorMessage))
-    {
-        <div>
-            @_errorMessage
-        </div>
-    }
+<EditForm Model="@_loginRequest" OnValidSubmit="HandleLogin" FormName="loginForm">
+    <div>
+        <label for="email">E-post</label>
+        <InputText id="email" @bind-Value="_loginRequest.Email"/>
+        @if (!string.IsNullOrEmpty(_emailError))
+        {
+            <div>@_emailError</div>
+        }
+    </div>
 
     <div>
-        <p>Har du inget konto? <a href="/registrera">Registrera dig</a></p>
-        <p><a href="/glomt-losenord">Glömt lösenord?</a></p>
+        <label for="password">Lösenord</label>
+        <InputText id="password" type="password" @bind-Value="_loginRequest.Password"/>
+        @if (!string.IsNullOrEmpty(_passwordError))
+        {
+            <div>@_passwordError</div>
+        }
     </div>
-</RedirectToHome>
+
+    <button type="submit" disabled="@_isLoggingIn">
+        @if (_isLoggingIn)
+        {
+            <span>Loggar in...</span>
+        }
+        else
+        {
+            <span>Logga in</span>
+        }
+    </button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div>
+        @_errorMessage
+    </div>
+}
+
+<div>
+    <p>Har du inget konto? <a href="/registrera">Registrera dig</a></p>
+    <p><a href="/glomt-losenord">Glömt lösenord?</a></p>
+</div>
 
 @code {
     private string? _returnUrl;

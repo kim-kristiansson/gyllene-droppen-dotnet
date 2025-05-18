@@ -1,11 +1,7 @@
 @inject NavigationManager Navigation
 @inject ILogger<RedirectToHome> Logger
 
-@ChildContent
-
 @code {
-    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
-
     [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -18,7 +14,8 @@
         if (user.Identity?.IsAuthenticated == true)
         {
             Logger.LogInformation("User is authenticated, redirecting from restricted page to home");
-            Navigation.NavigateTo("/");
+            // Use NavigateTo with forceLoad:true to avoid any potential circular references
+            Navigation.NavigateTo("/", false, true);
         }
     }
 

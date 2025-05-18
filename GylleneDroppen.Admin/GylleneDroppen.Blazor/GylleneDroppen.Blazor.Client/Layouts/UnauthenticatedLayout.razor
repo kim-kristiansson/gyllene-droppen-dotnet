@@ -1,0 +1,46 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject ILogger<UnauthenticatedLayout> Logger
+
+<CascadingAuthenticationState>
+    <AuthorizeView>
+        <Authorized>
+            <p>Redirecting...</p>
+        </Authorized>
+        <NotAuthorized>
+            <header>
+                <NavMenu/>
+            </header>
+
+            <main>
+                @Body
+            </main>
+
+            <div id="blazor-error-ui" style="display: none;">
+                An error has occurred.
+                <a href="">Reload</a>
+                <button type="button" class="dismiss">X</button>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && AuthState != null)
+        {
+            var authState = await AuthState;
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                Logger.LogInformation("User is authenticated, redirecting from restricted page to home");
+                Navigation.NavigateTo("/", replace: true);
+            }
+        }
+    }
+
+}

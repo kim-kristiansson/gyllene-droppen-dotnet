@@ -2,6 +2,7 @@ using GylleneDroppen.Blazor.Client.Authentication;
 using GylleneDroppen.Blazor.Client.Services;
 using GylleneDroppen.Blazor.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using _Imports = GylleneDroppen.Blazor.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,10 +22,13 @@ builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
     provider.GetRequiredService<ApiAuthenticationStateProvider>());
 
+// Add authentication services
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie();
+builder.Services.AddAuthorizationCore();
+
 // Then register AuthService
 builder.Services.AddScoped<AuthService>();
-
-builder.Services.AddAuthorizationCore();
 
 builder.Services.AddSingleton(services =>
 {
@@ -51,6 +55,10 @@ else
 }
 
 app.UseHttpsRedirection();
+
+// Add these two lines to enable authentication
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 

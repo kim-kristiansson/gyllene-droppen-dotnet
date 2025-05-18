@@ -1,38 +1,47 @@
 @page "/profil"
 @using GylleneDroppen.Application.Dtos.Shared.Auth
 @using GylleneDroppen.Blazor.Client.Services
-@using Microsoft.AspNetCore.Authorization
 @rendermode InteractiveAuto
-@attribute [Authorize]
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
 <PageTitle>Min Profil</PageTitle>
 
-<h1>Min Profil</h1>
+<CascadingAuthenticationState>
+    <AuthorizeView>
+        <Authorized>
+            <h1>Min Profil</h1>
 
-@if (_loading)
-{
-    <p>Laddar...</p>
-}
-else if (_user != null)
-{
-    <div>
-        <h2>Användaruppgifter</h2>
-        <p><strong>E-post:</strong> @_user.Email</p>
-        <p><strong>Användar-ID:</strong> @_user.Id</p>
-        <p><strong>Roll:</strong> @_user.Role</p>
-    </div>
+            @if (_loading)
+            {
+                <p>Laddar...</p>
+            }
+            else if (_user != null)
+            {
+                <div>
+                    <h2>Användaruppgifter</h2>
+                    <p><strong>E-post:</strong> @_user.Email</p>
+                    <p><strong>Användar-ID:</strong> @_user.Id</p>
+                    <p><strong>Roll:</strong> @_user.Role</p>
+                </div>
 
-    <button @onclick="HandleLogout">Logga ut</button>
-}
-else
-{
-    <div>
-        <p>Du måste vara inloggad för att se denna sida.</p>
-        <button @onclick="NavigateToLogin">Logga in</button>
-    </div>
-}
+                <button @onclick="HandleLogout">Logga ut</button>
+            }
+            else
+            {
+                <div>
+                    <p>Kunde inte ladda användaruppgifter. Försök igen senare.</p>
+                </div>
+            }
+        </Authorized>
+        <NotAuthorized>
+            <div>
+                <p>Du måste vara inloggad för att se denna sida.</p>
+                <button @onclick="NavigateToLogin">Logga in</button>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
 
 @code {
     private CurrentUserResponse? _user;
@@ -53,7 +62,8 @@ else
 
     private void NavigateToLogin()
     {
-        Navigation.NavigateTo("/logga-in");
+        var encodedReturnUrl = Uri.EscapeDataString(Navigation.Uri);
+        Navigation.NavigateTo($"/logga-in?returnUrl={encodedReturnUrl}");
     }
 
 }

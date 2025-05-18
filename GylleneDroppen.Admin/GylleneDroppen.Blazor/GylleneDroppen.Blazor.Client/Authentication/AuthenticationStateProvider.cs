@@ -6,6 +6,7 @@ namespace GylleneDroppen.Blazor.Client.Authentication;
 
 public class ApiAuthenticationStateProvider : AuthenticationStateProvider
 {
+    private readonly ClaimsPrincipal _anonymous = new(new ClaimsIdentity());
     private CurrentUserResponse? _cachedUser;
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -20,23 +21,35 @@ public class ApiAuthenticationStateProvider : AuthenticationStateProvider
                 new(ClaimTypes.Role, _cachedUser.Role)
             };
 
-            var identity = new ClaimsIdentity(claims, "api");
-            return new AuthenticationState(new ClaimsPrincipal(identity));
+            var identity = new ClaimsIdentity(claims, "jwt");
+            var user = new ClaimsPrincipal(identity);
+            return new AuthenticationState(user);
         }
 
         // Otherwise return an unauthenticated state
-        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+        return new AuthenticationState(_anonymous);
     }
 
     public void NotifyUserAuthentication(CurrentUserResponse user)
     {
         _cachedUser = user;
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.Name, user.Email),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Role, user.Role)
+        };
+
+        var identity = new ClaimsIdentity(claims, "jwt");
+        var authenticatedUser = new ClaimsPrincipal(identity);
+
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(authenticatedUser)));
     }
 
     public void NotifyUserLogout()
     {
         _cachedUser = null;
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_anonymous)));
     }
 }

@@ -5,8 +5,17 @@ using Microsoft.AspNetCore.Components.WebAssembly.Http;
 
 namespace GylleneDroppen.Blazor.Client.Services;
 
-public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider authStateProvider)
+public class AuthService
 {
+    private readonly ApiAuthenticationStateProvider _authStateProvider;
+    private readonly HttpClient _httpClient;
+
+    public AuthService(HttpClient httpClient, ApiAuthenticationStateProvider authStateProvider)
+    {
+        _httpClient = httpClient;
+        _authStateProvider = authStateProvider;
+    }
+
     public async Task<bool> LoginAsync(LoginRequest loginRequest)
     {
         try
@@ -21,16 +30,18 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
             requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
 
             // Set credentials inclusion
-            var response = await httpClient.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
 
             Console.WriteLine($"Login status code: {response.StatusCode}");
 
             if (!response.IsSuccessStatusCode) return false;
+
             // Get the current user data immediately after successful login
             var user = await GetCurrentUserAsync();
             if (user == null) return false;
+
             // Notify the authentication state provider
-            authStateProvider.NotifyUserAuthentication(user);
+            _authStateProvider.NotifyUserAuthentication(user);
             return true;
         }
         catch (Exception ex)
@@ -40,7 +51,6 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
         }
     }
 
-// Update to your AuthService.cs LogoutAsync method
     public async Task<bool> LogoutAsync()
     {
         try
@@ -48,10 +58,10 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, "api/auth/logout");
             requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
 
-            var response = await httpClient.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
 
             // Always notify the auth state provider of logout, regardless of response
-            authStateProvider.NotifyUserLogout();
+            _authStateProvider.NotifyUserLogout();
 
             return response.IsSuccessStatusCode;
         }
@@ -59,7 +69,7 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
         {
             Console.WriteLine($"Logout error: {ex.Message}");
             // Still notify logout even if there's an error with the request
-            authStateProvider.NotifyUserLogout();
+            _authStateProvider.NotifyUserLogout();
             return false;
         }
     }
@@ -74,25 +84,33 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
             // Ensure credentials are included
             requestMessage.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
 
-            var response = await httpClient.SendAsync(requestMessage);
+            var response = await _httpClient.SendAsync(requestMessage);
 
-            if (response.IsSuccessStatusCode) return await response.Content.ReadFromJsonAsync<CurrentUserResponse>();
+            if (response.IsSuccessStatusCode)
+            {
+                var user = await response.Content.ReadFromJsonAsync<CurrentUserResponse>();
+                if (user != null)
+                {
+                    _authStateProvider.NotifyUserAuthentication(user);
+                    return user;
+                }
+            }
 
             return null;
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"GetCurrentUser error: {ex.Message}");
             return null;
         }
     }
 
-    // Add the method to request a password reset
     public async Task<bool> RequestPasswordResetAsync(string email)
     {
         try
         {
             var resetRequest = new PasswordResetRequest { Email = email };
-            var response = await httpClient.PostAsJsonAsync("api/auth/request-password-reset", resetRequest);
+            var response = await _httpClient.PostAsJsonAsync("api/auth/request-password-reset", resetRequest);
 
             return response.IsSuccessStatusCode;
         }
@@ -103,7 +121,6 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
         }
     }
 
-    // Add the method to reset a password with a token
     public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
     {
         try
@@ -115,7 +132,7 @@ public class AuthService(HttpClient httpClient, ApiAuthenticationStateProvider a
                 NewPassword = newPassword
             };
 
-            var response = await httpClient.PostAsJsonAsync("api/auth/reset-password", resetRequest);
+            var response = await _httpClient.PostAsJsonAsync("api/auth/reset-password", resetRequest);
 
             return response.IsSuccessStatusCode;
         }

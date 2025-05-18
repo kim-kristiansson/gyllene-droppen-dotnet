@@ -1,0 +1,29 @@
+@inject NavigationManager Navigation
+
+@code {
+    [Parameter] public string? ReturnUrl { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+
+    private bool _hasRedirected = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAndRedirectIfNotAuthenticated();
+    }
+
+    private async Task CheckAndRedirectIfNotAuthenticated()
+    {
+        if (AuthState == null || _hasRedirected) return;
+
+        var authState = await AuthState;
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            _hasRedirected = true;
+
+            var currentUrl = ReturnUrl ?? Navigation.Uri;
+            var encodedReturnUrl = Uri.EscapeDataString(currentUrl);
+            Navigation.NavigateTo($"/logga-in?returnUrl={encodedReturnUrl}", replace: true);
+        }
+    }
+
+}

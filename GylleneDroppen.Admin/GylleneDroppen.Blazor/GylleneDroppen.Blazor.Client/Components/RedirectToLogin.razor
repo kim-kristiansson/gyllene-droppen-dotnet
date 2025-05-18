@@ -1,4 +1,5 @@
 @inject NavigationManager Navigation
+@inject ILogger<RedirectToLogin> Logger
 
 <div class="redirect-message">
     <p>Du måste logga in för att se denna sida.</p>
@@ -11,7 +12,8 @@
     private void NavigateToLoginPage()
     {
         var returnUrlEncoded = string.IsNullOrEmpty(ReturnUrl) ? "" : $"?returnUrl={Uri.EscapeDataString(ReturnUrl)}";
-        Navigation.NavigateTo($"/logga-in{returnUrlEncoded}");
+        var targetUrl = $"/logga-in{returnUrlEncoded}";
+        Logger.LogInformation("Redirecting unauthenticated user to: {TargetUrl}", targetUrl);
+        Navigation.NavigateTo(targetUrl);
     }
-
 }
