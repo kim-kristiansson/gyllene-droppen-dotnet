@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace GylleneDroppen.Application.Interfaces.Shared.Repositories;
+namespace GylleneDroppen.Application.Interfaces.Repositories;
 
 public interface IRepository<T> where T : class
 {

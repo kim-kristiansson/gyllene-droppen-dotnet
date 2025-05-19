@@ -1,0 +1,13 @@
+@page "/force-reload"
+@inject NavigationManager Nav
+
+<h1>Loggar in...</h1>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        Nav.NavigateTo("/", true);
+    }
+
+}
