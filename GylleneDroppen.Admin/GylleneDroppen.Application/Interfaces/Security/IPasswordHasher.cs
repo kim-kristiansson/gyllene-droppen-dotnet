@@ -1,7 +1,7 @@
-namespace GylleneDroppen.Application.Interfaces.Shared.Security;
+namespace GylleneDroppen.Application.Interfaces.Security;
 
 public interface IPasswordHasher
 {
-    (string Hash, string Salt) HashPassword(string password);
-    bool VerifyPassword(string password, string storedHash, string storedSalt);
+    string Hash(string password);
+    bool Verify(string hash, string password);
 }

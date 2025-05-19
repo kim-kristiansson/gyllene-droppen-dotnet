@@ -1,10 +1,9 @@
-using GylleneDroppen.Domain.Entities;
-using GylleneDroppen.Domain.Enums;
+using GylleneDroppen.Core.Entities;
 
-namespace GylleneDroppen.Application.Interfaces.Shared.Repositories;
+namespace GylleneDroppen.Application.Interfaces.Repositories;
 
 public interface IUserRepository : IRepository<User>
 {
     Task<User?> GetByEmailAsync(string email);
-    Task<List<User>> GetUsersByRoleAsync(RoleType role);
+    Task<bool> ExistsByEmailAsync(string email);
 }

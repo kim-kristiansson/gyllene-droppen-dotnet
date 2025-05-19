@@ -7,9 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\GylleneDroppen.Application\GylleneDroppen.Application.csproj"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <ProjectReference Include="..\..\GylleneDroppen.Infrastructure\GylleneDroppen.Infrastructure.csproj"/>
-        <ProjectReference Include="..\..\GylleneDroppen.Presentation\GylleneDroppen.Presentation.csproj"/>
         <ProjectReference Include="..\GylleneDroppen.Blazor.Client\GylleneDroppen.Blazor.Client.csproj"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0"/>
     </ItemGroup>

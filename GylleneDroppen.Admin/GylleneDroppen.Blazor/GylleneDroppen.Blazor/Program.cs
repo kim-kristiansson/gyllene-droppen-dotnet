@@ -1,89 +1,66 @@
-using GylleneDroppen.Application.Interfaces.Public.Mappers;
-using GylleneDroppen.Application.Interfaces.Public.Services;
-using GylleneDroppen.Application.Interfaces.Repositories;
-using GylleneDroppen.Application.Interfaces.Services;
-using GylleneDroppen.Application.Interfaces.Shared.Repositories;
-using GylleneDroppen.Application.Interfaces.Shared.Security;
-using GylleneDroppen.Application.Interfaces.Utilities;
-using GylleneDroppen.Application.Services;
-using GylleneDroppen.Application.Services.Public;
 using GylleneDroppen.Blazor.Components;
-using GylleneDroppen.Infrastructure.Email;
-using GylleneDroppen.Infrastructure.Persistence.Repositories.Admin;
-using GylleneDroppen.Infrastructure.Persistence.Repositories.Public;
-using GylleneDroppen.Infrastructure.Persistence.Repositories.Shared;
-using GylleneDroppen.Infrastructure.Redis;
-using GylleneDroppen.Infrastructure.Security;
-using GylleneDroppen.Presentation.Extensions;
-using GylleneDroppen.Presentation.Mappers.Public;
-using GylleneDroppen.Presentation.Utilities;
+using GylleneDroppen.Core.Entities;
+using GylleneDroppen.Infrastructure.DependencyInjection;
+using GylleneDroppen.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Identity;
 using _Imports = GylleneDroppen.Blazor.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Razor & Blazor services (interactive hybrid)
+// --------------------
+// Identity
+// --------------------
+
+builder.Services.AddIdentity<User, IdentityRole>(options => { options.SignIn.RequireConfirmedEmail = true; })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(2));
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/logga-in";
+    options.LogoutPath = "/logga-ut";
+    options.AccessDeniedPath = "/nekad";
+});
+
+// ----------------------
+// Blazor Hybrid Services
+// ----------------------
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-// === Custom App Configuration ===
-builder.Services.AddApplicationConfiguration(builder.Configuration);
-builder.Services.AddRedis(builder.Configuration);
-builder.Services.AddDatabase();
-builder.Services.AddSmtpClient(builder.Configuration);
-
-// === Dependency Injection ===
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IRedisRepository, RedisRepository>();
-builder.Services.AddScoped<ITastingRepository, TastingRepository>();
-builder.Services.AddScoped<IAttendeeRepository, AttendeeRepository>();
-builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<ITastingService, TastingService>();
-builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
-builder.Services.AddScoped<ICookieManager, CookieManager>();
-builder.Services.AddScoped<ITastingMapper, TastingMapper>();
-builder.Services.AddHttpContextAccessor();
-
-// === Authentication & Authorization ===
-builder.Services.AddAuthentication("GylleneScheme")
-    .AddCookie("GylleneScheme", options =>
-    {
-        options.LoginPath = "/logga-in";
-        options.AccessDeniedPath = "/forbidden";
-        options.Cookie.Name = "gyllenedroppen.auth";
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-        options.Cookie.SameSite = SameSiteMode.Strict;
-        options.ExpireTimeSpan = TimeSpan.FromHours(2);
-    });
+builder.Services.AddRazorPages();
 
 builder.Services.AddAuthorization();
 
-// === App Pipeline ===
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddInfrastructure(builder.Configuration);
+
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging(); // Only used if WASM hydration fails in dev
-}
-else
-{
-    app.UseExceptionHandler("/Error", true);
-    app.UseHsts();
-}
-
+// ---------------------
+// Middleware
+// ---------------------
 app.UseHttpsRedirection();
-app.UseStaticFiles(); // Serve from wwwroot
+app.UseStaticFiles();
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
+app.MapRazorPages();
+
+// ---------------------
+// Blazor Hybrid Mapping
+// ---------------------
+app.MapStaticAssets(); // Must be here to serve WASM assets
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(_Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(_Imports).Assembly); // if using Client project
 
 app.Run();
