@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GylleneDroppen.Infrastructure.Persistence.Repositories;
 
-public class UserRepository(AppDbContext context) : Repository<User>(context), IUserRepository
+public class UserRepository(ApplicationDbContext context) : Repository<ApplicationUser>(context), IUserRepository
 {
-    public async Task<User?> GetByEmailAsync(string email)
+    public async Task<ApplicationUser?> GetByEmailAsync(string email)
     {
         return await DbSet.FirstOrDefaultAsync(x => x.Email == email);
     }

@@ -6,10 +6,10 @@ namespace GylleneDroppen.Infrastructure.Persistence.Repositories;
 
 public class Repository<T> : IRepository<T> where T : class
 {
-    private readonly AppDbContext _context;
+    private readonly ApplicationDbContext _context;
     protected readonly DbSet<T> DbSet;
 
-    protected Repository(AppDbContext context)
+    protected Repository(ApplicationDbContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
         DbSet = _context.Set<T>();

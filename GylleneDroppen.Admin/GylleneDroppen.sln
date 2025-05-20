@@ -1,14 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor", "GylleneDroppen.Blazor\GylleneDroppen.Blazor\GylleneDroppen.Blazor.csproj", "{7AE89D93-39FD-4868-AB9C-068EABE7643E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor.Client", "GylleneDroppen.Blazor\GylleneDroppen.Blazor.Client\GylleneDroppen.Blazor.Client.csproj", "{4E33EC24-1871-4B2F-A972-885A1B0872B4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Core", "GylleneDroppen.Core\GylleneDroppen.Core.csproj", "{EF1652EC-9503-4AED-B388-2E2F8B82E7C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Infrastructure", "GylleneDroppen.Infrastructure\GylleneDroppen.Infrastructure.csproj", "{41391C97-D3A9-4B77-AE15-9C52BD605E92}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Application", "GylleneDroppen.Application\GylleneDroppen.Application.csproj", "{F3167637-DD45-4E85-B6C0-8A80668FCF2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor", "GylleneDroppen.Blazor\GylleneDroppen.Blazor\GylleneDroppen.Blazor.csproj", "{AE4AE1B9-2039-48C3-8126-6B8FF6D811F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GylleneDroppen.Blazor.Client", "GylleneDroppen.Blazor\GylleneDroppen.Blazor.Client\GylleneDroppen.Blazor.Client.csproj", "{F361A57B-702E-4FEC-B81B-AE4EAB412C36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,14 +16,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7AE89D93-39FD-4868-AB9C-068EABE7643E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7AE89D93-39FD-4868-AB9C-068EABE7643E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7AE89D93-39FD-4868-AB9C-068EABE7643E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7AE89D93-39FD-4868-AB9C-068EABE7643E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4E33EC24-1871-4B2F-A972-885A1B0872B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4E33EC24-1871-4B2F-A972-885A1B0872B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4E33EC24-1871-4B2F-A972-885A1B0872B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4E33EC24-1871-4B2F-A972-885A1B0872B4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EF1652EC-9503-4AED-B388-2E2F8B82E7C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EF1652EC-9503-4AED-B388-2E2F8B82E7C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF1652EC-9503-4AED-B388-2E2F8B82E7C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -36,5 +28,13 @@ Global
 		{F3167637-DD45-4E85-B6C0-8A80668FCF2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F3167637-DD45-4E85-B6C0-8A80668FCF2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F3167637-DD45-4E85-B6C0-8A80668FCF2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE4AE1B9-2039-48C3-8126-6B8FF6D811F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE4AE1B9-2039-48C3-8126-6B8FF6D811F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE4AE1B9-2039-48C3-8126-6B8FF6D811F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE4AE1B9-2039-48C3-8126-6B8FF6D811F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F361A57B-702E-4FEC-B81B-AE4EAB412C36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F361A57B-702E-4FEC-B81B-AE4EAB412C36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F361A57B-702E-4FEC-B81B-AE4EAB412C36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F361A57B-702E-4FEC-B81B-AE4EAB412C36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

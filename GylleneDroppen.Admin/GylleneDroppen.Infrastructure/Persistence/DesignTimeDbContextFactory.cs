@@ -5,9 +5,9 @@ using Microsoft.Extensions.Configuration;
 
 namespace GylleneDroppen.Infrastructure.Persistence;
 
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {
-    public AppDbContext CreateDbContext(string[] args)
+    public ApplicationDbContext CreateDbContext(string[] args)
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
@@ -25,9 +25,9 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
                 "Could not find a connection string. Please ensure DatabaseSettings:ConnectionString is set in appsettings.json");
 
         // Configure the DbContext using the same pattern as your application
-        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
         optionsBuilder.UseNpgsql(databaseSettings.ConnectionString);
 
-        return new AppDbContext(optionsBuilder.Options);
+        return new ApplicationDbContext(optionsBuilder.Options);
     }
 }

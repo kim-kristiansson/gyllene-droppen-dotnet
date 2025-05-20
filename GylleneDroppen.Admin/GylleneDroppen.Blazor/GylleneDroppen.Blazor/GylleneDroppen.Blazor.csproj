@@ -4,16 +4,21 @@
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>aspnet-GylleneDroppen.Blazor-e805d729-e1e6-42f6-acfa-2ec5efd3cf27</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
+        <ProjectReference Include="..\..\GylleneDroppen.Core\GylleneDroppen.Core.csproj"/>
+        <ProjectReference Include="..\..\GylleneDroppen.Infrastructure\GylleneDroppen.Infrastructure.csproj"/>
+        <ProjectReference Include="..\GylleneDroppen.Blazor.Client\GylleneDroppen.Blazor.Client.csproj"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.5"/>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.5"/>
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.5"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <ProjectReference Include="..\..\GylleneDroppen.Infrastructure\GylleneDroppen.Infrastructure.csproj"/>
-        <ProjectReference Include="..\GylleneDroppen.Blazor.Client\GylleneDroppen.Blazor.Client.csproj"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0"/>
     </ItemGroup>
 
 </Project>

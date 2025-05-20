@@ -2,8 +2,8 @@ using GylleneDroppen.Core.Entities;
 
 namespace GylleneDroppen.Application.Interfaces.Repositories;
 
-public interface IUserRepository : IRepository<User>
+public interface IUserRepository : IRepository<ApplicationUser>
 {
-    Task<User?> GetByEmailAsync(string email);
+    Task<ApplicationUser?> GetByEmailAsync(string email);
     Task<bool> ExistsByEmailAsync(string email);
 }

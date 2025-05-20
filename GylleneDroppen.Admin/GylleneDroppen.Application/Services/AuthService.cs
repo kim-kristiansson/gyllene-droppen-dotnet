@@ -8,12 +8,15 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace GylleneDroppen.Application.Services;
 
-public class AuthService(UserManager<User> userManager, IEmailService emailService, IUrlGenerator urlGenerator)
+public class AuthService(
+    UserManager<ApplicationUser> userManager,
+    IEmailService emailService,
+    IUrlGenerator urlGenerator)
     : IAuthService
 {
     public async Task RegisterAsync(RegisterRequestDto dto)
     {
-        var user = new User
+        var user = new ApplicationUser
         {
             Email = dto.Email,
             UserName = dto.Email,
