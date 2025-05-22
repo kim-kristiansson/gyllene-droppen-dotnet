@@ -1,11 +1,12 @@
-﻿@page "/Account/ExternalLogin"
+﻿@page "/konto/extern-inloggning"
+
 @using System.ComponentModel.DataAnnotations
 @using System.Security.Claims
 @using System.Text
 @using System.Text.Encodings.Web
-@using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
+@using GylleneDroppen.Core.Entities
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -15,34 +16,28 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ExternalLogin> Logger
 
-<PageTitle>Register</PageTitle>
+<PageTitle>Registrera</PageTitle>
 
 <StatusMessage Message="@message"/>
-<h1>Register</h1>
-<h2>Associate your @ProviderDisplayName account.</h2>
+<h1>Registrera</h1>
+<h2>Koppla ditt @ProviderDisplayName-konto.</h2>
 <hr/>
 
-<div class="alert alert-info">
-    You've successfully authenticated with <strong>@ProviderDisplayName</strong>.
-    Please enter an email address for this site below and click the Register button to finish
-    logging in.
+<div>
+    Du har loggat in med <strong>@ProviderDisplayName</strong>.
+    Ange en e-postadress för denna webbplats nedan och klicka på knappen Registrera för att slutföra inloggningen.
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync" FormName="confirmation" method="post">
-            <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="email"
-                           placeholder="Please enter your email."/>
-                <label for="Input.Email" class="form-label">Email</label>
-                <ValidationMessage For="() => Input.Email"/>
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </EditForm>
+<EditForm Model="Input" OnValidSubmit="OnValidSubmitAsync" FormName="confirmation" method="post">
+    <DataAnnotationsValidator/>
+    <ValidationSummary role="alert"/>
+    <div>
+        <InputText @bind-Value="Input.Email" id="Input.Email" autocomplete="email" placeholder="Ange din e-postadress"/>
+        <label for="Input.Email">E-post</label>
+        <ValidationMessage For="() => Input.Email"/>
     </div>
-</div>
+    <button type="submit">Registrera</button>
+</EditForm>
 
 @code {
     public const string LoginCallbackAction = "LoginCallback";
@@ -66,13 +61,13 @@
     {
         if (RemoteError is not null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", $"Error from external provider: {RemoteError}", HttpContext);
+            RedirectManager.RedirectToWithStatus("/konto/logga-in", $"Fel från extern leverantör: {RemoteError}", HttpContext);
         }
 
         var info = await SignInManager.GetExternalLoginInfoAsync();
         if (info is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+            RedirectManager.RedirectToWithStatus("/konto/logga-in", "Fel vid inläsning av extern inloggning.", HttpContext);
         }
 
         externalLoginInfo = info;
@@ -85,9 +80,7 @@
                 return;
             }
 
-            // We should only reach this page via the login callback, so redirect back to
-            // the login page if we get here some other way.
-            RedirectManager.RedirectTo("Account/Login");
+            RedirectManager.RedirectTo("/konto/logga-in");
         }
     }
 
@@ -95,30 +88,28 @@
     {
         if (externalLoginInfo is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+            RedirectManager.RedirectToWithStatus("/konto/logga-in", "Fel vid inläsning av extern inloggning.", HttpContext);
         }
 
-        // Sign in the user with this external login provider if the user already has a login.
         var result = await SignInManager.ExternalLoginSignInAsync(
             externalLoginInfo.LoginProvider,
             externalLoginInfo.ProviderKey,
-            false,
-            true);
+            isPersistent: false,
+            bypassTwoFactor: true);
 
         if (result.Succeeded)
         {
             Logger.LogInformation(
-                "{Name} logged in with {LoginProvider} provider.",
+                "{Name} loggade in med {LoginProvider}.",
                 externalLoginInfo.Principal.Identity?.Name,
                 externalLoginInfo.LoginProvider);
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.IsLockedOut)
         {
-            RedirectManager.RedirectTo("Account/Lockout");
+            RedirectManager.RedirectTo("/konto/utlasning");
         }
 
-        // If the user does not have an account, then ask the user to create an account.
         if (externalLoginInfo.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
         {
             Input.Email = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
@@ -129,7 +120,7 @@
     {
         if (externalLoginInfo is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information during confirmation.", HttpContext);
+            RedirectManager.RedirectToWithStatus("/konto/logga-in", "Fel vid inläsning av extern inloggning under bekräftelse.", HttpContext);
         }
 
         var emailStore = GetEmailStore();
@@ -144,29 +135,29 @@
             result = await UserManager.AddLoginAsync(user, externalLoginInfo);
             if (result.Succeeded)
             {
-                Logger.LogInformation("User created an account using {Name} provider.", externalLoginInfo.LoginProvider);
+                Logger.LogInformation("Användaren skapade ett konto med {Name}.", externalLoginInfo.LoginProvider);
 
                 var userId = await UserManager.GetUserIdAsync(user);
                 var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
                 var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-                    NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+                    NavigationManager.ToAbsoluteUri("/konto/bekrafta-epost").AbsoluteUri,
                     new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+
                 await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-                // If account confirmation is required, we need to show the link if we don't have a real email sender
                 if (UserManager.Options.SignIn.RequireConfirmedAccount)
                 {
-                    RedirectManager.RedirectTo("Account/RegisterConfirmation", new Dictionary<string, object?> { ["email"] = Input.Email });
+                    RedirectManager.RedirectTo("/konto/registreringsbekraftelse", new() { ["email"] = Input.Email });
                 }
 
-                await SignInManager.SignInAsync(user, false, externalLoginInfo.LoginProvider);
+                await SignInManager.SignInAsync(user, isPersistent: false, externalLoginInfo.LoginProvider);
                 RedirectManager.RedirectTo(ReturnUrl);
             }
         }
 
-        message = $"Error: {string.Join(",", result.Errors.Select(error => error.Description))}";
+        message = $"Fel: {string.Join(",", result.Errors.Select(error => error.Description))}";
     }
 
     private ApplicationUser CreateUser()
@@ -177,8 +168,8 @@
         }
         catch
         {
-            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
-                                                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor");
+            throw new InvalidOperationException($"Kan inte skapa en instans av '{nameof(ApplicationUser)}'. " +
+                                                $"Säkerställ att '{nameof(ApplicationUser)}' inte är abstrakt och har en parameterlös konstruktor.");
         }
     }
 
@@ -186,7 +177,7 @@
     {
         if (!UserManager.SupportsUserEmail)
         {
-            throw new NotSupportedException("The default UI requires a user store with email support.");
+            throw new NotSupportedException("Standardgränssnittet kräver en användarstore med e-poststöd.");
         }
 
         return (IUserEmailStore<ApplicationUser>)UserStore;
@@ -194,7 +185,9 @@
 
     private sealed class InputModel
     {
-        [Required] [EmailAddress] public string Email { get; set; } = "";
+        [Required(ErrorMessage = "E-post är obligatorisk.")]
+        [EmailAddress(ErrorMessage = "Ogiltig e-postadress.")]
+        public string Email { get; set; } = "";
     }
 
 }

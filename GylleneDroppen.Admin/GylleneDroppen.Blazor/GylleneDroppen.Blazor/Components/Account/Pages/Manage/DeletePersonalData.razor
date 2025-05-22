@@ -1,7 +1,8 @@
-﻿@page "/Account/Manage/DeletePersonalData"
+﻿@page "/konto/hantera/radera-personuppgifter"
+
 @using System.ComponentModel.DataAnnotations
-@using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Identity
+@using GylleneDroppen.Core.Entities
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -9,33 +10,32 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<DeletePersonalData> Logger
 
-<PageTitle>Delete Personal Data</PageTitle>
+<PageTitle>Radera personuppgifter</PageTitle>
 
 <StatusMessage Message="@message"/>
 
-<h3>Delete Personal Data</h3>
+<h3>Radera personuppgifter</h3>
 
-<div class="alert alert-warning" role="alert">
+<div role="alert">
     <p>
-        <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
+        <strong>Att radera dina uppgifter innebär att ditt konto tas bort permanent och inte kan återställas.</strong>
     </p>
 </div>
 
 <div>
     <EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post">
         <DataAnnotationsValidator/>
-        <ValidationSummary class="text-danger" role="alert"/>
+        <ValidationSummary role="alert"/>
         @if (requirePassword)
         {
-            <div class="form-floating mb-3">
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control"
-                           autocomplete="current-password" aria-required="true"
-                           placeholder="Please enter your password."/>
-                <label for="Input.Password" class="form-label">Password</label>
-                <ValidationMessage For="() => Input.Password" class="text-danger"/>
+            <div>
+                <InputText type="password" @bind-Value="Input.Password" id="Input.Password"
+                           autocomplete="current-password" aria-required="true" placeholder="Ange ditt lösenord."/>
+                <label for="Input.Password">Lösenord</label>
+                <ValidationMessage For="() => Input.Password"/>
             </div>
         }
-        <button class="w-100 btn btn-lg btn-danger" type="submit">Delete data and close my account</button>
+        <button type="submit">Radera uppgifter och stäng mitt konto</button>
     </EditForm>
 </div>
 
@@ -50,7 +50,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Input ??= new InputModel();
+        Input ??= new();
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         requirePassword = await UserManager.HasPasswordAsync(user);
     }
@@ -59,27 +59,29 @@
     {
         if (requirePassword && !await UserManager.CheckPasswordAsync(user, Input.Password))
         {
-            message = "Error: Incorrect password.";
+            message = "Fel: Felaktigt lösenord.";
             return;
         }
 
         var result = await UserManager.DeleteAsync(user);
         if (!result.Succeeded)
         {
-            throw new InvalidOperationException("Unexpected error occurred deleting user.");
+            throw new InvalidOperationException("Ett oväntat fel inträffade vid borttagning av användare.");
         }
 
         await SignInManager.SignOutAsync();
 
         var userId = await UserManager.GetUserIdAsync(user);
-        Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
+        Logger.LogInformation("Användare med ID '{UserId}' raderade sitt konto.", userId);
 
         RedirectManager.RedirectToCurrentPage();
     }
 
     private sealed class InputModel
     {
-        [DataType(DataType.Password)] public string Password { get; set; } = "";
+        [DataType(DataType.Password)]
+        [Display(Name = "Lösenord")]
+        public string Password { get; set; } = "";
     }
 
 }

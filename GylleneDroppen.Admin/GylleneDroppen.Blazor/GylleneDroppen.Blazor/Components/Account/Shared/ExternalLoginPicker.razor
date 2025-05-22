@@ -1,6 +1,7 @@
 ﻿@using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
+
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
@@ -8,30 +9,27 @@
 {
     <div>
         <p>
-            There are no external authentication services configured. See this
+            Det finns inga externa inloggningstjänster konfigurerade. Se
             <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
-                article
-                about setting up this ASP.NET application to support logging in via external services
+                den här artikeln om hur du ställer in inloggning via externa tjänster i en ASP.NET-applikation
             </a>.
         </p>
     </div>
 }
 else
 {
-    <form class="form-horizontal" action="Account/PerformExternalLogin" method="post">
-        <div>
-            <AntiforgeryToken/>
-            <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
-            <p>
-                @foreach (var provider in externalLogins)
-                {
-                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name"
-                            title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                }
-            </p>
-        </div>
+    <form action="konto/starta-extern-inloggning" method="post">
+        <AntiforgeryToken/>
+        <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
+        <p>
+            @foreach (var provider in externalLogins)
+            {
+                <button type="submit" name="provider" value="@provider.Name">@provider.DisplayName</button>
+            }
+        </p>
     </form>
 }
+
 
 @code {
     private AuthenticationScheme[] externalLogins = [];

@@ -1,13 +1,14 @@
-﻿@page "/Account/Manage/GenerateRecoveryCodes"
-@using GylleneDroppen.Core.Entities
+﻿@page "/konto/hantera/generera-reservkoder"
+
 @using Microsoft.AspNetCore.Identity
+@using GylleneDroppen.Core.Entities
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<GenerateRecoveryCodes> Logger
 
-<PageTitle>Generate two-factor authentication (2FA) recovery codes</PageTitle>
+<PageTitle>Generera reservkoder för tvåfaktorsautentisering (2FA)</PageTitle>
 
 @if (recoveryCodes is not null)
 {
@@ -15,26 +16,25 @@
 }
 else
 {
-    <h3>Generate two-factor authentication (2FA) recovery codes</h3>
-    <div class="alert alert-warning" role="alert">
+    <h3>Generera reservkoder för tvåfaktorsautentisering (2FA)</h3>
+    <div role="alert">
         <p>
-            <span class="glyphicon glyphicon-warning-sign"></span>
-            <strong>Put these codes in a safe place.</strong>
+            <strong>Spara dessa koder på en säker plats.</strong>
         </p>
         <p>
-            If you lose your device and don't have the recovery codes you will lose access to your account.
+            Om du förlorar din enhet och inte har tillgång till reservkoderna kommer du inte att kunna logga in på ditt
+            konto.
         </p>
         <p>
-            Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the
-            key
-            used in an authenticator app you should <a href="Account/Manage/ResetAuthenticator">reset your authenticator
-                keys.</a>
+            Att generera nya reservkoder ändrar inte nycklarna som används i autentiseringsappar. Om du vill byta nyckel
+            som används i en autentiseringsapp bör du <a href="/konto/hantera/aterstall-autentiserare">återställa dina
+                autentiseringsnycklar.</a>
         </p>
     </div>
     <div>
         <form @formname="generate-recovery-codes" @onsubmit="OnSubmitAsync" method="post">
             <AntiforgeryToken/>
-            <button class="btn btn-danger" type="submit">Generate Recovery Codes</button>
+            <button type="submit">Generera reservkoder</button>
         </form>
     </div>
 }
@@ -53,7 +53,7 @@ else
         var isTwoFactorEnabled = await UserManager.GetTwoFactorEnabledAsync(user);
         if (!isTwoFactorEnabled)
         {
-            throw new InvalidOperationException("Cannot generate recovery codes for user because they do not have 2FA enabled.");
+            throw new InvalidOperationException("Kan inte generera reservkoder eftersom användaren inte har aktiverat 2FA.");
         }
     }
 
@@ -61,9 +61,9 @@ else
     {
         var userId = await UserManager.GetUserIdAsync(user);
         recoveryCodes = await UserManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-        message = "You have generated new recovery codes.";
+        message = "Du har genererat nya reservkoder.";
 
-        Logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", userId);
+        Logger.LogInformation("Användare med ID '{UserId}' har genererat nya 2FA-reservkoder.", userId);
     }
 
 }

@@ -1,70 +1,72 @@
-﻿@page "/Account/Login"
+﻿@page "/konto/logga-in"
+
 @using System.ComponentModel.DataAnnotations
-@using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
+@using GylleneDroppen.Core.Entities
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Log in</PageTitle>
+<PageTitle>Logga in</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-lg-6">
-        <section>
-            <StatusMessage Message="@errorMessage"/>
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-                <DataAnnotationsValidator/>
-                <h2>Use a local account to log in.</h2>
-                <hr/>
-                <ValidationSummary class="text-danger" role="alert"/>
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username"
-                               aria-required="true" placeholder="name@example.com"/>
-                    <label for="Input.Email" class="form-label">Email</label>
-                    <ValidationMessage For="() => Input.Email" class="text-danger"/>
-                </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control"
-                               autocomplete="current-password" aria-required="true" placeholder="password"/>
-                    <label for="Input.Password" class="form-label">Password</label>
-                    <ValidationMessage For="() => Input.Password" class="text-danger"/>
-                </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input"/>
-                        Remember me
-                    </label>
-                </div>
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                </div>
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
-                    </p>
-                    <p>
-                        <a href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Register
-                            as a new user</a>
-                    </p>
-                    <p>
-                        <a href="Account/ResendEmailConfirmation">Resend email confirmation</a>
-                    </p>
-                </div>
-            </EditForm>
-        </section>
-    </div>
-    <div class="col-lg-4 col-lg-offset-2">
-        <section>
-            <h3>Use another service to log in.</h3>
-            <hr/>
-            <ExternalLoginPicker/>
-        </section>
-    </div>
-</div>
+<h1>Logga in</h1>
+
+<section>
+    <StatusMessage Message="@errorMessage"/>
+    <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+        <DataAnnotationsValidator/>
+        <h2>Använd ett lokalt konto för att logga in.</h2>
+        <hr/>
+        <ValidationSummary role="alert"/>
+
+        <div>
+            <InputText @bind-Value="Input.Email" id="Input.Email" autocomplete="username" aria-required="true"
+                       placeholder="namn@example.com"/>
+            <label for="Input.Email">E-post</label>
+            <ValidationMessage For="() => Input.Email"/>
+        </div>
+
+        <div>
+            <InputText type="password" @bind-Value="Input.Password" id="Input.Password" autocomplete="current-password"
+                       aria-required="true" placeholder="lösenord"/>
+            <label for="Input.Password">Lösenord</label>
+            <ValidationMessage For="() => Input.Password"/>
+        </div>
+
+        <div>
+            <label>
+                <InputCheckbox @bind-Value="Input.RememberMe"/>
+                Kom ihåg mig
+            </label>
+        </div>
+
+        <div>
+            <button type="submit">Logga in</button>
+        </div>
+
+        <div>
+            <p>
+                <a href="/konto/glomt-losenord">Glömt ditt lösenord?</a>
+            </p>
+            <p>
+                <a href="@NavigationManager.GetUriWithQueryParameters("/konto/registrera", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl })">Registrera
+                    ny användare</a>
+            </p>
+            <p>
+                <a href="/konto/skicka-epostbekraftelse">Skicka bekräftelsemail igen</a>
+            </p>
+        </div>
+    </EditForm>
+</section>
+
+<section>
+    <h3>Använd en annan tjänst för att logga in</h3>
+    <hr/>
+    <ExternalLoginPicker/>
+</section>
 
 @code {
     private string? errorMessage;
@@ -79,47 +81,46 @@
     {
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
-            // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         }
     }
 
     public async Task LoginUser()
     {
-        // This doesn't count login failures towards account lockout
-        // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, false);
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (result.Succeeded)
         {
-            Logger.LogInformation("User logged in.");
+            Logger.LogInformation("Användare inloggad.");
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.RequiresTwoFactor)
         {
             RedirectManager.RedirectTo(
-                "Account/LoginWith2fa",
-                new Dictionary<string, object?> { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+                "/konto/logga-in-med-2fa",
+                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
         }
         else if (result.IsLockedOut)
         {
-            Logger.LogWarning("User account locked out.");
-            RedirectManager.RedirectTo("Account/Lockout");
+            Logger.LogWarning("Användarkonto låst.");
+            RedirectManager.RedirectTo("/konto/utlasning");
         }
         else
         {
-            errorMessage = "Error: Invalid login attempt.";
+            errorMessage = "Fel: Ogiltigt inloggningsförsök.";
         }
     }
 
     private sealed class InputModel
     {
-        [Required] [EmailAddress] public string Email { get; set; } = "";
+        [Required(ErrorMessage = "E-post är obligatorisk.")]
+        [EmailAddress(ErrorMessage = "Ogiltig e-postadress.")]
+        public string Email { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "Lösenord är obligatoriskt.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = "";
 
-        [Display(Name = "Remember me?")] public bool RememberMe { get; set; }
+        [Display(Name = "Kom ihåg mig")] public bool RememberMe { get; set; }
     }
 
 }

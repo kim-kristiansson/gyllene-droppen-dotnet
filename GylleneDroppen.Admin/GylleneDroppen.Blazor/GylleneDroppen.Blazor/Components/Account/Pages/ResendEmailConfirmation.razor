@@ -1,37 +1,36 @@
-﻿@page "/Account/ResendEmailConfirmation"
+﻿@page "/konto/skicka-epostbekraftelse"
+
 @using System.ComponentModel.DataAnnotations
 @using System.Text
 @using System.Text.Encodings.Web
-@using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
+@using GylleneDroppen.Core.Entities
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Resend email confirmation</PageTitle>
+<PageTitle>Skicka e-postbekräftelse igen</PageTitle>
 
-<h1>Resend email confirmation</h1>
-<h2>Enter your email.</h2>
+<h1>Skicka e-postbekräftelse igen</h1>
+<h2>Ange din e-postadress</h2>
 <hr/>
 <StatusMessage Message="@message"/>
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" aria-required="true"
-                           placeholder="name@example.com"/>
-                <label for="Input.Email" class="form-label">Email</label>
-                <ValidationMessage For="() => Input.Email" class="text-danger"/>
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Resend</button>
-        </EditForm>
+
+<EditForm Model="Input" FormName="resend-email-confirmation" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <DataAnnotationsValidator/>
+    <ValidationSummary role="alert"/>
+
+    <div>
+        <InputText @bind-Value="Input.Email" id="Input.Email" aria-required="true" placeholder="namn@example.com"/>
+        <label for="Input.Email">E-postadress</label>
+        <ValidationMessage For="() => Input.Email"/>
     </div>
-</div>
+
+    <button type="submit">Skicka igen</button>
+</EditForm>
 
 @code {
     private string? message;
@@ -43,7 +42,7 @@
         var user = await UserManager.FindByEmailAsync(Input.Email!);
         if (user is null)
         {
-            message = "Verification email sent. Please check your email.";
+            message = "Verifieringsmejl skickat. Kontrollera din e-post.";
             return;
         }
 
@@ -51,16 +50,19 @@
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
-            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            NavigationManager.ToAbsoluteUri("/konto/bekrafta-epost").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+
         await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
-        message = "Verification email sent. Please check your email.";
+        message = "Verifieringsmejl skickat. Kontrollera din e-post.";
     }
 
     private sealed class InputModel
     {
-        [Required] [EmailAddress] public string Email { get; set; } = "";
+        [Required(ErrorMessage = "E-postadress är obligatorisk.")]
+        [EmailAddress(ErrorMessage = "Ogiltig e-postadress.")]
+        public string Email { get; set; } = "";
     }
 
 }

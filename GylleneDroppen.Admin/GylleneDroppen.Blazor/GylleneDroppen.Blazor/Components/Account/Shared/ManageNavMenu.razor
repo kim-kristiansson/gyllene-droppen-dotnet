@@ -1,28 +1,29 @@
 ﻿@using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Identity
+
 @inject SignInManager<ApplicationUser> SignInManager
 
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">Profile</NavLink>
+<ul>
+    <li>
+        <NavLink href="konto/hantera" Match="NavLinkMatch.All">Profil</NavLink>
     </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Email">Email</NavLink>
+    <li>
+        <NavLink href="konto/hantera/epost">E-post</NavLink>
     </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/ChangePassword">Password</NavLink>
+    <li>
+        <NavLink href="konto/hantera/byt-losenord">Lösenord</NavLink>
     </li>
     @if (hasExternalLogins)
     {
-        <li class="nav-item">
-            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">External logins</NavLink>
+        <li>
+            <NavLink href="konto/hantera/externa-inloggningar">Externa inloggningar</NavLink>
         </li>
     }
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">Two-factor authentication</NavLink>
+    <li>
+        <NavLink href="konto/hantera/tvafaktorsautentisering">Tvåfaktorsautentisering</NavLink>
     </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/PersonalData">Personal data</NavLink>
+    <li>
+        <NavLink href="konto/hantera/personuppgifter">Personuppgifter</NavLink>
     </li>
 </ul>
 

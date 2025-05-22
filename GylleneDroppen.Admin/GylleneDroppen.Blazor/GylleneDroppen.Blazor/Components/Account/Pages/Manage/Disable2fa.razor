@@ -1,4 +1,5 @@
-﻿@page "/Account/Manage/Disable2fa"
+﻿@page "/konto/hantera/inaktivera-2fa"
+
 @using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Identity
 
@@ -7,26 +8,26 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<Disable2fa> Logger
 
-<PageTitle>Disable two-factor authentication (2FA)</PageTitle>
+<PageTitle>Inaktivera tvåfaktorsautentisering (2FA)</PageTitle>
 
 <StatusMessage/>
-<h3>Disable two-factor authentication (2FA)</h3>
+<h3>Inaktivera tvåfaktorsautentisering (2FA)</h3>
 
-<div class="alert alert-warning" role="alert">
+<div role="alert">
     <p>
-        <strong>This action only disables 2FA.</strong>
+        <strong>Den här åtgärden inaktiverar endast 2FA.</strong>
     </p>
     <p>
-        Disabling 2FA does not change the keys used in authenticator apps. If you wish to change the key
-        used in an authenticator app you should <a href="Account/Manage/ResetAuthenticator">reset your authenticator
-            keys.</a>
+        Att inaktivera 2FA ändrar inte nycklarna som används i autentiseringsappar. Om du vill byta nyckel
+        som används i en autentiseringsapp bör du <a href="/konto/hantera/aterstall-autentiserare">återställa dina
+            autentiseringsnycklar.</a>
     </p>
 </div>
 
 <div>
     <form @formname="disable-2fa" @onsubmit="OnSubmitAsync" method="post">
         <AntiforgeryToken/>
-        <button class="btn btn-danger" type="submit">Disable 2FA</button>
+        <button type="submit">Inaktivera 2FA</button>
     </form>
 </div>
 
@@ -41,7 +42,7 @@
 
         if (HttpMethods.IsGet(HttpContext.Request.Method) && !await UserManager.GetTwoFactorEnabledAsync(user))
         {
-            throw new InvalidOperationException("Cannot disable 2FA for user as it's not currently enabled.");
+            throw new InvalidOperationException("Kan inte inaktivera 2FA eftersom det inte är aktiverat.");
         }
     }
 
@@ -50,14 +51,14 @@
         var disable2faResult = await UserManager.SetTwoFactorEnabledAsync(user, false);
         if (!disable2faResult.Succeeded)
         {
-            throw new InvalidOperationException("Unexpected error occurred disabling 2FA.");
+            throw new InvalidOperationException("Ett oväntat fel inträffade vid inaktivering av 2FA.");
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
-        Logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", userId);
+        Logger.LogInformation("Användare med ID '{UserId}' har inaktiverat 2FA.", userId);
         RedirectManager.RedirectToWithStatus(
-            "Account/Manage/TwoFactorAuthentication",
-            "2fa has been disabled. You can reenable 2fa when you setup an authenticator app",
+            "/konto/hantera/tvafaktorsautentisering",
+            "2FA har inaktiverats. Du kan aktivera 2FA igen när du ställer in en autentiseringsapp.",
             HttpContext);
     }
 

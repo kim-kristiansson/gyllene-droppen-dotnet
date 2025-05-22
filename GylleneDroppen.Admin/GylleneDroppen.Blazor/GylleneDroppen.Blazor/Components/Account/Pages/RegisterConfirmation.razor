@@ -1,31 +1,33 @@
-﻿@page "/Account/RegisterConfirmation"
+﻿@page "/konto/registreringsbekraftelse"
+
 @using System.Text
-@using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.WebUtilities
+@using GylleneDroppen.Core.Entities
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Register confirmation</PageTitle>
+<PageTitle>Bekräfta registrering</PageTitle>
 
-<h1>Register confirmation</h1>
+<h1>Bekräfta registrering</h1>
 
 <StatusMessage Message="@statusMessage"/>
 
 @if (emailConfirmationLink is not null)
 {
     <p>
-        This app does not currently have a real email sender registered, see <a href="https://aka.ms/aspaccountconf">these
-            docs</a> for how to configure a real email sender.
-        Normally this would be emailed: <a href="@emailConfirmationLink">Click here to confirm your account</a>
+        Den här appen har för närvarande ingen riktig e-postavsändare konfigurerad. Se <a
+            href="https://aka.ms/aspaccountconf">dessa dokument</a> för att konfigurera en riktig avsändare.<br/>
+        Normalt skulle detta ha skickats via e-post: <a href="@emailConfirmationLink">Klicka här för att bekräfta ditt
+            konto</a>
     </p>
 }
 else
 {
-    <p role="alert">Please check your email to confirm your account.</p>
+    <p role="alert">Kontrollera din e-post för att bekräfta ditt konto.</p>
 }
 
 @code {
@@ -49,16 +51,15 @@ else
         if (user is null)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            statusMessage = "Error finding user for unspecified email";
+            statusMessage = "Fel: Kunde inte hitta användare för angiven e-postadress.";
         }
         else if (EmailSender is IdentityNoOpEmailSender)
         {
-            // Once you add a real email sender, you should remove this code that lets you confirm the account
             var userId = await UserManager.GetUserIdAsync(user);
             var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             emailConfirmationLink = NavigationManager.GetUriWithQueryParameters(
-                NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+                NavigationManager.ToAbsoluteUri("/konto/bekrafta-epost").AbsoluteUri,
                 new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
         }
     }

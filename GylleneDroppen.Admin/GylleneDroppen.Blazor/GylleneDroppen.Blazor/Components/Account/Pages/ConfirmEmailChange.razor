@@ -1,4 +1,5 @@
-﻿@page "/Account/ConfirmEmailChange"
+﻿@page "/konto/bekrafta-epostbyte"
+
 @using System.Text
 @using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Identity
@@ -8,9 +9,9 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Confirm email change</PageTitle>
+<PageTitle>Bekräfta e-postbyte</PageTitle>
 
-<h1>Confirm email change</h1>
+<h1>Bekräfta e-postbyte</h1>
 
 <StatusMessage Message="@message"/>
 
@@ -30,13 +31,13 @@
         if (UserId is null || Email is null || Code is null)
         {
             RedirectManager.RedirectToWithStatus(
-                "Account/Login", "Error: Invalid email change confirmation link.", HttpContext);
+                "/konto/logga-in", "Fel: Ogiltig länk för bekräftelse av e-postbyte.", HttpContext);
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
         if (user is null)
         {
-            message = "Unable to find user with Id '{userId}'";
+            message = $"Kunde inte hitta användare med ID '{UserId}'";
             return;
         }
 
@@ -44,21 +45,20 @@
         var result = await UserManager.ChangeEmailAsync(user, Email, code);
         if (!result.Succeeded)
         {
-            message = "Error changing email.";
+            message = "Fel vid byte av e-postadress.";
             return;
         }
 
-        // In our UI email and user name are one and the same, so when we update the email
-        // we need to update the user name.
+        // Eftersom e-postadress = användarnamn i detta UI uppdateras även användarnamnet
         var setUserNameResult = await UserManager.SetUserNameAsync(user, Email);
         if (!setUserNameResult.Succeeded)
         {
-            message = "Error changing user name.";
+            message = "Fel vid byte av användarnamn.";
             return;
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        message = "Thank you for confirming your email change.";
+        message = "Tack för att du bekräftade ditt byte av e-postadress.";
     }
 
 }

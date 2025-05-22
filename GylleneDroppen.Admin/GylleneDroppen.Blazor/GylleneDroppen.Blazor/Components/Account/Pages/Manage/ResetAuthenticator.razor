@@ -1,6 +1,7 @@
-﻿@page "/Account/Manage/ResetAuthenticator"
-@using GylleneDroppen.Core.Entities
+﻿@page "/konto/hantera/aterstall-autentiserare"
+
 @using Microsoft.AspNetCore.Identity
+@using GylleneDroppen.Core.Entities
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -8,25 +9,24 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<ResetAuthenticator> Logger
 
-<PageTitle>Reset authenticator key</PageTitle>
+<PageTitle>Återställ autentiseringsnyckel</PageTitle>
 
 <StatusMessage/>
-<h3>Reset authenticator key</h3>
-<div class="alert alert-warning" role="alert">
+<h3>Återställ autentiseringsnyckel</h3>
+<div role="alert">
     <p>
-        <span class="glyphicon glyphicon-warning-sign"></span>
-        <strong>If you reset your authenticator key your authenticator app will not work until you reconfigure
-            it.</strong>
+        <strong>Om du återställer din autentiseringsnyckel kommer din autentiseringsapp inte att fungera förrän du har
+            konfigurerat den på nytt.</strong>
     </p>
     <p>
-        This process disables 2FA until you verify your authenticator app.
-        If you do not complete your authenticator app configuration you may lose access to your account.
+        Denna process inaktiverar 2FA tills du har verifierat din autentiseringsapp.
+        Om du inte slutför konfigurationen kan du förlora åtkomsten till ditt konto.
     </p>
 </div>
 <div>
     <form @formname="reset-authenticator" @onsubmit="OnSubmitAsync" method="post">
         <AntiforgeryToken/>
-        <button class="btn btn-danger" type="submit">Reset authenticator key</button>
+        <button type="submit">Återställ autentiseringsnyckel</button>
     </form>
 </div>
 
@@ -39,13 +39,13 @@
         await UserManager.SetTwoFactorEnabledAsync(user, false);
         await UserManager.ResetAuthenticatorKeyAsync(user);
         var userId = await UserManager.GetUserIdAsync(user);
-        Logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", userId);
+        Logger.LogInformation("Användare med ID '{UserId}' har återställt sin autentiseringsnyckel.", userId);
 
         await SignInManager.RefreshSignInAsync(user);
 
         RedirectManager.RedirectToWithStatus(
-            "Account/Manage/EnableAuthenticator",
-            "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.",
+            "/konto/hantera/aktivera-autentiserare",
+            "Din autentiseringsnyckel har återställts. Du måste konfigurera din autentiseringsapp med den nya nyckeln.",
             HttpContext);
     }
 

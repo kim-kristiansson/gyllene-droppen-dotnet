@@ -12,8 +12,10 @@ internal sealed class IdentityUserAccessor(
         var user = await userManager.GetUserAsync(context.User);
 
         if (user is null)
-            redirectManager.RedirectToWithStatus("Account/InvalidUser",
+        {
+            redirectManager.RedirectToWithStatus("konto/ogiltig-anvandare",
                 $"Error: Unable to load user with ID '{userManager.GetUserId(context.User)}'.", context);
+        }
 
         return user;
     }

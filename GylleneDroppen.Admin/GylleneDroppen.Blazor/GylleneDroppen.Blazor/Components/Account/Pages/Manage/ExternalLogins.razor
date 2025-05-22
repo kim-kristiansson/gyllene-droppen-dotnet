@@ -1,7 +1,8 @@
-﻿@page "/Account/Manage/ExternalLogins"
-@using GylleneDroppen.Core.Entities
+﻿@page "/konto/hantera/externa-inloggningar"
+
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
+@using GylleneDroppen.Core.Entities
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
@@ -9,13 +10,13 @@
 @inject IUserStore<ApplicationUser> UserStore
 @inject IdentityRedirectManager RedirectManager
 
-<PageTitle>Manage your external logins</PageTitle>
+<PageTitle>Hantera dina externa inloggningar</PageTitle>
 
 <StatusMessage/>
 @if (currentLogins?.Count > 0)
 {
-    <h3>Registered Logins</h3>
-    <table class="table">
+    <h3>Registrerade inloggningar</h3>
+    <table>
         <tbody>
         @foreach (var login in currentLogins)
         {
@@ -30,8 +31,8 @@
                             <div>
                                 <input type="hidden" name="@nameof(LoginProvider)" value="@login.LoginProvider"/>
                                 <input type="hidden" name="@nameof(ProviderKey)" value="@login.ProviderKey"/>
-                                <button type="submit" class="btn btn-primary"
-                                        title="Remove this @login.ProviderDisplayName login from your account">Remove
+                                <button type="submit" title="Ta bort @login.ProviderDisplayName från ditt konto">Ta
+                                    bort
                                 </button>
                             </div>
                         </form>
@@ -48,16 +49,16 @@
 }
 @if (otherLogins?.Count > 0)
 {
-    <h4>Add another service to log in.</h4>
+    <h4>Lägg till en annan inloggningstjänst</h4>
     <hr/>
-    <form class="form-horizontal" action="Account/Manage/LinkExternalLogin" method="post">
+    <form action="/konto/hantera/lanka-extern-inloggning" method="post">
         <AntiforgeryToken/>
         <div>
             <p>
                 @foreach (var provider in otherLogins)
                 {
-                    <button type="submit" class="btn btn-primary" name="Provider" value="@provider.Name"
-                            title="Log in using your @provider.DisplayName account">
+                    <button type="submit" name="Provider" value="@provider.Name"
+                            title="Logga in med @provider.DisplayName">
                         @provider.DisplayName
                     </button>
                 }
@@ -109,11 +110,11 @@
         var result = await UserManager.RemoveLoginAsync(user, LoginProvider!, ProviderKey!);
         if (!result.Succeeded)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: The external login was not removed.", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus("Fel: Den externa inloggningen kunde inte tas bort.", HttpContext);
         }
 
         await SignInManager.RefreshSignInAsync(user);
-        RedirectManager.RedirectToCurrentPageWithStatus("The external login was removed.", HttpContext);
+        RedirectManager.RedirectToCurrentPageWithStatus("Den externa inloggningen har tagits bort.", HttpContext);
     }
 
     private async Task OnGetLinkLoginCallbackAsync()
@@ -122,19 +123,18 @@
         var info = await SignInManager.GetExternalLoginInfoAsync(userId);
         if (info is null)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: Could not load external login info.", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus("Fel: Kunde inte läsa extern inloggningsinformation.", HttpContext);
         }
 
         var result = await UserManager.AddLoginAsync(user, info);
         if (!result.Succeeded)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: The external login was not added. External logins can only be associated with one account.", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus("Fel: Den externa inloggningen kunde inte läggas till. En extern inloggning kan endast kopplas till ett konto.", HttpContext);
         }
 
-        // Clear the existing external cookie to ensure a clean login process
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
-        RedirectManager.RedirectToCurrentPageWithStatus("The external login was added.", HttpContext);
+        RedirectManager.RedirectToCurrentPageWithStatus("Den externa inloggningen har lagts till.", HttpContext);
     }
 
 }

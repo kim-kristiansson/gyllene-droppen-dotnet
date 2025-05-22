@@ -1,47 +1,48 @@
-﻿@page "/Account/LoginWith2fa"
+﻿@page "/konto/logga-in-med-2fa"
+
 @using System.ComponentModel.DataAnnotations
-@using GylleneDroppen.Core.Entities
 @using Microsoft.AspNetCore.Identity
+@using GylleneDroppen.Core.Entities
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<LoginWith2fa> Logger
 
-<PageTitle>Two-factor authentication</PageTitle>
+<PageTitle>Tvåfaktorsautentisering</PageTitle>
 
-<h1>Two-factor authentication</h1>
+<h1>Tvåfaktorsautentisering</h1>
 <hr/>
 <StatusMessage Message="@message"/>
-<p>Your login is protected with an authenticator app. Enter your authenticator code below.</p>
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
-            <input type="hidden" name="RememberMe" value="@RememberMe"/>
-            <DataAnnotationsValidator/>
-            <ValidationSummary class="text-danger" role="alert"/>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.TwoFactorCode" id="Input.TwoFactorCode" class="form-control"
-                           autocomplete="off"/>
-                <label for="Input.TwoFactorCode" class="form-label">Authenticator code</label>
-                <ValidationMessage For="() => Input.TwoFactorCode" class="text-danger"/>
-            </div>
-            <div class="checkbox mb-3">
-                <label for="remember-machine" class="form-label">
-                    <InputCheckbox @bind-Value="Input.RememberMachine"/>
-                    Remember this machine
-                </label>
-            </div>
-            <div>
-                <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-            </div>
-        </EditForm>
+<p>Din inloggning är skyddad med en autentiseringsapp. Ange din verifieringskod nedan.</p>
+
+<EditForm Model="Input" FormName="login-with-2fa" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
+    <input type="hidden" name="RememberMe" value="@RememberMe"/>
+    <DataAnnotationsValidator/>
+    <ValidationSummary role="alert"/>
+
+    <div>
+        <InputText @bind-Value="Input.TwoFactorCode" id="Input.TwoFactorCode" autocomplete="off"/>
+        <label for="Input.TwoFactorCode">Verifieringskod</label>
+        <ValidationMessage For="() => Input.TwoFactorCode"/>
     </div>
-</div>
+
+    <div>
+        <label for="remember-machine">
+            <InputCheckbox @bind-Value="Input.RememberMachine"/>
+            Kom ihåg denna enhet
+        </label>
+    </div>
+
+    <div>
+        <button type="submit">Logga in</button>
+    </div>
+</EditForm>
+
 <p>
-    Don't have access to your authenticator device? You can
-    <a href="Account/LoginWithRecoveryCode?ReturnUrl=@ReturnUrl">log in with a recovery code</a>.
+    Har du inte tillgång till din autentiseringsenhet? Du kan
+    <a href="/konto/logga-in-med-reservkod?ReturnUrl=@ReturnUrl">logga in med en reservkod</a>.
 </p>
 
 @code {
@@ -56,9 +57,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Ensure the user has gone through the username & password screen first
-        user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
-               throw new InvalidOperationException("Unable to load two-factor authentication user.");
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync()
+               ?? throw new InvalidOperationException("Kunde inte läsa användare för tvåfaktorsautentisering.");
     }
 
     private async Task OnValidSubmitAsync()
@@ -69,30 +69,30 @@
 
         if (result.Succeeded)
         {
-            Logger.LogInformation("User with ID '{UserId}' logged in with 2fa.", userId);
+            Logger.LogInformation("Användare med ID '{UserId}' loggade in med 2FA.", userId);
             RedirectManager.RedirectTo(ReturnUrl);
         }
         else if (result.IsLockedOut)
         {
-            Logger.LogWarning("User with ID '{UserId}' account locked out.", userId);
-            RedirectManager.RedirectTo("Account/Lockout");
+            Logger.LogWarning("Användare med ID '{UserId}' är låst.", userId);
+            RedirectManager.RedirectTo("/konto/utlasning");
         }
         else
         {
-            Logger.LogWarning("Invalid authenticator code entered for user with ID '{UserId}'.", userId);
-            message = "Error: Invalid authenticator code.";
+            Logger.LogWarning("Ogiltig verifieringskod angavs för användare med ID '{UserId}'.", userId);
+            message = "Fel: Ogiltig verifieringskod.";
         }
     }
 
     private sealed class InputModel
     {
-        [Required]
-        [StringLength(7, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [Required(ErrorMessage = "Verifieringskod är obligatorisk.")]
+        [StringLength(7, ErrorMessage = "{0} måste vara minst {2} och högst {1} tecken långt.", MinimumLength = 6)]
         [DataType(DataType.Text)]
-        [Display(Name = "Authenticator code")]
+        [Display(Name = "Verifieringskod")]
         public string? TwoFactorCode { get; set; }
 
-        [Display(Name = "Remember this machine")]
+        [Display(Name = "Kom ihåg denna enhet")]
         public bool RememberMachine { get; set; }
     }
 
