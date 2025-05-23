@@ -9,7 +9,10 @@
 @inject IUserManagementService UserManagementService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject ILogger<string> Logger
+@inject ILogger<ManageUsers> Logger
+
+@rendermode InteractiveServer
+
 
 @attribute [Authorize(Policy = "AdminOnly")]
 
@@ -49,17 +52,20 @@ else if (regularUsers.Any())
         <tbody>
         @foreach (var user in regularUsers)
         {
+            var uid = user.Id.ToString();
+
             <tr>
                 <td>@user.Email</td>
                 <td>@user.FullName</td>
                 <td>@(user.Role == "User" ? "Medlem" : user.Role)</td>
                 <td>
-                    <button @onclick="() => PromoteUser(user.Id.ToString())" disabled="@isProcessing">
+                    <button type="button" @onclick="async () => await PromoteUser(uid)">
                         Lägg till i styrelsen
                     </button>
                 </td>
             </tr>
         }
+
         </tbody>
     </table>
 }
@@ -74,56 +80,58 @@ else
 {
     @foreach (var admin in adminUsers)
     {
-        <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px;">
+        <div>
             <p><strong>@admin.FullName</strong> - @admin.Email</p>
             <p>Roll: Styrelsemedlem @(admin.Id.ToString() == currentUserId ? "(Du)" : "")</p>
 
             @if (adminDepartments.ContainsKey(admin.Id.ToString()))
             {
-                <p>Ansvarsområde: <strong>@Departments.GetDisplayName(adminDepartments[admin.Id.ToString()])</strong></p>
+                <p>Ansvarsområde: <strong>@Departments.GetDisplayName(adminDepartments[admin.Id.ToString()])</strong>
+                </p>
             }
             else
             {
                 <p>Ansvarsområde: <em>Inget tilldelat</em></p>
             }
 
-            <div style="margin-top: 10px;">
+            <div>
                 @if (admin.Id.ToString() != currentUserId)
                 {
-                    <button @onclick="() => DemoteUser(admin.Id.ToString())" disabled="@isProcessing"
-                            style="margin-right: 10px;">
+                    <button type="button" @onclick="async () => await DemoteUser(admin.Id.ToString())"
+                            disabled="@isProcessing">
                         Ta bort från styrelsen
                     </button>
                 }
 
                 @if (showDepartmentForm && selectedAdminId == admin.Id.ToString())
                 {
-                    <select @bind="selectedDepartment" style="margin-right: 10px;">
+                    <select @bind="selectedDepartment">
                         <option value="">Välj ansvarsområde</option>
                         @foreach (var dept in Departments.All)
                         {
                             <option value="@dept.Value">@dept.DisplayName</option>
                         }
                     </select>
-                    <button @onclick="() => SetDepartment(admin.Id.ToString())" disabled="@isProcessing"
-                            style="margin-right: 5px;">
+                    <button type="button" @onclick="async () => await SetDepartment(admin.Id.ToString())"
+                            disabled="@isProcessing">
                         Sätt ansvarsområde
                     </button>
-                    <button @onclick="CancelDepartmentEdit" style="margin-right: 5px;">
+                    <button type="button" @onclick="CancelDepartmentEdit">
                         Avbryt
                     </button>
                 }
                 else
                 {
-                    <button @onclick="() => ShowDepartmentForm(admin.Id.ToString())" disabled="@isProcessing"
-                            style="margin-right: 10px;">
+                    <button type="button" @onclick="() => ShowDepartmentForm(admin.Id.ToString())"
+                            disabled="@isProcessing">
                         @(adminDepartments.ContainsKey(admin.Id.ToString()) ? "Ändra ansvarsområde" : "Sätt ansvarsområde")
                     </button>
                 }
 
                 @if (adminDepartments.ContainsKey(admin.Id.ToString()))
                 {
-                    <button @onclick="() => RemoveDepartment(admin.Id.ToString())" disabled="@isProcessing">
+                    <button type="button" @onclick="async () => await RemoveDepartment(admin.Id.ToString())"
+                            disabled="@isProcessing">
                         Ta bort ansvarsområde
                     </button>
                 }
@@ -172,6 +180,7 @@ else
             isLoading = true;
             users = await UserManagementService.GetAllUsersAsync();
             adminUsers = await UserManagementService.GetAdminUsersAsync();
+            Logger.LogInformation("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!Loaded {UserCount} total users, {AdminCount} admins", users.Count, adminUsers.Count);
         }
         catch (Exception ex)
         {
@@ -182,6 +191,7 @@ else
         {
             isLoading = false;
             StateHasChanged();
+            Logger.LogInformation("Loaded {UserCount} total users, {AdminCount} admins", users.Count, adminUsers.Count);
         }
     }
 
@@ -200,8 +210,10 @@ else
         StateHasChanged();
     }
 
-    private async Task PromoteUser(string userId)
+    public async Task PromoteUser(string userId)
     {
+        Logger.LogWarning("🔥🔥🔥 PromoteUser CLICKED for {UserId}", userId);
+
         if (isProcessing) return;
 
         try
@@ -210,16 +222,23 @@ else
             StateHasChanged();
 
             var result = await UserManagementService.PromoteToAdminAsync(userId, currentUserId);
+            Logger.LogInformation("PromoteToAdminAsync result for {UserId}: {Result}", userId, result);
 
             if (result)
             {
                 statusMessage = "Medlemmen har lagts till i styrelsen.";
                 await LoadUsers();
                 await LoadAdminDepartments();
+
+                var newlyPromoted = users.FirstOrDefault(u => u.Id.ToString() == userId);
+                if (newlyPromoted != null && !adminUsers.Any(u => u.Id == newlyPromoted.Id))
+                {
+                    adminUsers.Add(newlyPromoted);
+                }
             }
             else
             {
-                statusMessage = "Fel: Kunde inte lägga till medlemmen i styrelsen.";
+                statusMessage = $"Fel: PromoteToAdminAsync misslyckades för ID: {userId}";
             }
         }
         catch (Exception ex)
@@ -350,4 +369,5 @@ else
             StateHasChanged();
         }
     }
+
 }

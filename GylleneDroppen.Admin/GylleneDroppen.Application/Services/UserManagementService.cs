@@ -59,6 +59,9 @@ public class UserManagementService(
 
     public async Task<bool> PromoteToAdminAsync(string userId, string currentAdminId)
     {
+        logger.LogWarning("🔍 PromoteToAdminAsync called with userId={UserId}, by admin={AdminId}", userId,
+            currentAdminId);
+
         try
         {
             // Verify the current user is an admin
