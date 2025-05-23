@@ -6,37 +6,44 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-@attribute [Authorize(Policy = "Admin")]
+@attribute [Authorize(Policy = "AdminOnly")]
 
 <PageTitle>Admin Dashboard</PageTitle>
 
 <h1>Admin Dashboard</h1>
 <p>Välkommen till admin-panelen!</p>
 
-<div>
-    <h2>System Information</h2>
-    <p><strong>Server tid:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</p>
-    <p><strong>Användare inloggad som:</strong> @currentUserEmail</p>
-    <p><strong>Användar-ID:</strong> @currentUserId</p>
-</div>
+<h2>System Information</h2>
+<p><strong>Server tid:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</p>
+<p><strong>Användare inloggad som:</strong> @currentUserEmail</p>
+<p><strong>Användar-ID:</strong> @currentUserId</p>
 
-<div>
-    <h2>Snabbstatistik</h2>
-    <p><strong>Totalt antal användare:</strong> @totalUsers</p>
-    <p><strong>Bekräftade e-postadresser:</strong> @confirmedEmails</p>
-</div>
+<h2>Användarstatistik</h2>
+<p><strong>Totalt antal användare:</strong> @totalUsers</p>
+<p><strong>Bekräftade e-postadresser:</strong> @confirmedEmails</p>
+<p><strong>Obekräftade e-postadresser:</strong> @(totalUsers - confirmedEmails)</p>
 
-<div>
-    <h2>Admin Actions</h2>
-    <p>Här kommer fler admin-funktioner att läggas till...</p>
-    <button type="button" @onclick="RefreshStats">Uppdatera statistik</button>
-</div>
+<h2>Admin Actions</h2>
+<p>Här kommer fler admin-funktioner att läggas till...</p>
+<button type="button" @onclick="RefreshStats">Uppdatera statistik</button>
+
+@if (isLoading)
+{
+    <p>Uppdaterar...</p>
+}
+
+@if (lastUpdated.HasValue)
+{
+    <p>Senast uppdaterad: @lastUpdated.Value.ToString("HH:mm:ss")</p>
+}
 
 @code {
     private string currentUserEmail = "";
     private string currentUserId = "";
     private int totalUsers = 0;
     private int confirmedEmails = 0;
+    private bool isLoading = false;
+    private DateTime? lastUpdated = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,11 +68,18 @@
         var users = UserManager.Users.ToList();
         totalUsers = users.Count;
         confirmedEmails = users.Count(u => u.EmailConfirmed);
+        lastUpdated = DateTime.Now;
     }
 
     private async Task RefreshStats()
     {
+        isLoading = true;
+        StateHasChanged();
+
+        await Task.Delay(500);
         await LoadStatistics();
+
+        isLoading = false;
         StateHasChanged();
     }
 

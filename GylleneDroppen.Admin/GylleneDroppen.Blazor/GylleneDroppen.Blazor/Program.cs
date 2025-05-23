@@ -5,6 +5,7 @@ using GylleneDroppen.Infrastructure.Authorization;
 using GylleneDroppen.Infrastructure.Data;
 using GylleneDroppen.Infrastructure.DependencyInjection;
 using GylleneDroppen.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using _Imports = GylleneDroppen.Blazor.Client._Imports;
@@ -48,8 +49,10 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("Admin", policy =>
+    .AddPolicy("AdminOnly", policy =>
         policy.Requirements.Add(new AdminRequirement()));
+
+builder.Services.AddScoped<IAuthorizationHandler, AdminAuthorizationHandler>();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
