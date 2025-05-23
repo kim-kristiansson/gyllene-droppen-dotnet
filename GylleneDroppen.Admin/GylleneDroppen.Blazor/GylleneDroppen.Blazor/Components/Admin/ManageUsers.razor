@@ -1,0 +1,353 @@
+@page "/admin/anvandare"
+@using GylleneDroppen.Application.Contants
+@using Microsoft.AspNetCore.Authorization
+@using GylleneDroppen.Core.Entities
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.User
+@using Microsoft.AspNetCore.Identity
+
+@inject IUserManagementService UserManagementService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<string> Logger
+
+@attribute [Authorize(Policy = "AdminOnly")]
+
+<PageTitle>Användarhantering</PageTitle>
+
+<h1>Användarhantering</h1>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div>
+        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
+        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+    </div>
+}
+
+@{
+    var regularUsers = users.Where(u => u.Role != "Admin").ToList();
+}
+
+<h2>Alla medlemmar (@regularUsers.Count)</h2>
+
+@if (isLoading)
+{
+    <p>Laddar...</p>
+}
+else if (regularUsers.Any())
+{
+    <table>
+        <thead>
+        <tr>
+            <th>E-post</th>
+            <th>Namn</th>
+            <th>Roll</th>
+            <th>Åtgärder</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var user in regularUsers)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.FullName</td>
+                <td>@(user.Role == "User" ? "Medlem" : user.Role)</td>
+                <td>
+                    <button @onclick="() => PromoteUser(user.Id.ToString())" disabled="@isProcessing">
+                        Lägg till i styrelsen
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Inga medlemmar hittades.</p>
+}
+
+<h2>Styrelsen (@adminUsers.Count)</h2>
+
+@if (adminUsers.Any())
+{
+    @foreach (var admin in adminUsers)
+    {
+        <div style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px;">
+            <p><strong>@admin.FullName</strong> - @admin.Email</p>
+            <p>Roll: Styrelsemedlem @(admin.Id.ToString() == currentUserId ? "(Du)" : "")</p>
+
+            @if (adminDepartments.ContainsKey(admin.Id.ToString()))
+            {
+                <p>Ansvarsområde: <strong>@Departments.GetDisplayName(adminDepartments[admin.Id.ToString()])</strong></p>
+            }
+            else
+            {
+                <p>Ansvarsområde: <em>Inget tilldelat</em></p>
+            }
+
+            <div style="margin-top: 10px;">
+                @if (admin.Id.ToString() != currentUserId)
+                {
+                    <button @onclick="() => DemoteUser(admin.Id.ToString())" disabled="@isProcessing"
+                            style="margin-right: 10px;">
+                        Ta bort från styrelsen
+                    </button>
+                }
+
+                @if (showDepartmentForm && selectedAdminId == admin.Id.ToString())
+                {
+                    <select @bind="selectedDepartment" style="margin-right: 10px;">
+                        <option value="">Välj ansvarsområde</option>
+                        @foreach (var dept in Departments.All)
+                        {
+                            <option value="@dept.Value">@dept.DisplayName</option>
+                        }
+                    </select>
+                    <button @onclick="() => SetDepartment(admin.Id.ToString())" disabled="@isProcessing"
+                            style="margin-right: 5px;">
+                        Sätt ansvarsområde
+                    </button>
+                    <button @onclick="CancelDepartmentEdit" style="margin-right: 5px;">
+                        Avbryt
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="() => ShowDepartmentForm(admin.Id.ToString())" disabled="@isProcessing"
+                            style="margin-right: 10px;">
+                        @(adminDepartments.ContainsKey(admin.Id.ToString()) ? "Ändra ansvarsområde" : "Sätt ansvarsområde")
+                    </button>
+                }
+
+                @if (adminDepartments.ContainsKey(admin.Id.ToString()))
+                {
+                    <button @onclick="() => RemoveDepartment(admin.Id.ToString())" disabled="@isProcessing">
+                        Ta bort ansvarsområde
+                    </button>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+    <p>Inga styrelsemedlemmar hittades.</p>
+}
+
+@code {
+    private List<UserResponseDto> users = new();
+    private List<UserResponseDto> adminUsers = new();
+    private Dictionary<string, string> adminDepartments = new();
+    private string currentUserId = string.Empty;
+    private string statusMessage = string.Empty;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private bool showDepartmentForm = false;
+    private string selectedAdminId = string.Empty;
+    private string selectedDepartment = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUser();
+        await LoadUsers();
+        await LoadAdminDepartments();
+    }
+
+    private async Task LoadCurrentUser()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user != null)
+        {
+            currentUserId = user.Id;
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+        try
+        {
+            isLoading = true;
+            users = await UserManagementService.GetAllUsersAsync();
+            adminUsers = await UserManagementService.GetAdminUsersAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading users");
+            statusMessage = "Fel: Kunde inte ladda medlemmar";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadAdminDepartments()
+    {
+        adminDepartments.Clear();
+        foreach (var admin in adminUsers)
+        {
+            var department = await UserManagementService.GetAdminDepartmentAsync(admin.Id.ToString());
+            if (!string.IsNullOrEmpty(department))
+            {
+                adminDepartments[admin.Id.ToString()] = department;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task PromoteUser(string userId)
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            var result = await UserManagementService.PromoteToAdminAsync(userId, currentUserId);
+
+            if (result)
+            {
+                statusMessage = "Medlemmen har lagts till i styrelsen.";
+                await LoadUsers();
+                await LoadAdminDepartments();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte lägga till medlemmen i styrelsen.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error promoting user {UserId}", userId);
+            statusMessage = "Fel: Ett oväntat fel inträffade vid tillägg till styrelsen.";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DemoteUser(string userId)
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            var result = await UserManagementService.DemoteFromAdminAsync(userId, currentUserId);
+
+            if (result)
+            {
+                statusMessage = "Medlemmen har tagits bort från styrelsen.";
+                await LoadUsers();
+                await LoadAdminDepartments();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte ta bort medlemmen från styrelsen. Det måste finnas minst en styrelsemedlem kvar.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error demoting user {UserId}", userId);
+            statusMessage = "Fel: Ett oväntat fel inträffade vid borttagning från styrelsen.";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowDepartmentForm(string adminId)
+    {
+        selectedAdminId = adminId;
+        selectedDepartment = adminDepartments.ContainsKey(adminId) ? adminDepartments[adminId] : "";
+        showDepartmentForm = true;
+        StateHasChanged();
+    }
+
+    private void CancelDepartmentEdit()
+    {
+        showDepartmentForm = false;
+        selectedAdminId = string.Empty;
+        selectedDepartment = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task SetDepartment(string adminId)
+    {
+        if (isProcessing || string.IsNullOrEmpty(selectedDepartment)) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            var result = await UserManagementService.SetAdminDepartmentAsync(adminId, selectedDepartment, currentUserId);
+
+            if (result)
+            {
+                statusMessage = "Ansvarsområde har tilldelats styrelsemedlemmen.";
+                await LoadAdminDepartments();
+                CancelDepartmentEdit();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte tilldela ansvarsområde.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error setting department for admin {AdminId}", adminId);
+            statusMessage = "Fel: Ett oväntat fel inträffade vid tilldelning av ansvarsområde.";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveDepartment(string adminId)
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            var result = await UserManagementService.RemoveAdminDepartmentAsync(adminId, currentUserId);
+
+            if (result)
+            {
+                statusMessage = "Ansvarsområde har tagits bort från styrelsemedlemmen.";
+                await LoadAdminDepartments();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte ta bort ansvarsområde.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error removing department from admin {AdminId}", adminId);
+            statusMessage = "Fel: Ett oväntat fel inträffade vid borttagning av ansvarsområde.";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+}

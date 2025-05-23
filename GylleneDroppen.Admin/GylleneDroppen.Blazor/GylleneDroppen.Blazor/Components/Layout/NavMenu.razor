@@ -1,0 +1,75 @@
+@using Microsoft.AspNetCore.Identity
+@using GylleneDroppen.Core.Entities
+
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+
+<p><strong>Gyllene Droppen Admin</strong></p>
+
+<input type="checkbox" title="Navigation menu"/>
+
+<div onclick="document.querySelector('input[title=\'Navigation menu\']').click()">
+    <nav>
+        <p>
+            <NavLink href="" Match="NavLinkMatch.All">Start</NavLink>
+        </p>
+
+        <AuthorizeView>
+            <Authorized>
+                <p>
+                    <NavLink href="konto/hantera">Mitt konto</NavLink>
+                </p>
+
+                <AuthorizeView Policy="AdminOnly">
+                    <Authorized Context="adminContext">
+                        <p><strong>ADMINISTRATION</strong></p>
+                        <p>
+                            <NavLink href="admin">Dashboard</NavLink>
+                        </p>
+                        <p>
+                            <NavLink href="admin/anvandare">Användarhantering</NavLink>
+                        </p>
+                    </Authorized>
+                </AuthorizeView>
+
+                <form action="/konto/logga-ut" method="post">
+                    <AntiforgeryToken/>
+                    <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
+                    <button type="submit">Logga ut</button>
+                </form>
+            </Authorized>
+
+            <NotAuthorized>
+                <p>
+                    <NavLink href="konto/registrera">Registrera</NavLink>
+                </p>
+                <p>
+                    <NavLink href="konto/logga-in">Logga in</NavLink>
+                </p>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</div>
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+}

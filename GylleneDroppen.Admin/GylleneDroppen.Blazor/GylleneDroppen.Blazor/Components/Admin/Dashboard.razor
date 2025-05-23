@@ -16,16 +16,23 @@
 <h2>System Information</h2>
 <p><strong>Server tid:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</p>
 <p><strong>Användare inloggad som:</strong> @currentUserEmail</p>
-<p><strong>Användar-ID:</strong> @currentUserId</p>
+<p><strong>Användar-ID:</strong> <code>@currentUserId</code></p>
 
 <h2>Användarstatistik</h2>
+
 <p><strong>Totalt antal användare:</strong> @totalUsers</p>
 <p><strong>Bekräftade e-postadresser:</strong> @confirmedEmails</p>
 <p><strong>Obekräftade e-postadresser:</strong> @(totalUsers - confirmedEmails)</p>
 
 <h2>Admin Actions</h2>
-<p>Här kommer fler admin-funktioner att läggas till...</p>
-<button type="button" @onclick="RefreshStats">Uppdatera statistik</button>
+
+<p>
+    <a href="/admin/anvandare">Hantera användare</a>
+</p>
+
+<p>
+    <button type="button" @onclick="RefreshStats">Uppdatera statistik</button>
+</p>
 
 @if (isLoading)
 {
@@ -34,8 +41,16 @@
 
 @if (lastUpdated.HasValue)
 {
-    <p>Senast uppdaterad: @lastUpdated.Value.ToString("HH:mm:ss")</p>
+    <p><small>Senast uppdaterad: @lastUpdated.Value.ToString("HH:mm:ss")</small></p>
 }
+
+<h2>Snabblänkar</h2>
+
+<ul>
+    <li><a href="/admin/anvandare">Befordra/degradera administratörer</a></li>
+    <li><a href="/konto/hantera">Hantera ditt konto</a></li>
+    <li><a href="/">Tillbaka till startsidan</a></li>
+</ul>
 
 @code {
     private string currentUserEmail = "";
