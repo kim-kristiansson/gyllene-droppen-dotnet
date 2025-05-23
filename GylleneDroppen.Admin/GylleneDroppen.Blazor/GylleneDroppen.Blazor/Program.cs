@@ -1,6 +1,8 @@
 using GylleneDroppen.Blazor.Components;
 using GylleneDroppen.Blazor.Components.Account;
 using GylleneDroppen.Core.Entities;
+using GylleneDroppen.Infrastructure.Authorization;
+using GylleneDroppen.Infrastructure.Data;
 using GylleneDroppen.Infrastructure.DependencyInjection;
 using GylleneDroppen.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -27,18 +29,43 @@ builder.Services.AddAuthentication(options =>
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
         options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
     })
-    .AddIdentityCookies();
+    .AddIdentityCookies(options =>
+    {
+        options.ApplicationCookie?.Configure(cookieOptions =>
+        {
+            cookieOptions.LoginPath = "/konto/logga-in";
+            cookieOptions.AccessDeniedPath = "/konto/nekad-atkomst";
+            cookieOptions.ReturnUrlParameter = "returnUrl";
+        });
+    });
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("Admin", policy =>
+        policy.Requirements.Add(new AdminRequirement()));
+
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
+
+using var scope = app.Services.CreateScope();
+try
+{
+    await DataSeeder.SeedDataAsync(scope.ServiceProvider);
+    Console.WriteLine("✅ Data seeding completed successfully");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"❌ Error during data seeding: {ex.Message}");
+}
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -14,6 +14,7 @@ public static class ApplicationConfigurationExtension
         services.Configure<RedisSettings>(configuration.GetRequiredSection("RedisSettings"));
         services.Configure<SmtpSettings>(configuration.GetRequiredSection("SmtpSettings"));
         services.Configure<GlobalSettings>(configuration.GetRequiredSection("GlobalSettings"));
+        services.Configure<AdminSettings>(configuration.GetRequiredSection("AdminSettings"));
 
         // Log database connection preview
         var databaseSettings = configuration

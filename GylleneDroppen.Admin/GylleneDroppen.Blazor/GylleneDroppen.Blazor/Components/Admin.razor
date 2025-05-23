@@ -1,0 +1,72 @@
+@page "/admin"
+@using Microsoft.AspNetCore.Authorization
+@using GylleneDroppen.Core.Entities
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize(Policy = "Admin")]
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<h1>Admin Dashboard</h1>
+<p>Välkommen till admin-panelen!</p>
+
+<div>
+    <h2>System Information</h2>
+    <p><strong>Server tid:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</p>
+    <p><strong>Användare inloggad som:</strong> @currentUserEmail</p>
+    <p><strong>Användar-ID:</strong> @currentUserId</p>
+</div>
+
+<div>
+    <h2>Snabbstatistik</h2>
+    <p><strong>Totalt antal användare:</strong> @totalUsers</p>
+    <p><strong>Bekräftade e-postadresser:</strong> @confirmedEmails</p>
+</div>
+
+<div>
+    <h2>Admin Actions</h2>
+    <p>Här kommer fler admin-funktioner att läggas till...</p>
+    <button type="button" @onclick="RefreshStats">Uppdatera statistik</button>
+</div>
+
+@code {
+    private string currentUserEmail = "";
+    private string currentUserId = "";
+    private int totalUsers = 0;
+    private int confirmedEmails = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserInfo();
+        await LoadStatistics();
+    }
+
+    private async Task LoadUserInfo()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+
+        if (user != null)
+        {
+            currentUserEmail = user.Email ?? "Okänd";
+            currentUserId = user.Id;
+        }
+    }
+
+    private async Task LoadStatistics()
+    {
+        var users = UserManager.Users.ToList();
+        totalUsers = users.Count;
+        confirmedEmails = users.Count(u => u.EmailConfirmed);
+    }
+
+    private async Task RefreshStats()
+    {
+        await LoadStatistics();
+        StateHasChanged();
+    }
+
+}
