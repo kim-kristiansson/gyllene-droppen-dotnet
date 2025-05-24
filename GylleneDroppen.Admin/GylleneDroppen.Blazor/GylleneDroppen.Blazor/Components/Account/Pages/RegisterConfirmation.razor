@@ -16,22 +16,12 @@
 
 <StatusMessage Message="@statusMessage"/>
 
-@if (emailConfirmationLink is not null)
-{
-    <p>
-        Den här appen har för närvarande ingen riktig e-postavsändare konfigurerad. Se <a
-            href="https://aka.ms/aspaccountconf">dessa dokument</a> för att konfigurera en riktig avsändare.<br/>
-        Normalt skulle detta ha skickats via e-post: <a href="@emailConfirmationLink">Klicka här för att bekräfta ditt
-            konto</a>
-    </p>
-}
-else
-{
-    <p role="alert">Kontrollera din e-post för att bekräfta ditt konto.</p>
-}
+<p role="alert">
+    Ett e-postmeddelande har skickats till <strong>@Email</strong> med en länk för att bekräfta ditt konto.<br/>
+    Om du inte ser e-postmeddelandet inom några minuter – kontrollera även din skräppostmapp.
+</p>
 
 @code {
-    private string? emailConfirmationLink;
     private string? statusMessage;
 
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
@@ -45,6 +35,7 @@ else
         if (Email is null)
         {
             RedirectManager.RedirectTo("");
+            return;
         }
 
         var user = await UserManager.FindByEmailAsync(Email);
@@ -52,15 +43,6 @@ else
         {
             HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             statusMessage = "Fel: Kunde inte hitta användare för angiven e-postadress.";
-        }
-        else if (EmailSender is IdentityNoOpEmailSender)
-        {
-            var userId = await UserManager.GetUserIdAsync(user);
-            var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-            emailConfirmationLink = NavigationManager.GetUriWithQueryParameters(
-                NavigationManager.ToAbsoluteUri("/konto/bekrafta-epost").AbsoluteUri,
-                new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
         }
     }
 

@@ -1,5 +1,6 @@
 using GylleneDroppen.Blazor.Components;
 using GylleneDroppen.Blazor.Components.Account;
+using GylleneDroppen.Blazor.Email;
 using GylleneDroppen.Core.Entities;
 using GylleneDroppen.Infrastructure.Authorization;
 using GylleneDroppen.Infrastructure.Data;
@@ -50,13 +51,13 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddSignInManager()
     .AddDefaultTokenProviders();
 
+builder.Services.AddScoped<IEmailSender<ApplicationUser>, EmailSender>();
+
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminOnly", policy =>
         policy.Requirements.Add(new AdminRequirement()));
 
 builder.Services.AddScoped<IAuthorizationHandler, AdminAuthorizationHandler>();
-
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
 

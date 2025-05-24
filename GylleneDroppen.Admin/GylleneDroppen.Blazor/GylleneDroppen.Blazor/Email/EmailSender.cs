@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace GylleneDroppen.Blazor.Email;
 
-internal sealed class RealEmailSender(SmtpClient smtpClient) : IEmailSender<ApplicationUser>
+internal sealed class EmailSender(SmtpClient smtpClient) : IEmailSender<ApplicationUser>
 {
     public async Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
     {
