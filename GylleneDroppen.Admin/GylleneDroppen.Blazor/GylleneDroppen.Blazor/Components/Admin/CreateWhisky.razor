@@ -1,0 +1,203 @@
+@page "/admin/whiskies/create"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.Whisky
+@using GylleneDroppen.Core.Constants
+@using Microsoft.AspNetCore.Authorization
+
+@inject IWhiskyService WhiskyService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Policy = "AdminOnly")]
+@rendermode InteractiveServer
+
+<PageTitle>Lägg till Whisky</PageTitle>
+
+<h1>Lägg till Whisky</h1>
+
+<div>
+    <button @onclick="GoBack">← Tillbaka</button>
+</div>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div>
+        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
+        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+    </div>
+}
+
+<EditForm Model="whiskyDto" OnValidSubmit="CreateWhisky">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    <fieldset>
+        <legend>Bild</legend>
+        <ImageUpload CurrentImagePath="@currentImagePath"
+                     OnImageUploaded="HandleImageUploaded"
+                     OnImageRemoved="HandleImageRemoved"/>
+    </fieldset>
+
+    <fieldset>
+        <legend>Grundinformation</legend>
+
+        <div>
+            <label>Namn:</label>
+            <InputText @bind-Value="whiskyDto.Name"/>
+            <ValidationMessage For="() => whiskyDto.Name"/>
+        </div>
+
+        <div>
+            <label>Destilleri:</label>
+            <InputText @bind-Value="whiskyDto.Distillery"/>
+            <ValidationMessage For="() => whiskyDto.Distillery"/>
+        </div>
+
+        <div>
+            <label>Land:</label>
+            <InputSelect @bind-Value="whiskyDto.Country">
+                <option value="">Välj land</option>
+                @foreach (var country in WhiskyConstants.Countries)
+                {
+                    <option value="@country">@country</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => whiskyDto.Country"/>
+        </div>
+
+        <div>
+            <label>Region:</label>
+            <InputSelect @bind-Value="whiskyDto.Region">
+                <option value="">Välj region</option>
+                @foreach (var region in WhiskyConstants.CommonRegions)
+                {
+                    <option value="@region">@region</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => whiskyDto.Region"/>
+        </div>
+
+        <div>
+            <label>Typ:</label>
+            <InputSelect @bind-Value="whiskyDto.Type">
+                <option value="">Välj typ</option>
+                @foreach (var type in WhiskyConstants.WhiskyTypes)
+                {
+                    <option value="@type">@type</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => whiskyDto.Type"/>
+        </div>
+
+        <div>
+            <label>Ålder (år, lämna tomt för NAS):</label>
+            <InputNumber @bind-Value="whiskyDto.Age"/>
+            <ValidationMessage For="() => whiskyDto.Age"/>
+        </div>
+
+        <div>
+            <label>Alkoholhalt (%):</label>
+            <InputNumber @bind-Value="whiskyDto.Abv" step="0.1"/>
+            <ValidationMessage For="() => whiskyDto.Abv"/>
+        </div>
+
+        <div>
+            <label>Pris (kr, valfritt):</label>
+            <InputNumber @bind-Value="whiskyDto.Price" step="0.01"/>
+            <ValidationMessage For="() => whiskyDto.Price"/>
+        </div>
+
+        <div>
+            <label>Flaskstorlek (ml, valfritt):</label>
+            <InputNumber @bind-Value="whiskyDto.BottleSize"/>
+            <ValidationMessage For="() => whiskyDto.BottleSize"/>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Provningsanteckningar (valfritt)</legend>
+
+        <div>
+            <label>Färg:</label>
+            <InputTextArea @bind-Value="whiskyDto.Color" rows="2"/>
+            <ValidationMessage For="() => whiskyDto.Color"/>
+        </div>
+
+        <div>
+            <label>Doft:</label>
+            <InputTextArea @bind-Value="whiskyDto.Nose" rows="3"/>
+            <ValidationMessage For="() => whiskyDto.Nose"/>
+        </div>
+
+        <div>
+            <label>Smak:</label>
+            <InputTextArea @bind-Value="whiskyDto.Palate" rows="3"/>
+            <ValidationMessage For="() => whiskyDto.Palate"/>
+        </div>
+
+        <div>
+            <label>Eftersmak:</label>
+            <InputTextArea @bind-Value="whiskyDto.Finish" rows="3"/>
+            <ValidationMessage For="() => whiskyDto.Finish"/>
+        </div>
+    </fieldset>
+
+    <div>
+        <button type="submit" disabled="@isProcessing">
+            @(isProcessing ? "Skapar..." : "Skapa whisky")
+        </button>
+        <button type="button" @onclick="GoBack">Avbryt</button>
+    </div>
+</EditForm>
+
+@code {
+    private CreateWhiskyRequestDto whiskyDto = new();
+    private bool isProcessing = false;
+    private string statusMessage = string.Empty;
+    private string? currentImagePath;
+
+    private async Task CreateWhisky()
+    {
+        isProcessing = true;
+        statusMessage = string.Empty;
+
+        try
+        {
+            var createdWhisky = await WhiskyService.CreateWhiskyAsync(whiskyDto);
+
+            // Update image path if one was uploaded
+            if (!string.IsNullOrEmpty(currentImagePath))
+            {
+                await WhiskyService.UpdateWhiskyImageAsync(createdWhisky.Id, currentImagePath);
+            }
+
+            NavigationManager.NavigateTo($"/whiskies/{createdWhisky.Id}");
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleImageUploaded(string imagePath)
+    {
+        currentImagePath = imagePath;
+        StateHasChanged();
+    }
+
+    private void HandleImageRemoved()
+    {
+        currentImagePath = null;
+        StateHasChanged();
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/admin/whiskies");
+    }
+
+}

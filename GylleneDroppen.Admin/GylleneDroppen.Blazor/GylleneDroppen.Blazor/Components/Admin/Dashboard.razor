@@ -1,10 +1,14 @@
 @page "/admin"
 @using Microsoft.AspNetCore.Authorization
 @using GylleneDroppen.Core.Entities
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.Whisky
 @using Microsoft.AspNetCore.Identity
 
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IWhiskyService WhiskyService
+@inject ITastingHistoryService TastingHistoryService
 
 @attribute [Authorize(Policy = "AdminOnly")]
 
@@ -18,17 +22,73 @@
 <p><strong>Användare inloggad som:</strong> @currentUserEmail</p>
 <p><strong>Användar-ID:</strong> <code>@currentUserId</code></p>
 
-<h2>Användarstatistik</h2>
+<div>
+    <div>
+        <h2>Användarstatistik</h2>
+        <p><strong>Totalt antal användare:</strong> @totalUsers</p>
+        <p><strong>Bekräftade e-postadresser:</strong> @confirmedEmails</p>
+        <p><strong>Obekräftade e-postadresser:</strong> @(totalUsers - confirmedEmails)</p>
+    </div>
 
-<p><strong>Totalt antal användare:</strong> @totalUsers</p>
-<p><strong>Bekräftade e-postadresser:</strong> @confirmedEmails</p>
-<p><strong>Obekräftade e-postadresser:</strong> @(totalUsers - confirmedEmails)</p>
+    <div>
+        <h2>Whisky-statistik</h2>
+        <p><strong>Totalt antal whiskies:</strong> @totalWhiskies</p>
+        <p><strong>Antal provningar:</strong> @totalTastings</p>
+        <p><strong>Mest populära land:</strong> @mostPopularCountry</p>
+        <p><strong>Mest populära region:</strong> @mostPopularRegion</p>
+        <p><strong>Genomsnittlig ålder:</strong> @averageAge år</p>
+        <p><strong>Genomsnittlig ABV:</strong> @averageAbv%</p>
+    </div>
+</div>
+
+<h2>Senaste aktivitet</h2>
+
+@if (recentTastings.Any())
+{
+    <div>
+        <h3>Senaste provningar</h3>
+        @foreach (var tasting in recentTastings.Take(5))
+        {
+            <div>
+                <strong>@tasting.EventName</strong> - @tasting.WhiskyName
+                <br>
+                <small>@tasting.TastingDate.ToString("yyyy-MM-dd") av @tasting.OrganizedByUserName</small>
+            </div>
+        }
+    </div>
+}
+
+@if (featuredWhiskies.Any())
+{
+    <div>
+        <h3>Senast tillagda whiskies</h3>
+        @foreach (var whisky in featuredWhiskies.Take(5))
+        {
+            <div>
+                <strong>@whisky.Name</strong> - @whisky.Distillery
+                <br>
+                <small>@whisky.CreatedDate.ToString("yyyy-MM-dd") av @whisky.CreatedByUserName</small>
+            </div>
+        }
+    </div>
+}
 
 <h2>Admin Actions</h2>
 
-<p>
-    <a href="/admin/anvandare">Hantera användare</a>
-</p>
+<div>
+    <p>
+        <a href="/admin/anvandare">Hantera användare</a>
+    </p>
+    <p>
+        <a href="/admin/whiskies">Hantera whiskies</a>
+    </p>
+    <p>
+        <a href="/admin/whiskies/create">Lägg till ny whisky</a>
+    </p>
+    <p>
+        <a href="/whiskies">Visa alla whiskies</a>
+    </p>
+</div>
 
 <p>
     <button type="button" @onclick="RefreshStats">Uppdatera statistik</button>
@@ -55,8 +115,23 @@
 @code {
     private string currentUserEmail = "";
     private string currentUserId = "";
+
+    // User statistics
     private int totalUsers = 0;
     private int confirmedEmails = 0;
+
+    // Whisky statistics
+    private int totalWhiskies = 0;
+    private int totalTastings = 0;
+    private string mostPopularCountry = "";
+    private string mostPopularRegion = "";
+    private decimal averageAge = 0;
+    private decimal averageAbv = 0;
+
+    // Recent activity
+    private List<TastingHistoryDto> recentTastings = new();
+    private List<WhiskyResponseDto> featuredWhiskies = new();
+
     private bool isLoading = false;
     private DateTime? lastUpdated = null;
 
@@ -80,9 +155,49 @@
 
     private async Task LoadStatistics()
     {
+        // Load user statistics
         var users = UserManager.Users.ToList();
         totalUsers = users.Count;
         confirmedEmails = users.Count(u => u.EmailConfirmed);
+
+        // Load whisky statistics
+        var searchResult = await WhiskyService.SearchWhiskiesAsync(new WhiskySearchDto { PageSize = int.MaxValue });
+        var whiskies = searchResult.Whiskies;
+
+        totalWhiskies = whiskies.Count;
+
+        if (whiskies.Any())
+        {
+            // Most popular country
+            mostPopularCountry = whiskies
+                .GroupBy(w => w.Country)
+                .OrderByDescending(g => g.Count())
+                .FirstOrDefault()?.Key ?? "Ingen";
+
+            // Most popular region
+            mostPopularRegion = whiskies
+                .GroupBy(w => w.Region)
+                .OrderByDescending(g => g.Count())
+                .FirstOrDefault()?.Key ?? "Ingen";
+
+            // Average age (excluding NAS whiskies)
+            var agedWhiskies = whiskies.Where(w => w.Age.HasValue).ToList();
+            if (agedWhiskies.Any())
+            {
+                averageAge = (decimal)agedWhiskies.Average(w => w.Age!.Value);
+            }
+
+            // Average ABV
+            averageAbv = whiskies.Average(w => w.Abv);
+
+            // Total tastings
+            totalTastings = whiskies.Sum(w => w.TastingCount);
+        }
+
+        // Load recent activity
+        recentTastings = await TastingHistoryService.GetRecentTastingHistoryAsync(10);
+        featuredWhiskies = await WhiskyService.GetFeaturedWhiskiesAsync(10);
+
         lastUpdated = DateTime.Now;
     }
 

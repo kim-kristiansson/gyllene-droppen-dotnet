@@ -1,0 +1,223 @@
+@page "/admin/whiskies"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.Whisky
+@using Microsoft.AspNetCore.Authorization
+
+@inject IWhiskyService WhiskyService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+@attribute [Authorize(Policy = "AdminOnly")]
+@rendermode InteractiveServer
+
+<PageTitle>Hantera Whiskies</PageTitle>
+
+<h1>Hantera Whiskies</h1>
+
+<div>
+    <button @onclick="() => NavigationManager.NavigateTo(\"
+    /admin/whiskies/create\")">
+    Lägg till ny whisky
+    </button>
+</div>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div>
+        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
+        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+    </div>
+}
+
+<div>
+    <input type="text" @bind="searchDto.SearchTerm" @onkeypress="HandleKeyPress" placeholder="Sök whiskies...">
+    <button @onclick="SearchWhiskies">Sök</button>
+    <button @onclick="ClearSearch">Rensa</button>
+</div>
+
+@if (isLoading)
+{
+    <p>Laddar whiskies...</p>
+}
+else if (searchResult?.Whiskies.Any() == true)
+{
+    <div>
+        <p>Visar @searchResult.Whiskies.Count av @searchResult.TotalCount whiskies</p>
+
+        @if (searchResult.TotalPages > 1)
+        {
+            <div>
+                @if (searchResult.HasPreviousPage)
+                {
+                    <button @onclick="() => GoToPage(searchDto.Page - 1)">Föregående</button>
+                }
+
+                <span>Sida @searchResult.Page av @searchResult.TotalPages</span>
+
+                @if (searchResult.HasNextPage)
+                {
+                    <button @onclick="() => GoToPage(searchDto.Page + 1)">Nästa</button>
+                }
+            </div>
+        }
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Namn</th>
+            <th>Destilleri</th>
+            <th>Land</th>
+            <th>Region</th>
+            <th>Typ</th>
+            <th>Ålder</th>
+            <th>ABV</th>
+            <th>Pris</th>
+            <th>Provningar</th>
+            <th>Skapad</th>
+            <th>Åtgärder</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var whisky in searchResult.Whiskies)
+        {
+            <tr>
+                <td>@whisky.Name</td>
+                <td>@whisky.Distillery</td>
+                <td>@whisky.Country</td>
+                <td>@whisky.Region</td>
+                <td>@whisky.Type</td>
+                <td>@(whisky.Age?.ToString() ?? "NAS")</td>
+                <td>@whisky.Abv%</td>
+                <td>@(whisky.Price?.ToString("C") ?? "-")</td>
+                <td>@whisky.TastingCount</td>
+                <td>@whisky.CreatedDate.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <button @onclick="() => NavigationManager.NavigateTo($\"
+                    /whiskies/{whisky.Id}\")">
+                    Visa
+                    </button>
+                    <button @onclick="() => NavigationManager.NavigateTo($\"
+                    /admin/whiskies/edit/{whisky.Id}\")">
+                    Redigera
+                    </button>
+                    <button @onclick="() => DeleteWhisky(whisky.Id, whisky.Name)"
+                            disabled="@isProcessing">
+                        Ta bort
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    @if (searchResult.TotalPages > 1)
+    {
+        <div>
+            @if (searchResult.HasPreviousPage)
+            {
+                <button @onclick="() => GoToPage(searchDto.Page - 1)">Föregående</button>
+            }
+
+            <span>Sida @searchResult.Page av @searchResult.TotalPages</span>
+
+            @if (searchResult.HasNextPage)
+            {
+                <button @onclick="() => GoToPage(searchDto.Page + 1)">Nästa</button>
+            }
+        </div>
+    }
+}
+else if (searchResult != null)
+{
+    <p>Inga whiskies hittades.</p>
+}
+
+@code {
+    private WhiskySearchDto searchDto = new() { PageSize = 50 };
+    private WhiskySearchResultDto? searchResult;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private string statusMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchWhiskies();
+    }
+
+    private async Task SearchWhiskies()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            searchResult = await WhiskyService.SearchWhiskiesAsync(searchDto);
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ClearSearch()
+    {
+        searchDto = new WhiskySearchDto { PageSize = 50 };
+        await SearchWhiskies();
+    }
+
+    private async Task GoToPage(int page)
+    {
+        searchDto.Page = page;
+        await SearchWhiskies();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchWhiskies();
+        }
+    }
+
+    private async Task DeleteWhisky(Guid whiskyId, string whiskyName)
+    {
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
+            $"Är du säker på att du vill ta bort whiskyn '{whiskyName}'?");
+
+        if (!confirmed) return;
+
+        isProcessing = true;
+
+        try
+        {
+// Note: In a real implementation, you'd get the current user ID
+            var success = await WhiskyService.DeleteWhiskyAsync(whiskyId, "current-user-id");
+
+            if (success)
+            {
+                statusMessage = $"Whiskyn '{whiskyName}' har tagits bort.";
+                await SearchWhiskies();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte ta bort whiskyn.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+}

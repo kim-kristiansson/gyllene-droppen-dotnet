@@ -1,0 +1,250 @@
+@page "/whiskies"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.Whisky
+@using GylleneDroppen.Core.Constants
+
+@inject IWhiskyService WhiskyService
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<PageTitle>Whiskies</PageTitle>
+
+<h1>Whiskies</h1>
+
+<div>
+    <h2>Sök och filtrera</h2>
+
+    <div>
+        <input type="text" @bind="searchDto.SearchTerm" @onkeypress="HandleKeyPress"
+               placeholder="Sök på namn, destilleri eller region...">
+        <button @onclick="SearchWhiskies">Sök</button>
+        <button @onclick="ClearSearch">Rensa</button>
+    </div>
+
+    <div>
+        <div>
+            <label>Land:</label>
+            <select @bind="searchDto.Country">
+                <option value="">Alla länder</option>
+                @foreach (var country in WhiskyConstants.Countries)
+                {
+                    <option value="@country">@country</option>
+                }
+            </select>
+        </div>
+
+        <div>
+            <label>Region:</label>
+            <select @bind="searchDto.Region">
+                <option value="">Alla regioner</option>
+                @foreach (var region in WhiskyConstants.CommonRegions)
+                {
+                    <option value="@region">@region</option>
+                }
+            </select>
+        </div>
+
+        <div>
+            <label>Typ:</label>
+            <select @bind="searchDto.Type">
+                <option value="">Alla typer</option>
+                @foreach (var type in WhiskyConstants.WhiskyTypes)
+                {
+                    <option value="@type">@type</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div>
+        <div>
+            <label>Ålder från:</label>
+            <input type="number" @bind="searchDto.MinAge" min="0" max="100">
+            <label>till:</label>
+            <input type="number" @bind="searchDto.MaxAge" min="0" max="100">
+        </div>
+
+        <div>
+            <label>ABV från:</label>
+            <input type="number" @bind="searchDto.MinAbv" min="0" max="100" step="0.1">
+            <label>till:</label>
+            <input type="number" @bind="searchDto.MaxAbv" min="0" max="100" step="0.1">
+        </div>
+
+        <div>
+            <label>Pris från:</label>
+            <input type="number" @bind="searchDto.MinPrice" min="0" step="0.01">
+            <label>till:</label>
+            <input type="number" @bind="searchDto.MaxPrice" min="0" step="0.01">
+        </div>
+    </div>
+
+    <div>
+        <label>Sortera efter:</label>
+        <select @bind="searchDto.SortBy">
+            <option value="Name">Namn</option>
+            <option value="Age">Ålder</option>
+            <option value="Abv">ABV</option>
+            <option value="Price">Pris</option>
+            <option value="CreatedDate">Datum tillagt</option>
+        </select>
+
+        <label>
+            <input type="checkbox" @bind="searchDto.SortDescending"> Fallande
+        </label>
+
+        <button @onclick="SearchWhiskies">Filtrera</button>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <p>Laddar whiskies...</p>
+}
+else if (searchResult?.Whiskies.Any() == true)
+{
+    <div>
+        <p>Visar @searchResult.Whiskies.Count av @searchResult.TotalCount whiskies</p>
+
+        @if (searchResult.TotalPages > 1)
+        {
+            <div>
+                @if (searchResult.HasPreviousPage)
+                {
+                    <button @onclick="() => GoToPage(searchDto.Page - 1)">Föregående</button>
+                }
+
+                <span>Sida @searchResult.Page av @searchResult.TotalPages</span>
+
+                @if (searchResult.HasNextPage)
+                {
+                    <button @onclick="() => GoToPage(searchDto.Page + 1)">Nästa</button>
+                }
+            </div>
+        }
+    </div>
+
+    <div>
+        @foreach (var whisky in searchResult.Whiskies)
+        {
+            <div>
+                @if (!string.IsNullOrEmpty(whisky.ImagePath))
+                {
+                    <img src="@whisky.ImagePath" alt="@whisky.Name">
+                }
+
+                <div>
+                    <h3>@whisky.Name</h3>
+                    <p><strong>Destilleri:</strong> @whisky.Distillery</p>
+                    <p><strong>Land:</strong> @whisky.Country</p>
+                    <p><strong>Region:</strong> @whisky.Region</p>
+                    <p><strong>Typ:</strong> @whisky.Type</p>
+
+                    @if (whisky.Age.HasValue)
+                    {
+                        <p><strong>Ålder:</strong> @whisky.Age år</p>
+                    }
+                    else
+                    {
+                        <p><strong>Ålder:</strong> NAS (No Age Statement)</p>
+                    }
+
+                    <p><strong>ABV:</strong> @whisky.Abv%</p>
+
+                    @if (whisky.Price.HasValue)
+                    {
+                        <p><strong>Pris:</strong> @whisky.Price.Value.ToString("C")</p>
+                    }
+
+                    @if (whisky.BottleSize.HasValue)
+                    {
+                        <p><strong>Flaskstorlek:</strong> @whisky.BottleSize ml</p>
+                    }
+
+                    <p><strong>Provad @whisky.TastingCount gång@(whisky.TastingCount != 1 ? "er" : "")</strong></p>
+
+                    <button @onclick="() => ViewWhisky(whisky.Id)">Visa detaljer</button>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (searchResult.TotalPages > 1)
+    {
+        <div>
+            @if (searchResult.HasPreviousPage)
+            {
+                <button @onclick="() => GoToPage(searchDto.Page - 1)">Föregående</button>
+            }
+
+            <span>Sida @searchResult.Page av @searchResult.TotalPages</span>
+
+            @if (searchResult.HasNextPage)
+            {
+                <button @onclick="() => GoToPage(searchDto.Page + 1)">Nästa</button>
+            }
+        </div>
+    }
+}
+else if (searchResult != null)
+{
+    <p>Inga whiskies hittades med de valda filtren.</p>
+}
+
+@code {
+    private WhiskySearchDto searchDto = new();
+    private WhiskySearchResultDto? searchResult;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchWhiskies();
+    }
+
+    private async Task SearchWhiskies()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            searchResult = await WhiskyService.SearchWhiskiesAsync(searchDto);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error searching whiskies: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ClearSearch()
+    {
+        searchDto = new WhiskySearchDto();
+        await SearchWhiskies();
+    }
+
+    private async Task GoToPage(int page)
+    {
+        searchDto.Page = page;
+        await SearchWhiskies();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchWhiskies();
+        }
+    }
+
+    private void ViewWhisky(Guid whiskyId)
+    {
+        NavigationManager.NavigateTo($"/whiskies/{whiskyId}");
+    }
+
+}

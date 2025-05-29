@@ -1,0 +1,134 @@
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Services
+
+@inject IImageService ImageService
+@inject IWhiskyService WhiskyService
+@inject IJSRuntime JSRuntime
+
+<div>
+    <label>Whisky-bild:</label>
+
+    @if (!string.IsNullOrEmpty(CurrentImagePath))
+    {
+        <div>
+            <img src="@CurrentImagePath" alt="Current whisky image" style="max-width: 200px; max-height: 200px;">
+            <button type="button" @onclick="RemoveImage" disabled="@isUploading">
+                Ta bort bild
+            </button>
+        </div>
+    }
+
+    <div>
+        <InputFile OnChange="HandleFileSelected" accept="image/*" disabled="@isUploading"/>
+        @if (isUploading)
+        {
+            <p>Laddar upp bild...</p>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(uploadMessage))
+    {
+        <div>
+            <span>@uploadMessage</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid? WhiskyId { get; set; }
+    [Parameter] public string? CurrentImagePath { get; set; }
+    [Parameter] public EventCallback<string> OnImageUploaded { get; set; }
+    [Parameter] public EventCallback OnImageRemoved { get; set; }
+
+    private bool isUploading = false;
+    private string uploadMessage = string.Empty;
+    private const long MaxFileSize = 5 * 1024 * 1024; // 5MB
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        if (file == null)
+            return;
+
+        uploadMessage = string.Empty;
+
+        // Validate file type
+        if (!ImageService.IsValidImageType(file.ContentType))
+        {
+            uploadMessage = "Fel: Endast JPEG, PNG, GIF och WebP-bilder är tillåtna.";
+            return;
+        }
+
+        // Validate file size
+        if (!ImageService.IsValidImageSize(file.Size, MaxFileSize))
+        {
+            uploadMessage = "Fel: Bilden får inte vara större än 5MB.";
+            return;
+        }
+
+        isUploading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Remove old image if exists
+            if (!string.IsNullOrEmpty(CurrentImagePath))
+            {
+                await ImageService.DeleteImageAsync(CurrentImagePath);
+            }
+
+            // Upload new image
+            using var stream = file.OpenReadStream(MaxFileSize);
+            var imagePath = await ImageService.SaveImageAsync(stream, file.Name);
+
+            // Update whisky image path if WhiskyId is provided
+            if (WhiskyId.HasValue)
+            {
+                await WhiskyService.UpdateWhiskyImageAsync(WhiskyId.Value, imagePath);
+            }
+
+            // Notify parent component
+            await OnImageUploaded.InvokeAsync(imagePath);
+
+            uploadMessage = "Bilden har laddats upp.";
+        }
+        catch (Exception ex)
+        {
+            uploadMessage = $"Fel vid uppladdning: {ex.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveImage()
+    {
+        if (string.IsNullOrEmpty(CurrentImagePath))
+            return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Är du säker på att du vill ta bort bilden?");
+        if (!confirmed)
+            return;
+
+        try
+        {
+            await ImageService.DeleteImageAsync(CurrentImagePath);
+
+            if (WhiskyId.HasValue)
+            {
+                await WhiskyService.UpdateWhiskyImageAsync(WhiskyId.Value, string.Empty);
+            }
+
+            await OnImageRemoved.InvokeAsync();
+            uploadMessage = "Bilden har tagits bort.";
+        }
+        catch (Exception ex)
+        {
+            uploadMessage = $"Fel vid borttagning: {ex.Message}";
+        }
+    }
+
+}
