@@ -22,9 +22,9 @@ public class WhiskyService(
         return whisky == null ? null : MapToResponseDto(whisky);
     }
 
-    public async Task<WhiskyResponseDto> CreateWhiskyAsync(CreateWhiskyRequestDto dto, string? userId = null)
+    public async Task<WhiskyResponseDto> CreateWhiskyAsync(CreateWhiskyRequestDto dto)
     {
-        var currentUserId = userId ?? currentUserService.GetUserId();
+        var currentUserId = currentUserService.GetUserId();
         if (string.IsNullOrEmpty(currentUserId))
             throw new UnauthorizedAccessException("Användare måste vara inloggad för att skapa whiskies.");
 
@@ -63,9 +63,9 @@ public class WhiskyService(
         return MapToResponseDto(whisky);
     }
 
-    public async Task<WhiskyResponseDto> UpdateWhiskyAsync(UpdateWhiskyRequestDto dto, string? userId = null)
+    public async Task<WhiskyResponseDto> UpdateWhiskyAsync(UpdateWhiskyRequestDto dto)
     {
-        var currentUserId = userId ?? currentUserService.GetUserId();
+        var currentUserId = currentUserService.GetUserId();
         if (string.IsNullOrEmpty(currentUserId))
             throw new UnauthorizedAccessException("Användare måste vara inloggad för att uppdatera whiskies.");
 
@@ -145,9 +145,9 @@ public class WhiskyService(
             .ToList();
     }
 
-    public async Task<bool> UpdateWhiskyImageAsync(Guid id, string imagePath, string? userId = null)
+    public async Task<bool> UpdateWhiskyImageAsync(Guid id, string imagePath)
     {
-        var currentUserId = userId ?? currentUserService.GetUserId();
+        var currentUserId = currentUserService.GetUserId();
         if (string.IsNullOrEmpty(currentUserId))
             throw new UnauthorizedAccessException("Användare måste vara inloggad för att uppdatera whisky-bilder.");
 

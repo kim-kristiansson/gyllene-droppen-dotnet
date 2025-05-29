@@ -30,10 +30,9 @@ public class TastingHistoryService(
         return histories.Select(MapToDto).ToList();
     }
 
-    public async Task<TastingHistoryDto> CreateTastingHistoryAsync(CreateTastingHistoryRequestDto dto,
-        string? userId = null)
+    public async Task<TastingHistoryDto> CreateTastingHistoryAsync(CreateTastingHistoryRequestDto dto)
     {
-        var currentUserId = userId ?? currentUserService.GetUserId();
+        var currentUserId = currentUserService.GetUserId();
         if (string.IsNullOrEmpty(currentUserId))
             throw new UnauthorizedAccessException("Användare måste vara inloggad för att skapa provningshistorik.");
 
@@ -62,9 +61,9 @@ public class TastingHistoryService(
         return MapToDto(tastingHistory);
     }
 
-    public async Task<bool> DeleteTastingHistoryAsync(Guid id, string? userId = null)
+    public async Task<bool> DeleteTastingHistoryAsync(Guid id)
     {
-        var currentUserId = userId ?? currentUserService.GetUserId();
+        var currentUserId = currentUserService.GetUserId();
         if (string.IsNullOrEmpty(currentUserId))
             throw new UnauthorizedAccessException("Användare måste vara inloggad för att ta bort provningshistorik.");
 

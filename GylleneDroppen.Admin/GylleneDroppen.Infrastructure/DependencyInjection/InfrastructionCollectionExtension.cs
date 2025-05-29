@@ -3,6 +3,7 @@ using GylleneDroppen.Application.Interfaces.Services;
 using GylleneDroppen.Application.Services;
 using GylleneDroppen.Infrastructure.Configuration;
 using GylleneDroppen.Infrastructure.Persistence.Repositories;
+using GylleneDroppen.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,11 @@ public static class InfrastructionCollectionExtension
 
     private static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IImageService, ImageService>();
+
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IWhiskyService, WhiskyService>();
         services.AddScoped<ITastingHistoryService, TastingHistoryService>();

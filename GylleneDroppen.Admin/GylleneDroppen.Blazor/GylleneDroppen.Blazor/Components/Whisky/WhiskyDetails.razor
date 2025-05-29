@@ -8,7 +8,7 @@
 @inject ITastingHistoryService TastingHistoryService
 @inject ICurrentUserService CurrentUserService
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JsRuntime
 
 @rendermode InteractiveServer
 
@@ -21,10 +21,7 @@
 
         <AuthorizeView Policy="AdminOnly">
             <Authorized>
-                <button @onclick="() => NavigationManager.NavigateTo($\"
-                /admin/whiskies/edit/{whisky.Id}\")">
-                Redigera
-                </button>
+                <button @onclick="GoToEditPage">Redigera</button>
             </Authorized>
         </AuthorizeView>
     </div>
@@ -32,152 +29,114 @@
     <div>
         @if (!string.IsNullOrEmpty(whisky.ImagePath))
         {
-            <div>
-                <img src="@whisky.ImagePath" alt="@whisky.Name" style="max-width: 400px; max-height: 400px;">
-            </div>
+            <img src="@whisky.ImagePath" alt="@whisky.Name" style="max-width: 400px; max-height: 400px;"/>
         }
 
+        <h1>@whisky.Name</h1>
+        <h2>@whisky.Distillery</h2>
+
         <div>
-            <h1>@whisky.Name</h1>
-            <h2>@whisky.Distillery</h2>
-
-            <div>
-                <div>
-                    <h3>Grundinformation</h3>
-                    <p><strong>Land:</strong> @whisky.Country</p>
-                    <p><strong>Region:</strong> @whisky.Region</p>
-                    <p><strong>Typ:</strong> @whisky.Type</p>
-
-                    @if (whisky.Age.HasValue)
-                    {
-                        <p><strong>Ålder:</strong> @whisky.Age år</p>
-                    }
-                    else
-                    {
-                        <p><strong>Ålder:</strong> NAS (No Age Statement)</p>
-                    }
-
-                    <p><strong>Alkoholhalt:</strong> @whisky.Abv%</p>
-
-                    @if (whisky.Price.HasValue)
-                    {
-                        <p><strong>Pris:</strong> @whisky.Price.Value.ToString("C")</p>
-                    }
-
-                    @if (whisky.BottleSize.HasValue)
-                    {
-                        <p><strong>Flaskstorlek:</strong> @whisky.BottleSize ml</p>
-                    }
-                </div>
-
-                @if (!string.IsNullOrEmpty(whisky.Color) || !string.IsNullOrEmpty(whisky.Nose) ||
-                     !string.IsNullOrEmpty(whisky.Palate) || !string.IsNullOrEmpty(whisky.Finish))
-                {
-                    <div>
-                        <h3>Provningsanteckningar</h3>
-
-                        @if (!string.IsNullOrEmpty(whisky.Color))
-                        {
-                            <p><strong>Färg:</strong> @whisky.Color</p>
-                        }
-
-                        @if (!string.IsNullOrEmpty(whisky.Nose))
-                        {
-                            <p><strong>Doft:</strong> @whisky.Nose</p>
-                        }
-
-                        @if (!string.IsNullOrEmpty(whisky.Palate))
-                        {
-                            <p><strong>Smak:</strong> @whisky.Palate</p>
-                        }
-
-                        @if (!string.IsNullOrEmpty(whisky.Finish))
-                        {
-                            <p><strong>Eftersmak:</strong> @whisky.Finish</p>
-                        }
-                    </div>
-                }
-            </div>
-
-            <div>
-                <p><strong>Tillagd:</strong> @whisky.CreatedDate.ToString("yyyy-MM-dd") av @whisky.CreatedByUserName</p>
-                @if (whisky.UpdatedDate.HasValue)
-                {
-                    <p><strong>Senast
-                            uppdaterad:</strong> @whisky.UpdatedDate.Value.ToString("yyyy-MM-dd") av @whisky.UpdatedByUserName
-                    </p>
-                }
-            </div>
+            <h3>Grundinformation</h3>
+            <p><strong>Land:</strong> @whisky.Country</p>
+            <p><strong>Region:</strong> @whisky.Region</p>
+            <p><strong>Typ:</strong> @whisky.Type</p>
+            <p><strong>Ålder:</strong> @(whisky.Age.HasValue ? $"{whisky.Age} år" : "NAS")</p>
+            <p><strong>Alkoholhalt:</strong> @whisky.Abv%</p>
+            @if (whisky.Price.HasValue)
+            {
+                <p><strong>Pris:</strong> @whisky.Price.Value.ToString("C")</p>
+            }
+            @if (whisky.BottleSize.HasValue)
+            {
+                <p><strong>Flaskstorlek:</strong> @whisky.BottleSize ml</p>
+            }
         </div>
+
+        @if (!string.IsNullOrEmpty(whisky.Color) || !string.IsNullOrEmpty(whisky.Nose) ||
+             !string.IsNullOrEmpty(whisky.Palate) || !string.IsNullOrEmpty(whisky.Finish))
+        {
+            <h3>Provningsanteckningar</h3>
+            @if (!string.IsNullOrEmpty(whisky.Color))
+            {
+                <p><strong>Färg:</strong> @whisky.Color</p>
+            }
+
+            @if (!string.IsNullOrEmpty(whisky.Nose))
+            {
+                <p><strong>Doft:</strong> @whisky.Nose</p>
+            }
+
+            @if (!string.IsNullOrEmpty(whisky.Palate))
+            {
+                <p><strong>Smak:</strong> @whisky.Palate</p>
+            }
+
+            @if (!string.IsNullOrEmpty(whisky.Finish))
+            {
+                <p><strong>Eftersmak:</strong> @whisky.Finish</p>
+            }
+        }
+
+        <p><strong>Tillagd:</strong> @whisky.CreatedDate.ToString("yyyy-MM-dd") av @whisky.CreatedByUserName</p>
+        @if (whisky.UpdatedDate.HasValue)
+        {
+            <p><strong>Senast
+                    uppdaterad:</strong> @whisky.UpdatedDate.Value.ToString("yyyy-MM-dd") av @whisky.UpdatedByUserName
+            </p>
+        }
     </div>
 
     <div>
-        <div>
-            <h3>Provningshistorik (@tastingHistories.Count)</h3>
+        <h3>Provningshistorik (@tastingHistories.Count)</h3>
 
-            <AuthorizeView Policy="AdminOnly">
-                <Authorized>
-                    <button @onclick="ShowAddTastingForm">Lägg till provning</button>
-                </Authorized>
-            </AuthorizeView>
-        </div>
+        <AuthorizeView Policy="AdminOnly">
+            <Authorized>
+                <button @onclick="ShowAddTastingForm">Lägg till provning</button>
+            </Authorized>
+        </AuthorizeView>
 
         @if (showAddTastingForm)
         {
-            <div>
-                <h4>Lägg till provning</h4>
-                <EditForm Model="newTasting" OnValidSubmit="AddTasting">
-                    <DataAnnotationsValidator/>
-                    <ValidationSummary/>
-
-                    <div>
-                        <label>Eventnamn:</label>
-                        <InputText @bind-Value="newTasting.EventTitle"/>
-                        <ValidationMessage For="() => newTasting.EventTitle"/>
-                    </div>
-
-                    <div>
-                        <label>Datum:</label>
-                        <InputDate @bind-Value="newTasting.TastingDate"/>
-                        <ValidationMessage For="() => newTasting.TastingDate"/>
-                    </div>
-
-                    <div>
-                        <label>Anteckningar:</label>
-                        <InputTextArea @bind-Value="newTasting.Notes" rows="4"/>
-                        <ValidationMessage For="() => newTasting.Notes"/>
-                    </div>
-
-                    <button type="submit" disabled="@isProcessing">Lägg till</button>
-                    <button type="button" @onclick="CancelAddTasting">Avbryt</button>
-                </EditForm>
-            </div>
+            <EditForm Model="newTasting" OnValidSubmit="AddTasting">
+                <DataAnnotationsValidator/>
+                <ValidationSummary/>
+                <div>
+                    <label>Eventnamn:</label>
+                    <InputText @bind-Value="newTasting.EventTitle"/>
+                </div>
+                <div>
+                    <label>Datum:</label>
+                    <InputDate @bind-Value="newTasting.TastingDate"/>
+                </div>
+                <div>
+                    <label>Anteckningar:</label>
+                    <InputTextArea @bind-Value="newTasting.Notes" rows="4"/>
+                </div>
+                <button type="submit" disabled="@isProcessing">Lägg till</button>
+                <button type="button" @onclick="CancelAddTasting">Avbryt</button>
+            </EditForm>
         }
 
         @if (tastingHistories.Any())
         {
-            <div>
-                @foreach (var tasting in tastingHistories)
-                {
-                    <div>
-                        <h4>@tasting.EventTitle</h4>
-                        <p><strong>Datum:</strong> @tasting.TastingDate.ToString("yyyy-MM-dd")</p>
-                        <p><strong>Organiserad av:</strong> @tasting.OrganizedByUserName</p>
-                        @if (!string.IsNullOrEmpty(tasting.Notes))
-                        {
-                            <p><strong>Anteckningar:</strong> @tasting.Notes</p>
-                        }
+            @foreach (var tasting in tastingHistories)
+            {
+                <div>
+                    <h4>@tasting.EventTitle</h4>
+                    <p><strong>Datum:</strong> @tasting.TastingDate.ToString("yyyy-MM-dd")</p>
+                    <p><strong>Organiserad av:</strong> @tasting.OrganizedByUserName</p>
+                    @if (!string.IsNullOrEmpty(tasting.Notes))
+                    {
+                        <p><strong>Anteckningar:</strong> @tasting.Notes</p>
+                    }
 
-                        <AuthorizeView Policy="AdminOnly">
-                            <Authorized>
-                                <button @onclick="() => DeleteTasting(tasting.Id)" disabled="@isProcessing">
-                                    Ta bort
-                                </button>
-                            </Authorized>
-                        </AuthorizeView>
-                    </div>
-                }
-            </div>
+                    <AuthorizeView Policy="AdminOnly">
+                        <Authorized>
+                            <button @onclick="() => OpenDeleteDialog(tasting.Id)">Ta bort</button>
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
+            }
         }
         else
         {
@@ -197,6 +156,16 @@ else
     <button @onclick="GoBack">Tillbaka till listan</button>
 }
 
+<dialog id="deleteDialog">
+    <form method="dialog">
+        <p>Är du säker på att du vill ta bort denna provning?</p>
+        <menu>
+            <button @onclick="ConfirmDelete">Ja</button>
+            <button @onclick="CancelDelete">Nej</button>
+        </menu>
+    </form>
+</dialog>
+
 @code {
     [Parameter] public Guid WhiskyId { get; set; }
 
@@ -206,6 +175,7 @@ else
     private bool isProcessing = false;
     private bool showAddTastingForm = false;
     private CreateTastingHistoryRequestDto newTasting = new();
+    private Guid tastingToDelete;
 
     protected override async Task OnInitializedAsync()
     {
@@ -237,15 +207,9 @@ else
         }
     }
 
-    private void GoBack()
-    {
-        NavigationManager.NavigateTo("/whiskies");
-    }
+    private void GoBack() => NavigationManager.NavigateTo("/whiskies");
 
-    private void ShowAddTastingForm()
-    {
-        showAddTastingForm = true;
-    }
+    private void ShowAddTastingForm() => showAddTastingForm = true;
 
     private void CancelAddTasting()
     {
@@ -284,17 +248,19 @@ else
         }
     }
 
-    private async Task DeleteTasting(Guid tastingId)
+    private async Task OpenDeleteDialog(Guid tastingId)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Är du säker på att du vill ta bort denna provning?");
-        if (!confirmed)
-            return;
+        tastingToDelete = tastingId;
+        await JsRuntime.InvokeVoidAsync("dialogInterop.show", "deleteDialog");
+    }
 
+    private async Task ConfirmDelete()
+    {
         isProcessing = true;
 
         try
         {
-            await TastingHistoryService.DeleteTastingHistoryAsync(tastingId);
+            await TastingHistoryService.DeleteTastingHistoryAsync(tastingToDelete);
             await LoadWhisky();
         }
         catch (Exception ex)
@@ -304,8 +270,20 @@ else
         finally
         {
             isProcessing = false;
+            await JsRuntime.InvokeVoidAsync("dialogInterop.close", "deleteDialog");
             StateHasChanged();
         }
+    }
+
+    private async Task CancelDelete()
+    {
+        await JsRuntime.InvokeVoidAsync("dialogInterop.close", "deleteDialog");
+    }
+
+    private void GoToEditPage()
+    {
+        if (whisky is not null)
+            NavigationManager.NavigateTo($"/admin/whiskies/edit/{whisky.Id}");
     }
 
 }

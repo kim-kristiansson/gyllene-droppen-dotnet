@@ -18,10 +18,7 @@
 
     <div>
         <button @onclick="GoBack">← Tillbaka</button>
-        <button @onclick="() => NavigationManager.NavigateTo($\"
-        /whiskies/{WhiskyId}\")">
-        Visa whisky
-        </button>
+        <button @onclick="GoToWhisky">Visa whisky</button>
     </div>
 
     @if (!string.IsNullOrEmpty(statusMessage))
@@ -260,6 +257,11 @@ else
     private void GoBack()
     {
         NavigationManager.NavigateTo("/admin/whiskies");
+    }
+
+    private void GoToWhisky()
+    {
+        NavigationManager.NavigateTo($"/whiskies/{WhiskyId}");
     }
 
 }

@@ -1,4 +1,5 @@
 @page "/admin"
+@using GylleneDroppen.Application.Dtos.Tasting
 @using Microsoft.AspNetCore.Authorization
 @using GylleneDroppen.Core.Entities
 @using GylleneDroppen.Application.Interfaces.Services
@@ -50,7 +51,7 @@
         @foreach (var tasting in recentTastings.Take(5))
         {
             <div>
-                <strong>@tasting.EventName</strong> - @tasting.WhiskyName
+                <strong>@tasting.EventTitle</strong> - @tasting.WhiskyName
                 <br>
                 <small>@tasting.TastingDate.ToString("yyyy-MM-dd") av @tasting.OrganizedByUserName</small>
             </div>

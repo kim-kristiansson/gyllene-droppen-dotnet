@@ -2,10 +2,11 @@
 @using GylleneDroppen.Application.Interfaces.Services
 @using GylleneDroppen.Application.Dtos.Whisky
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Web
 
 @inject IWhiskyService WhiskyService
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
+@inject IJSRuntime JsRuntime
 
 @attribute [Authorize(Policy = "AdminOnly")]
 @rendermode InteractiveServer
@@ -15,10 +16,7 @@
 <h1>Hantera Whiskies</h1>
 
 <div>
-    <button @onclick="() => NavigationManager.NavigateTo(\"
-    /admin/whiskies/create\")">
-    Lägg till ny whisky
-    </button>
+    <button @onclick="GoToCreatePage">Lägg till ny whisky</button>
 </div>
 
 @if (!string.IsNullOrEmpty(statusMessage))
@@ -30,7 +28,7 @@
 }
 
 <div>
-    <input type="text" @bind="searchDto.SearchTerm" @onkeypress="HandleKeyPress" placeholder="Sök whiskies...">
+    <input type="text" @bind="searchDto.SearchTerm" @onkeydown="HandleKeyDown" placeholder="Sök whiskies...">
     <button @onclick="SearchWhiskies">Sök</button>
     <button @onclick="ClearSearch">Rensa</button>
 </div>
@@ -93,45 +91,26 @@ else if (searchResult?.Whiskies.Any() == true)
                 <td>@whisky.TastingCount</td>
                 <td>@whisky.CreatedDate.ToString("yyyy-MM-dd")</td>
                 <td>
-                    <button @onclick="() => NavigationManager.NavigateTo($\"
-                    /whiskies/{whisky.Id}\")">
-                    Visa
-                    </button>
-                    <button @onclick="() => NavigationManager.NavigateTo($\"
-                    /admin/whiskies/edit/{whisky.Id}\")">
-                    Redigera
-                    </button>
-                    <button @onclick="() => DeleteWhisky(whisky.Id, whisky.Name)"
-                            disabled="@isProcessing">
-                        Ta bort
+                    <button @onclick="() => GoToWhisky(whisky.Id)">Visa</button>
+                    <button @onclick="() => GoToEditPage(whisky.Id)">Redigera</button>
+                    <button @onclick="() => OpenDeleteDialog(whisky.Id, whisky.Name)" disabled="@isProcessing">Ta bort
                     </button>
                 </td>
             </tr>
         }
         </tbody>
     </table>
-
-    @if (searchResult.TotalPages > 1)
-    {
-        <div>
-            @if (searchResult.HasPreviousPage)
-            {
-                <button @onclick="() => GoToPage(searchDto.Page - 1)">Föregående</button>
-            }
-
-            <span>Sida @searchResult.Page av @searchResult.TotalPages</span>
-
-            @if (searchResult.HasNextPage)
-            {
-                <button @onclick="() => GoToPage(searchDto.Page + 1)">Nästa</button>
-            }
-        </div>
-    }
 }
-else if (searchResult != null)
-{
-    <p>Inga whiskies hittades.</p>
-}
+
+<dialog id="deleteDialog">
+    <form method="dialog">
+        <p>Är du säker på att du vill ta bort whiskyn <strong>@dialogWhiskyName</strong>?</p>
+        <menu>
+            <button @onclick="ConfirmDelete">Ja</button>
+            <button @onclick="CancelDelete">Nej</button>
+        </menu>
+    </form>
+</dialog>
 
 @code {
     private WhiskySearchDto searchDto = new() { PageSize = 50 };
@@ -139,6 +118,9 @@ else if (searchResult != null)
     private bool isLoading = true;
     private bool isProcessing = false;
     private string statusMessage = string.Empty;
+
+    private Guid whiskyIdToDelete;
+    private string dialogWhiskyName = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -177,7 +159,7 @@ else if (searchResult != null)
         await SearchWhiskies();
     }
 
-    private async Task HandleKeyPress(KeyboardEventArgs e)
+    private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Enter")
         {
@@ -185,23 +167,25 @@ else if (searchResult != null)
         }
     }
 
-    private async Task DeleteWhisky(Guid whiskyId, string whiskyName)
+    private async Task OpenDeleteDialog(Guid whiskyId, string whiskyName)
     {
-        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm",
-            $"Är du säker på att du vill ta bort whiskyn '{whiskyName}'?");
+        whiskyIdToDelete = whiskyId;
+        dialogWhiskyName = whiskyName;
 
-        if (!confirmed) return;
+        await JsRuntime.InvokeVoidAsync("dialogInterop.show", "deleteDialog");
+    }
 
+    private async Task ConfirmDelete()
+    {
         isProcessing = true;
 
         try
         {
-// Note: In a real implementation, you'd get the current user ID
-            var success = await WhiskyService.DeleteWhiskyAsync(whiskyId, "current-user-id");
+            var success = await WhiskyService.DeleteWhiskyAsync(whiskyIdToDelete, "current-user-id");
 
             if (success)
             {
-                statusMessage = $"Whiskyn '{whiskyName}' har tagits bort.";
+                statusMessage = $"Whiskyn '{dialogWhiskyName}' har tagits bort.";
                 await SearchWhiskies();
             }
             else
@@ -216,8 +200,23 @@ else if (searchResult != null)
         finally
         {
             isProcessing = false;
+            await JsRuntime.InvokeVoidAsync("dialogInterop.close", "deleteDialog");
             StateHasChanged();
         }
     }
+
+    private async Task CancelDelete()
+    {
+        await JsRuntime.InvokeVoidAsync("dialogInterop.close", "deleteDialog");
+    }
+
+    private void GoToEditPage(Guid id) =>
+        NavigationManager.NavigateTo($"/admin/whiskies/edit/{id}");
+
+    private void GoToWhisky(Guid id) =>
+        NavigationManager.NavigateTo($"/whiskies/{id}");
+
+    private void GoToCreatePage() =>
+        NavigationManager.NavigateTo("/admin/whiskies/create");
 
 }
