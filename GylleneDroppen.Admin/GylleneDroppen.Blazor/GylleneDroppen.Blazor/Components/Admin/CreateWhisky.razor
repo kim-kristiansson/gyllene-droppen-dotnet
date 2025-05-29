@@ -3,6 +3,7 @@
 @using GylleneDroppen.Application.Dtos.Whisky
 @using GylleneDroppen.Core.Constants
 @using Microsoft.AspNetCore.Authorization
+@using GylleneDroppen.Blazor.Components.Shared
 
 @inject IWhiskyService WhiskyService
 @inject NavigationManager NavigationManager
@@ -26,7 +27,7 @@
     </div>
 }
 
-<EditForm Model="whiskyDto" OnValidSubmit="CreateWhisky">
+<EditForm Model="whiskyDto" OnValidSubmit="SubmitCreateWhiskyAsync">
     <DataAnnotationsValidator/>
     <ValidationSummary/>
 
@@ -155,7 +156,7 @@
     private string statusMessage = string.Empty;
     private string? currentImagePath;
 
-    private async Task CreateWhisky()
+    private async Task SubmitCreateWhiskyAsync()
     {
         isProcessing = true;
         statusMessage = string.Empty;
