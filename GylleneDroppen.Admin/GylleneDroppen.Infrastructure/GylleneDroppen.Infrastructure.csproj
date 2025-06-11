@@ -31,4 +31,8 @@
         <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Persistence\Migrations\" />
+    </ItemGroup>
+
 </Project>

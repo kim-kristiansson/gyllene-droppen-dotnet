@@ -1,6 +1,8 @@
+using GylleneDroppen.Application.Interfaces.Services;
 using GylleneDroppen.Blazor.Components;
 using GylleneDroppen.Blazor.Components.Account;
 using GylleneDroppen.Blazor.Email;
+using GylleneDroppen.Blazor.Service;
 using GylleneDroppen.Core.Entities;
 using GylleneDroppen.Infrastructure.Authorization;
 using GylleneDroppen.Infrastructure.Data;
@@ -25,6 +27,8 @@ builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+builder.Services.AddScoped<IAppEnvironment, ApplicationEnvironment>();
 
 builder.Logging.AddConsole();
 

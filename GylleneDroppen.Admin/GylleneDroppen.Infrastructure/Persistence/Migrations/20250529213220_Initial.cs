@@ -160,6 +160,76 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Whiskies",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Distillery = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Age = table.Column<int>(type: "integer", nullable: true),
+                    Abv = table.Column<decimal>(type: "numeric(5,2)", precision: 5, scale: 2, nullable: false),
+                    Region = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Country = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Color = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Nose = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Palate = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Finish = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    Price = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),
+                    BottleSize = table.Column<int>(type: "integer", nullable: true),
+                    ImagePath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedByUserId = table.Column<string>(type: "text", nullable: false),
+                    UpdatedByUserId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Whiskies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Whiskies_AspNetUsers_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Whiskies_AspNetUsers_UpdatedByUserId",
+                        column: x => x.UpdatedByUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TastingHistories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    WhiskyId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EventTitle = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    TastingDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    OrganizedByUserId = table.Column<string>(type: "text", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TastingHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TastingHistories_AspNetUsers_OrganizedByUserId",
+                        column: x => x.OrganizedByUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_TastingHistories_Whiskies_WhiskyId",
+                        column: x => x.WhiskyId,
+                        principalTable: "Whiskies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -196,6 +266,57 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TastingHistory_OrganizedByUserId",
+                table: "TastingHistories",
+                column: "OrganizedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TastingHistory_TastingDate",
+                table: "TastingHistories",
+                column: "TastingDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TastingHistory_WhiskyId",
+                table: "TastingHistories",
+                column: "WhiskyId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Whiskies_CreatedByUserId",
+                table: "Whiskies",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Whiskies_UpdatedByUserId",
+                table: "Whiskies",
+                column: "UpdatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Whisky_Country",
+                table: "Whiskies",
+                column: "Country");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Whisky_CreatedDate",
+                table: "Whiskies",
+                column: "CreatedDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Whisky_Name_Distillery",
+                table: "Whiskies",
+                columns: new[] { "Name", "Distillery" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Whisky_Region",
+                table: "Whiskies",
+                column: "Region");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Whisky_Type",
+                table: "Whiskies",
+                column: "Type");
         }
 
         /// <inheritdoc />
@@ -217,7 +338,13 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "TastingHistories");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Whiskies");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
