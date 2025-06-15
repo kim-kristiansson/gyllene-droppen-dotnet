@@ -28,6 +28,9 @@ public static class InfrastructionCollectionExtension
         services.AddScoped<IWhiskyRepository, WhiskyRepository>();
         services.AddScoped<ITastingHistoryRepository, TastingHistoryRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ITastingEventRepository, TastingEventRepository>();
+        services.AddScoped<ITastingEventWhiskyRepository, TastingEventWhiskyRepository>();
+        services.AddScoped<ITastingEventParticipantRepository, TastingEventParticipantRepository>();
 
         return services;
     }
@@ -42,6 +45,7 @@ public static class InfrastructionCollectionExtension
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IWhiskyService, WhiskyService>();
         services.AddScoped<ITastingHistoryService, TastingHistoryService>();
+        services.AddScoped<ITastingEventService, TastingEventService>();
 
         return services;
     }

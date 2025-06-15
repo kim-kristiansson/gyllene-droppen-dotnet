@@ -1,4 +1,4 @@
-namespace GylleneDroppen.Application.Services;
+namespace GylleneDroppen.Application.Interfaces.Services;
 
 public interface ICurrentUserService
 {

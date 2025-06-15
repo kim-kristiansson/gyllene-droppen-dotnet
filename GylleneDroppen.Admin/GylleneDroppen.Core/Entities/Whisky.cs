@@ -19,7 +19,7 @@ public class Whisky
 
     [Required] [MaxLength(100)] public string Country { get; set; } = string.Empty;
 
-    // Tasting notes
+    // TastingEvent notes
     [MaxLength(500)] public string? Color { get; set; }
 
     [MaxLength(1000)] public string? Nose { get; set; }

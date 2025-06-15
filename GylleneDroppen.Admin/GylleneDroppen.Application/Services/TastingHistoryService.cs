@@ -55,7 +55,7 @@ public class TastingHistoryService(
         await tastingHistoryRepository.AddAsync(tastingHistory);
         await tastingHistoryRepository.SaveChangesAsync();
 
-        logger.LogInformation("Tasting history created for whisky {WhiskyId} by user {UserId}", dto.WhiskyId,
+        logger.LogInformation("TastingEvent history created for whisky {WhiskyId} by user {UserId}", dto.WhiskyId,
             currentUserId);
 
         return MapToDto(tastingHistory);
@@ -74,7 +74,7 @@ public class TastingHistoryService(
         tastingHistoryRepository.Remove(tastingHistory);
         await tastingHistoryRepository.SaveChangesAsync();
 
-        logger.LogInformation("Tasting history {TastingHistoryId} deleted by user {UserId}", id, currentUserId);
+        logger.LogInformation("TastingEvent history {TastingHistoryId} deleted by user {UserId}", id, currentUserId);
 
         return true;
     }
