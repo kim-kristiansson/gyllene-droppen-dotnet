@@ -1,0 +1,228 @@
+@page "/provningar"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.TastingEvent
+@using Microsoft.AspNetCore.Authorization
+
+@inject ITastingEventService TastingEventService
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+@* Logic-only version, all styling removed *@
+
+<AuthorizeView>
+    <Authorized>
+        <button @onclick="CreateNewEvent">Skapa nytt event</button>
+    </Authorized>
+</AuthorizeView>
+
+@if (isLoading)
+{
+    Text("Laddar event...");
+}
+else
+{
+    Text($"Kommande event ({upcomingEvents.Count})");
+
+    if (upcomingEvents.Any())
+    {
+        foreach (var e in upcomingEvents)
+        {
+            Text(e.Title);
+            Text($"Datum: {e.EventDate:yyyy-MM-dd HH:mm}");
+
+            if (!string.IsNullOrEmpty(e.Location))
+                Text($"Plats: {e.Location}");
+
+            if (!string.IsNullOrEmpty(e.Description))
+                Text($"Beskrivning: {e.Description}");
+
+            Text($"Organiserad av: {e.OrganizedByUserName}");
+            Text($"Antal whiskies: {e.WhiskyCount}");
+            Text($"Antal deltagare: {e.ParticipantCount}");
+
+            if (e.MaxParticipants.HasValue)
+                Text($"Max deltagare: {e.MaxParticipants}");
+
+            Text($"Publikt: {(e.IsPublic ? "Ja" : "Nej")}");
+
+            EventActions(e);
+        }
+    }
+    else
+    {
+        Text("Inga kommande event.");
+    }
+
+    Text($"Tidigare event ({pastEvents.Count})");
+
+    if (pastEvents.Any())
+    {
+        foreach (var e in pastEvents)
+        {
+            Text(e.Title);
+            Text($"Datum: {e.EventDate:yyyy-MM-dd HH:mm}");
+
+            if (!string.IsNullOrEmpty(e.Location))
+                Text($"Plats: {e.Location}");
+
+            Text($"Organiserad av: {e.OrganizedByUserName}");
+            Text($"Antal whiskies: {e.WhiskyCount}");
+            Text($"Antal deltagare: {e.ParticipantCount}");
+
+            Button("Visa detaljer", () => ViewEvent(e.Id));
+        }
+    }
+    else
+    {
+        Text("Inga tidigare event.");
+    }
+}
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    Text($"{(statusMessage.StartsWith("Fel:") ? "Fel" : "Info")}: {statusMessage}");
+    Button("Stäng", () => statusMessage = string.Empty);
+}
+
+@code {
+    private List<TastingEventDto> upcomingEvents = new();
+    private List<TastingEventDto> pastEvents = new();
+    private Dictionary<Guid, bool> isUserRegistered = new();
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private string statusMessage = string.Empty;
+    private string? currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEvents();
+        await LoadUserRegistrations();
+    }
+
+    private async Task LoadEvents()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            upcomingEvents = await TastingEventService.GetUpcomingTastingEventsAsync(20);
+            pastEvents = await TastingEventService.GetPastTastingEventsAsync(10);
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUserRegistrations()
+    {
+        foreach (var e in upcomingEvents)
+        {
+            try
+            {
+                var registered = await TastingEventService.IsUserRegisteredAsync(e.Id, currentUserId ?? "");
+                isUserRegistered[e.Id] = registered;
+            }
+            catch
+            {
+                isUserRegistered[e.Id] = false;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    private bool CanEditEvent(TastingEventDto e)
+    {
+        return true;
+    }
+
+    private bool CanRegisterForEvent(TastingEventDto e)
+    {
+        if (!e.IsPublic) return false;
+        if (e.EventDate < DateTime.Now) return false;
+        if (e.MaxParticipants.HasValue && e.ParticipantCount >= e.MaxParticipants.Value) return false;
+        return true;
+    }
+
+    private async Task RegisterForEvent(Guid eventId)
+    {
+        if (isProcessing) return;
+
+        isProcessing = true;
+        statusMessage = string.Empty;
+
+        try
+        {
+            var isRegistered = isUserRegistered.ContainsKey(eventId) && isUserRegistered[eventId];
+
+            if (isRegistered)
+            {
+                await TastingEventService.UnregisterFromEventAsync(eventId, currentUserId ?? "");
+                isUserRegistered[eventId] = false;
+                statusMessage = "Du har avregistrerats från eventet.";
+            }
+            else
+            {
+                await TastingEventService.RegisterForEventAsync(eventId, currentUserId ?? "");
+                isUserRegistered[eventId] = true;
+                statusMessage = "Du har registrerats för eventet.";
+            }
+
+            await LoadEvents();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CreateNewEvent() => NavigationManager.NavigateTo("/tastings/create");
+    private void ViewEvent(Guid id) => NavigationManager.NavigateTo($"/tastings/{id}");
+    private void EditEvent(Guid id) => NavigationManager.NavigateTo($"/tastings/edit/{id}");
+
+    private void Text(string content)
+    {
+        <text>@content<br/></text>
+        ;
+    }
+
+    private void Button(string label, Action onClick)
+    {
+        <button @onclick="@onClick">@label</button>
+        ;
+    }
+
+    private void EventActions(TastingEventDto e)
+    {
+        Button("Visa detaljer", () => ViewEvent(e.Id));
+
+        <AuthorizeView>
+            <Authorized>
+                @if (CanEditEvent(e))
+                {
+                    Button("Redigera", () => EditEvent(e.Id));
+                }
+
+                @if (CanRegisterForEvent(e))
+                {
+                    var isRegistered = isUserRegistered.ContainsKey(e.Id) && isUserRegistered[e.Id];
+                    Button(isRegistered ? "Avregistrera" : "Registrera", () => RegisterForEvent(e.Id));
+                }
+            </Authorized>
+        </AuthorizeView>
+    }
+
+}

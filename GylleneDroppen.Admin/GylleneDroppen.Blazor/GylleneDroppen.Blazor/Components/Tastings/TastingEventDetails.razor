@@ -1,0 +1,432 @@
+@page "/tastings/{EventId:guid}"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.TastingEvent
+@using GylleneDroppen.Application.Dtos.Whisky
+@using Microsoft.AspNetCore.Authorization
+
+@inject ITastingEventService TastingEventService
+@inject IWhiskyService WhiskyService
+@inject ICurrentUserService CurrentUserService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+@rendermode InteractiveServer
+
+@if (tastingEvent != null)
+{
+    <PageTitle>@tastingEvent.Title</PageTitle>
+
+    <div>
+        <button @onclick="GoBack">← Tillbaka till listan</button>
+
+        <AuthorizeView>
+            <Authorized>
+                @if (CanEditEvent())
+                {
+                    <button @onclick="GoToEditPage">Redigera</button>
+                }
+
+                @if (CanRegisterForEvent())
+                {
+                    <button @onclick="ToggleRegistration" disabled="@isProcessing">
+                        @(isUserRegistered ? "Avregistrera" : "Registrera")
+                    </button>
+                }
+            </Authorized>
+        </AuthorizeView>
+    </div>
+
+    <h1>@tastingEvent.Title</h1>
+
+    <div>
+        <h2>Information</h2>
+        <p><strong>Datum:</strong> @tastingEvent.EventDate.ToString("yyyy-MM-dd HH:mm")</p>
+        @if (!string.IsNullOrEmpty(tastingEvent.Location))
+        {
+            <p><strong>Plats:</strong> @tastingEvent.Location</p>
+        }
+        @if (!string.IsNullOrEmpty(tastingEvent.Description))
+        {
+            <p><strong>Beskrivning:</strong> @tastingEvent.Description</p>
+        }
+        <p><strong>Organiserad av:</strong> @tastingEvent.OrganizedByUserName</p>
+        <p><strong>Publikt event:</strong> @(tastingEvent.IsPublic ? "Ja" : "Nej")</p>
+        @if (tastingEvent.MaxParticipants.HasValue)
+        {
+            <p><strong>Max deltagare:</strong> @tastingEvent.MaxParticipants</p>
+        }
+        <p><strong>Skapat:</strong> @tastingEvent.CreatedDate.ToString("yyyy-MM-dd HH:mm")</p>
+    </div>
+
+    <div>
+        <h2>Whiskies (@tastingEvent.Whiskies.Count)</h2>
+
+        @if (CanEditEvent())
+        {
+            <div>
+                <button @onclick="ShowAddWhiskyForm">Lägg till whisky</button>
+            </div>
+        }
+
+        @if (tastingEvent.Whiskies.Any())
+        {
+            @foreach (var whisky in tastingEvent.Whiskies.OrderBy(w => w.Order))
+            {
+                <div>
+                    <h3>@whisky.Order. @whisky.WhiskyName</h3>
+                    <p><strong>Destilleri:</strong> @whisky.Distillery</p>
+                    @if (!string.IsNullOrEmpty(whisky.Notes))
+                    {
+                        <p><strong>Anteckningar:</strong> @whisky.Notes</p>
+                    }
+
+                    @if (CanEditEvent())
+                    {
+                        <button @onclick="() => RemoveWhiskyFromEvent(whisky.WhiskyId)">Ta bort</button>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p>Inga whiskies har lagts till än.</p>
+        }
+    </div>
+
+    <div>
+        <h2>Deltagare (@tastingEvent.Participants.Count)</h2>
+
+        @if (tastingEvent.Participants.Any())
+        {
+            @foreach (var participant in tastingEvent.Participants.OrderBy(p => p.RegisteredDate))
+            {
+                <div>
+                    <span>@participant.UserName (@participant.UserEmail)</span>
+                    <span> - Registrerad: @participant.RegisteredDate.ToString("yyyy-MM-dd")</span>
+
+                    @if (CanEditEvent())
+                    {
+                        <span> - Närvarande: @(participant.Attended ? "Ja" : "Nej")</span>
+                        <button @onclick="() => ToggleAttendance(participant.UserId, !participant.Attended)">
+                            @(participant.Attended ? "Markera som frånvarande" : "Markera som närvarande")
+                        </button>
+                    }
+
+                    @if (!string.IsNullOrEmpty(participant.Notes))
+                    {
+                        <p><strong>Anteckningar:</strong> @participant.Notes</p>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p>Inga deltagare har registrerat sig än.</p>
+        }
+    </div>
+
+    @if (showAddWhiskyForm)
+    {
+        <div>
+            <h3>Lägg till whisky</h3>
+            <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown" placeholder="Sök whisky...">
+            <button type="button" @onclick="SearchWhiskies">Sök</button>
+
+            @if (availableWhiskies.Any())
+            {
+                @foreach (var whisky in availableWhiskies)
+                {
+                    <div>
+                        <span>@whisky.Name - @whisky.Distillery</span>
+                        <button type="button" @onclick="() => AddWhiskyToEvent(whisky.Id)">Lägg till</button>
+                    </div>
+                }
+            }
+
+            <button type="button" @onclick="CancelAddWhisky">Avbryt</button>
+        </div>
+    }
+}
+else if (isLoading)
+{
+    <p>Laddar event...</p>
+}
+else
+{
+    <PageTitle>Event hittades inte</PageTitle>
+    <h1>Event hittades inte</h1>
+    <p>Eventet du letar efter finns inte.</p>
+    <button @onclick="GoBack">Tillbaka till listan</button>
+}
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div>
+        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
+        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid EventId { get; set; }
+
+    private TastingEventDto? tastingEvent;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private bool isUserRegistered = false;
+    private bool showAddWhiskyForm = false;
+    private string statusMessage = string.Empty;
+    private string whiskySearchTerm = string.Empty;
+    private List<WhiskyResponseDto> availableWhiskies = new();
+    private string? currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentUserId = CurrentUserService.GetUserId();
+        await LoadEvent();
+        await CheckUserRegistration();
+    }
+
+    private async Task LoadEvent()
+    {
+        isLoading = true;
+
+        try
+        {
+            tastingEvent = await TastingEventService.GetTastingEventByIdAsync(EventId);
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckUserRegistration()
+    {
+        if (currentUserId != null && tastingEvent != null)
+        {
+            try
+            {
+                isUserRegistered = await TastingEventService.IsUserRegisteredAsync(EventId, currentUserId);
+            }
+            catch
+            {
+                isUserRegistered = false;
+            }
+        }
+    }
+
+    private bool CanEditEvent()
+    {
+        return tastingEvent != null && currentUserId != null &&
+               (tastingEvent.OrganizedByUserName == CurrentUserService.GetUserEmail() || IsAdmin());
+    }
+
+    private bool CanRegisterForEvent()
+    {
+        if (tastingEvent == null || !tastingEvent.IsPublic || !CurrentUserService.IsAuthenticated())
+            return false;
+
+        if (tastingEvent.EventDate < DateTime.Now)
+            return false;
+
+        if (tastingEvent.MaxParticipants.HasValue &&
+            tastingEvent.ParticipantCount >= tastingEvent.MaxParticipants.Value &&
+            !isUserRegistered)
+            return false;
+
+        return true;
+    }
+
+    private bool IsAdmin()
+    {
+        // Simplified - should check if user has Admin role
+        return false;
+    }
+
+    private async Task ToggleRegistration()
+    {
+        if (isProcessing || currentUserId == null) return;
+
+        isProcessing = true;
+        statusMessage = string.Empty;
+
+        try
+        {
+            if (isUserRegistered)
+            {
+                await TastingEventService.UnregisterFromEventAsync(EventId, currentUserId);
+                isUserRegistered = false;
+                statusMessage = "Du har avregistrerats från eventet.";
+            }
+            else
+            {
+                await TastingEventService.RegisterForEventAsync(EventId, currentUserId);
+                isUserRegistered = true;
+                statusMessage = "Du har registrerats för eventet.";
+            }
+
+            await LoadEvent(); // Refresh to update participant list
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleAttendance(string userId, bool attended)
+    {
+        if (isProcessing) return;
+
+        isProcessing = true;
+
+        try
+        {
+            await TastingEventService.MarkAttendanceAsync(EventId, userId, attended);
+            await LoadEvent(); // Refresh to update attendance
+            statusMessage = $"Närvaro uppdaterad.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowAddWhiskyForm()
+    {
+        showAddWhiskyForm = true;
+        StateHasChanged();
+    }
+
+    private void CancelAddWhisky()
+    {
+        showAddWhiskyForm = false;
+        whiskySearchTerm = string.Empty;
+        availableWhiskies.Clear();
+        StateHasChanged();
+    }
+
+    private async Task SearchWhiskies()
+    {
+        if (string.IsNullOrWhiteSpace(whiskySearchTerm))
+        {
+            availableWhiskies.Clear();
+            return;
+        }
+
+        try
+        {
+            var searchResult = await WhiskyService.SearchWhiskiesAsync(new WhiskySearchDto
+            {
+                SearchTerm = whiskySearchTerm,
+                PageSize = 20
+            });
+
+            // Filter out whiskies already in the event
+            var existingWhiskyIds = tastingEvent?.Whiskies.Select(w => w.WhiskyId).ToHashSet() ?? new HashSet<Guid>();
+            availableWhiskies = searchResult.Whiskies
+                .Where(w => !existingWhiskyIds.Contains(w.Id))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid sökning: {ex.Message}";
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchWhiskies();
+        }
+    }
+
+    private async Task AddWhiskyToEvent(Guid whiskyId)
+    {
+        if (isProcessing) return;
+
+        isProcessing = true;
+
+        try
+        {
+            var nextOrder = (tastingEvent?.Whiskies.Any() == true)
+                ? tastingEvent.Whiskies.Max(w => w.Order) + 1
+                : 1;
+
+            await TastingEventService.AddWhiskyToEventAsync(new AddWhiskyToEventRequestDto
+            {
+                TastingEventId = EventId,
+                WhiskyId = whiskyId,
+                Order = nextOrder
+            });
+
+            await LoadEvent(); // Refresh to show new whisky
+            CancelAddWhisky();
+            statusMessage = "Whisky har lagts till i eventet.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RemoveWhiskyFromEvent(Guid whiskyId)
+    {
+        if (isProcessing) return;
+
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Är du säker på att du vill ta bort denna whisky från eventet?");
+        if (!confirmed) return;
+
+        isProcessing = true;
+
+        try
+        {
+            await TastingEventService.RemoveWhiskyFromEventAsync(EventId, whiskyId);
+            await LoadEvent(); // Refresh to update whisky list
+            statusMessage = "Whisky har tagits bort från eventet.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/tastings");
+    }
+
+    private void GoToEditPage()
+    {
+        NavigationManager.NavigateTo($"/tastings/edit/{EventId}");
+    }
+
+}

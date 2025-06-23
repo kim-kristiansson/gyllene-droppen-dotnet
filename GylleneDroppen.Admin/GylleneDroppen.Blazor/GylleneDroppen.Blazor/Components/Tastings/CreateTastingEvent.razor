@@ -1,0 +1,183 @@
+@page "/provningar/skapa"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.TastingEvent
+@using GylleneDroppen.Application.Dtos.Whisky
+@using Microsoft.AspNetCore.Authorization
+@inject ITastingEventService TastingEventService
+@inject IWhiskyService WhiskyService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<button @onclick="GoBack">Tillbaka</button>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <text>
+        @(statusMessage.StartsWith("Fel:")
+            ? $"Fel: {statusMessage}"
+            : $"Info: {statusMessage}")
+    </text>
+    <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+}
+
+<EditForm Model="eventDto" OnValidSubmit="SubmitCreateEventAsync">
+    <DataAnnotationsValidator/>
+    <ValidationSummary/>
+
+    Titel:
+    <InputText @bind-Value="eventDto.Title"/>
+    <ValidationMessage For="() => eventDto.Title"/>
+
+    Beskrivning:
+    <InputTextArea @bind-Value="eventDto.Description" rows="3"/>
+    <ValidationMessage For="() => eventDto.Description"/>
+
+    Datum och tid:
+    <InputDateTime @bind-Value="eventDto.EventDate"/>
+    <ValidationMessage For="() => eventDto.EventDate"/>
+
+    Plats:
+    <InputText @bind-Value="eventDto.Location"/>
+    <ValidationMessage For="() => eventDto.Location"/>
+
+    Max antal deltagare:
+    <InputNumber @bind-Value="eventDto.MaxParticipants"/>
+    <ValidationMessage For="() => eventDto.MaxParticipants"/>
+
+    Publikt event:
+    <InputCheckbox @bind-Value="eventDto.IsPublic"/>
+
+    <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown"/>
+    <button type="button" @onclick="SearchWhiskies">Sök</button>
+
+    @if (availableWhiskies.Any())
+    {
+        <text>Tillgängliga whiskies:</text>
+        @foreach (var whisky in availableWhiskies)
+        {
+            <text>@($"{whisky.Name} - {whisky.Distillery} ({whisky.Country})")</text>
+            <button type="button" @onclick="() => AddWhisky(whisky)">Lägg till</button>
+        }
+    }
+
+    @if (selectedWhiskies.Any())
+    {
+        <text>Valda whiskies (@selectedWhiskies.Count):</text>
+        @foreach (var whisky in selectedWhiskies)
+        {
+            <text>@($"{whisky.Name} - {whisky.Distillery}")</text>
+            <button type="button" @onclick="() => RemoveWhisky(whisky)">Ta bort</button>
+        }
+    }
+
+    <button type="submit" disabled="@isProcessing">
+        @(isProcessing ? "Skapar..." : "Skapa event")
+    </button>
+
+    <button type="button" @onclick="GoBack">Avbryt</button>
+</EditForm>
+
+@code {
+
+    private CreateTastingEventRequestDto eventDto = new()
+    {
+        EventDate = DateTime.Today.AddDays(7).AddHours(19)
+    };
+
+    private List<WhiskyResponseDto> availableWhiskies = new();
+    private List<WhiskyResponseDto> selectedWhiskies = new();
+    private string whiskySearchTerm = string.Empty;
+    private bool isProcessing = false;
+    private string statusMessage = string.Empty;
+
+    private async Task SearchWhiskies()
+    {
+        if (string.IsNullOrWhiteSpace(whiskySearchTerm))
+        {
+            availableWhiskies.Clear();
+            return;
+        }
+
+        try
+        {
+            var searchResult = await WhiskyService.SearchWhiskiesAsync(new WhiskySearchDto
+            {
+                SearchTerm = whiskySearchTerm,
+                PageSize = 20
+            });
+
+            availableWhiskies = searchResult.Whiskies
+                .Where(w => !selectedWhiskies.Any(s => s.Id == w.Id))
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid sökning: {ex.Message}";
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchWhiskies();
+        }
+    }
+
+    private void AddWhisky(WhiskyResponseDto whisky)
+    {
+        if (!selectedWhiskies.Any(w => w.Id == whisky.Id))
+        {
+            selectedWhiskies.Add(whisky);
+            availableWhiskies.Remove(whisky);
+            eventDto.WhiskyIds.Add(whisky.Id);
+            StateHasChanged();
+        }
+    }
+
+    private void RemoveWhisky(WhiskyResponseDto whisky)
+    {
+        selectedWhiskies.Remove(whisky);
+        eventDto.WhiskyIds.Remove(whisky.Id);
+
+        if (!string.IsNullOrWhiteSpace(whiskySearchTerm) &&
+            (whisky.Name.Contains(whiskySearchTerm, StringComparison.OrdinalIgnoreCase) ||
+             whisky.Distillery.Contains(whiskySearchTerm, StringComparison.OrdinalIgnoreCase)))
+        {
+            availableWhiskies.Add(whisky);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SubmitCreateEventAsync()
+    {
+        isProcessing = true;
+        statusMessage = string.Empty;
+
+        try
+        {
+            var createdEvent = await TastingEventService.CreateTastingEventAsync(eventDto);
+            NavigationManager.NavigateTo($"/tastings/{createdEvent.Id}");
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/tastings");
+    }
+
+}
