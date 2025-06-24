@@ -10,8 +10,7 @@ namespace GylleneDroppen.Application.Services;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,
-    IEmailService emailService,
-    IUrlGenerator urlGenerator)
+    IEmailService emailService)
     : IAuthService
 {
     public async Task RegisterAsync(RegisterRequestDto dto)

@@ -23,33 +23,35 @@
 }
 
 <EditForm Model="eventDto" OnValidSubmit="SubmitCreateEventAsync">
-    <DataAnnotationsValidator/>
-    <ValidationSummary/>
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
     Titel:
-    <InputText @bind-Value="eventDto.Title"/>
-    <ValidationMessage For="() => eventDto.Title"/>
+    <InputText @bind-value="eventDto.Title" />
+    <ValidationMessage For="() => eventDto.Title" />
 
     Beskrivning:
-    <InputTextArea @bind-Value="eventDto.Description" rows="3"/>
-    <ValidationMessage For="() => eventDto.Description"/>
+    <InputTextArea @bind-value="eventDto.Description" rows="3" />
+    <ValidationMessage For="() => eventDto.Description" />
 
-    Datum och tid:
-    <InputDateTime @bind-Value="eventDto.EventDate"/>
-    <ValidationMessage For="() => eventDto.EventDate"/>
+    Datum:
+    <InputDate @bind-value="eventDto.EventDate" />
+    Tid:
+    <InputTime @bind-value="eventDto.EventDate" />
+    <ValidationMessage For="() => eventDto.EventDate" />
 
     Plats:
-    <InputText @bind-Value="eventDto.Location"/>
-    <ValidationMessage For="() => eventDto.Location"/>
+    <InputText @bind-value="eventDto.Location" />
+    <ValidationMessage For="() => eventDto.Location" />
 
     Max antal deltagare:
-    <InputNumber @bind-Value="eventDto.MaxParticipants"/>
-    <ValidationMessage For="() => eventDto.MaxParticipants"/>
+    <InputNumber @bind-value="eventDto.MaxParticipants" />
+    <ValidationMessage For="() => eventDto.MaxParticipants" />
 
     Publikt event:
-    <InputCheckbox @bind-Value="eventDto.IsPublic"/>
+    <InputCheckbox @bind-value="eventDto.IsPublic" />
 
-    <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown"/>
+    <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown" />
     <button type="button" @onclick="SearchWhiskies">Sök</button>
 
     @if (availableWhiskies.Any())
@@ -80,10 +82,10 @@
 </EditForm>
 
 @code {
-
     private CreateTastingEventRequestDto eventDto = new()
     {
-        EventDate = DateTime.Today.AddDays(7).AddHours(19)
+        EventDate = DateTime.Today.AddDays(7).AddHours(19),
+        WhiskyIds = new()
     };
 
     private List<WhiskyResponseDto> availableWhiskies = new();
@@ -179,5 +181,4 @@
     {
         NavigationManager.NavigateTo("/tastings");
     }
-
 }
