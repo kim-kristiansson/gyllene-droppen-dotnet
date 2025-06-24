@@ -1,4 +1,5 @@
 using GylleneDroppen.Application.Interfaces.Repositories;
+using GylleneDroppen.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace GylleneDroppen.Infrastructure.Persistence.Repositories;

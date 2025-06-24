@@ -82,7 +82,7 @@
 @code {
     private CreateTastingEventRequestDto eventDto = new()
     {
-        EventDate = DateTime.Today.AddDays(7).AddHours(19),
+        EventDate = DateTime.UtcNow.Date.AddDays(7).AddHours(19),
         WhiskyIds = new()
     };
 
@@ -177,6 +177,6 @@
 
     private void GoBack()
     {
-        NavigationManager.NavigateTo("/tastings");
+        NavigationManager.NavigateTo("/provningar");
     }
 }

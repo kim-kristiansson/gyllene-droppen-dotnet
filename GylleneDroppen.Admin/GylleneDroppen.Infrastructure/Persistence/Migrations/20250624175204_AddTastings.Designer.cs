@@ -3,6 +3,7 @@ using System;
 using GylleneDroppen.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GylleneDroppen.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250624175204_AddTastings")]
+    partial class AddTastings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,90 +24,6 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("GylleneDroppen.Core.Entities.TastingEventParticipant", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("Attended")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTime>("RegisteredDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("TastingEventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TastingEventId")
-                        .HasDatabaseName("IX_TastingEventParticipant_TastingEventId");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("IX_TastingEventParticipant_UserId");
-
-                    b.HasIndex("TastingEventId", "UserId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_TastingEventParticipant_TastingEventId_UserId");
-
-                    b.ToTable("TastingEventParticipants");
-                });
-
-            modelBuilder.Entity("GylleneDroppen.Core.Entities.TastingEventWhisky", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AddedByUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("AddedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TastingEventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("WhiskyId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AddedByUserId");
-
-                    b.HasIndex("Order")
-                        .HasDatabaseName("IX_TastingEventWhisky_Order");
-
-                    b.HasIndex("TastingEventId")
-                        .HasDatabaseName("IX_TastingEventWhisky_TastingEventId");
-
-                    b.HasIndex("WhiskyId")
-                        .HasDatabaseName("IX_TastingEventWhisky_WhiskyId");
-
-                    b.HasIndex("TastingEventId", "WhiskyId")
-                        .IsUnique()
-                        .HasDatabaseName("IX_TastingEventWhisky_TastingEventId_WhiskyId");
-
-                    b.ToTable("TastingEventWhiskies");
-                });
 
             modelBuilder.Entity("GylleneDroppen.Core.Entities.TastingHistory", b =>
                 {
@@ -353,58 +272,6 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("TastingEvent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<DateTime>("EventDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<int?>("MaxParticipants")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("OrganizedByUserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventDate")
-                        .HasDatabaseName("IX_TastingEvent_EventDate");
-
-                    b.HasIndex("IsPublic")
-                        .HasDatabaseName("IX_TastingEvent_IsPublic");
-
-                    b.HasIndex("OrganizedByUserId")
-                        .HasDatabaseName("IX_TastingEvent_OrganizedByUserId");
-
-                    b.ToTable("TastingEvents");
-                });
-
             modelBuilder.Entity("Whisky", b =>
                 {
                     b.Property<Guid>("Id")
@@ -523,52 +390,6 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.HasDiscriminator().HasValue("ApplicationUser");
                 });
 
-            modelBuilder.Entity("GylleneDroppen.Core.Entities.TastingEventParticipant", b =>
-                {
-                    b.HasOne("TastingEvent", "TastingEvent")
-                        .WithMany("Participants")
-                        .HasForeignKey("TastingEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("TastingEvent");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("GylleneDroppen.Core.Entities.TastingEventWhisky", b =>
-                {
-                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "AddedByUser")
-                        .WithMany()
-                        .HasForeignKey("AddedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("TastingEvent", "TastingEvent")
-                        .WithMany("TastingEventWhiskies")
-                        .HasForeignKey("TastingEventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Whisky", "Whisky")
-                        .WithMany()
-                        .HasForeignKey("WhiskyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("AddedByUser");
-
-                    b.Navigation("TastingEvent");
-
-                    b.Navigation("Whisky");
-                });
-
             modelBuilder.Entity("GylleneDroppen.Core.Entities.TastingHistory", b =>
                 {
                     b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "OrganizedByUser")
@@ -639,17 +460,6 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TastingEvent", b =>
-                {
-                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "OrganizedByUser")
-                        .WithMany()
-                        .HasForeignKey("OrganizedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("OrganizedByUser");
-                });
-
             modelBuilder.Entity("Whisky", b =>
                 {
                     b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "CreatedByUser")
@@ -666,13 +476,6 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("UpdatedByUser");
-                });
-
-            modelBuilder.Entity("TastingEvent", b =>
-                {
-                    b.Navigation("Participants");
-
-                    b.Navigation("TastingEventWhiskies");
                 });
 
             modelBuilder.Entity("Whisky", b =>

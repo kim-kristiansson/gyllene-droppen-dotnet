@@ -55,7 +55,7 @@ public class TastingEventService(
             Id = Guid.NewGuid(),
             Title = dto.Title,
             Description = dto.Description,
-            EventDate = dto.EventDate,
+            EventDate = dto.EventDate.Kind == DateTimeKind.Utc ? dto.EventDate : dto.EventDate.ToUniversalTime(),
             Location = dto.Location,
             MaxParticipants = dto.MaxParticipants,
             IsPublic = dto.IsPublic,
@@ -114,7 +114,7 @@ public class TastingEventService(
 
         tastingEvent.Title = dto.Title;
         tastingEvent.Description = dto.Description;
-        tastingEvent.EventDate = dto.EventDate;
+        tastingEvent.EventDate = dto.EventDate.Kind == DateTimeKind.Utc ? dto.EventDate : dto.EventDate.ToUniversalTime();
         tastingEvent.Location = dto.Location;
         tastingEvent.MaxParticipants = dto.MaxParticipants;
         tastingEvent.IsPublic = dto.IsPublic;
