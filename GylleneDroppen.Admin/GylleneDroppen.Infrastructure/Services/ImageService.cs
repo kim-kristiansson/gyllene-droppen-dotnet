@@ -27,22 +27,22 @@ public class ImageService(IAppEnvironment appEnvironment) : IImageService
         return $"/images/{folder}/{uniqueFileName}";
     }
 
-    public async Task<bool> DeleteImageAsync(string imagePath)
+    public Task<bool> DeleteImageAsync(string imagePath)
     {
         try
         {
             if (string.IsNullOrEmpty(imagePath))
-                return false;
+                return Task.FromResult(false);
 
             var fullPath = Path.Combine(appEnvironment.WebRootPath, imagePath.TrimStart('/'));
 
-            if (!File.Exists(fullPath)) return false;
+            if (!File.Exists(fullPath)) return Task.FromResult(false);
             File.Delete(fullPath);
-            return true;
+            return Task.FromResult(true);
         }
         catch
         {
-            return false;
+            return Task.FromResult(false);
         }
     }
 

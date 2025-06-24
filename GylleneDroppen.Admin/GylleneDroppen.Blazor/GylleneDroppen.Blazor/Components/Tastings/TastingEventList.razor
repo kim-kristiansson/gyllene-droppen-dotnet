@@ -2,9 +2,11 @@
 @using GylleneDroppen.Application.Interfaces.Services
 @using GylleneDroppen.Application.Dtos.TastingEvent
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 
 @inject ITastingEventService TastingEventService
 @inject NavigationManager NavigationManager
+@inject ICurrentUserService CurrentUserService
 
 @rendermode InteractiveServer
 
@@ -18,71 +20,79 @@
 
 @if (isLoading)
 {
-    Text("Laddar event...");
+    @Text("Laddar event...")
 }
 else
 {
-    Text($"Kommande event ({upcomingEvents.Count})");
+    @Text($"Kommande event ({upcomingEvents.Count})")
 
     if (upcomingEvents.Any())
     {
         foreach (var e in upcomingEvents)
         {
-            Text(e.Title);
-            Text($"Datum: {e.EventDate:yyyy-MM-dd HH:mm}");
+            @Text(e.Title)
+            @Text($"Datum: {e.EventDate:yyyy-MM-dd HH:mm}")
 
             if (!string.IsNullOrEmpty(e.Location))
-                Text($"Plats: {e.Location}");
+            {
+                @Text($"Plats: {e.Location}")
+            }
 
             if (!string.IsNullOrEmpty(e.Description))
-                Text($"Beskrivning: {e.Description}");
+            {
+                @Text($"Beskrivning: {e.Description}")
+            }
 
-            Text($"Organiserad av: {e.OrganizedByUserName}");
-            Text($"Antal whiskies: {e.WhiskyCount}");
-            Text($"Antal deltagare: {e.ParticipantCount}");
+            @Text($"Organiserad av: {e.OrganizedByUserName}")
+            @Text($"Antal whiskies: {e.WhiskyCount}")
+            @Text($"Antal deltagare: {e.ParticipantCount}")
 
             if (e.MaxParticipants.HasValue)
-                Text($"Max deltagare: {e.MaxParticipants}");
+            {
+                @Text($"Max deltagare: {e.MaxParticipants}")
+            }
 
-            Text($"Publikt: {(e.IsPublic ? "Ja" : "Nej")}");
+            @Text($"Publikt: {(e.IsPublic ? "Ja" : "Nej")}")
 
-            EventActions(e);
+            @EventActions(e)
         }
     }
     else
     {
-        Text("Inga kommande event.");
+        @Text("Inga kommande event.")
     }
 
-    Text($"Tidigare event ({pastEvents.Count})");
+    @Text($"Tidigare event ({pastEvents.Count})")
 
     if (pastEvents.Any())
     {
         foreach (var e in pastEvents)
         {
-            Text(e.Title);
-            Text($"Datum: {e.EventDate:yyyy-MM-dd HH:mm}");
+            @Text(e.Title)
+            @Text($"Datum: {e.EventDate:yyyy-MM-dd HH:mm}")
 
             if (!string.IsNullOrEmpty(e.Location))
-                Text($"Plats: {e.Location}");
+            {
+                @Text($"Plats: {e.Location}")
+            }
 
-            Text($"Organiserad av: {e.OrganizedByUserName}");
-            Text($"Antal whiskies: {e.WhiskyCount}");
-            Text($"Antal deltagare: {e.ParticipantCount}");
+            @Text($"Organiserad av: {e.OrganizedByUserName}")
+            @Text($"Antal whiskies: {e.WhiskyCount}")
+            @Text($"Antal deltagare: {e.ParticipantCount}")
 
-            Button("Visa detaljer", () => ViewEvent(e.Id));
+            @Button("Visa detaljer", () => ViewEvent(e.Id))
         }
     }
     else
     {
-        Text("Inga tidigare event.");
+        @Text("Inga tidigare event.")
     }
 }
 
 @if (!string.IsNullOrEmpty(statusMessage))
 {
-    Text($"{(statusMessage.StartsWith("Fel:") ? "Fel" : "Info")}: {statusMessage}");
-    Button("Stäng", () => statusMessage = string.Empty);
+    @Text($"{(statusMessage.StartsWith("Fel:") ? "Fel" : "Info")}: {statusMessage}")
+    @Button("Stäng", () => statusMessage = string.Empty)
 }
 
 @code {
@@ -96,6 +106,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        currentUserId = CurrentUserService.GetUserId();
         await LoadEvents();
         await LoadUserRegistrations();
     }
@@ -193,36 +204,43 @@ else
     private void ViewEvent(Guid id) => NavigationManager.NavigateTo($"/tastings/{id}");
     private void EditEvent(Guid id) => NavigationManager.NavigateTo($"/tastings/edit/{id}");
 
-    private void Text(string content)
+    private RenderFragment Text(string content) => builder =>
     {
-        <text>@content<br/></text>
-        ;
-    }
+        builder.AddContent(0, content);
+        builder.AddMarkupContent(1, "<br/>");
+    };
 
-    private void Button(string label, Action onClick)
+    private RenderFragment Button(string label, Action onClick) => builder =>
     {
-        <button @onclick="@onClick">@label</button>
-        ;
-    }
+        builder.OpenElement(0, "button");
+        builder.AddAttribute(1, "onclick", EventCallback.Factory.Create(this, onClick));
+        builder.AddContent(2, label);
+        builder.CloseElement();
+    };
 
-    private void EventActions(TastingEventDto e)
+    private RenderFragment EventActions(TastingEventDto e) => builder =>
     {
-        Button("Visa detaljer", () => ViewEvent(e.Id));
-
-        <AuthorizeView>
-            <Authorized>
-                @if (CanEditEvent(e))
+        builder.AddContent(0, Button("Visa detaljer", () => ViewEvent(e.Id)));
+        
+        builder.OpenComponent<AuthorizeView>(1);
+        builder.AddAttribute(2, "Authorized", (RenderFragment<AuthenticationState>)(context =>
+        {
+            var fragment = new RenderFragment(childBuilder =>
+            {
+                if (CanEditEvent(e))
                 {
-                    Button("Redigera", () => EditEvent(e.Id));
+                    childBuilder.AddContent(0, Button("Redigera", () => EditEvent(e.Id)));
                 }
 
-                @if (CanRegisterForEvent(e))
+                if (CanRegisterForEvent(e))
                 {
                     var isRegistered = isUserRegistered.ContainsKey(e.Id) && isUserRegistered[e.Id];
-                    Button(isRegistered ? "Avregistrera" : "Registrera", () => RegisterForEvent(e.Id));
+                    childBuilder.AddContent(1, Button(isRegistered ? "Avregistrera" : "Registrera", async () => await RegisterForEvent(e.Id)));
                 }
-            </Authorized>
-        </AuthorizeView>
-    }
+            });
+            return fragment;
+        }));
+        builder.CloseComponent();
+    };
 
 }

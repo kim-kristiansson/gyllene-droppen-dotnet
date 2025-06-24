@@ -6,7 +6,7 @@ namespace GylleneDroppen.Infrastructure.Persistence;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext(options)
 {
-    public DbSet<ApplicationUser> Users { get; set; }
+    public new DbSet<ApplicationUser> Users { get; set; }
     public DbSet<Whisky> Whiskies { get; set; }
     public DbSet<TastingHistory> TastingHistories { get; set; }
 

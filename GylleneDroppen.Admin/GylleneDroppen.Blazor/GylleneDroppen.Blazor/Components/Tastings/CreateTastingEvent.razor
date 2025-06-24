@@ -34,10 +34,8 @@
     <InputTextArea @bind-value="eventDto.Description" rows="3" />
     <ValidationMessage For="() => eventDto.Description" />
 
-    Datum:
-    <InputDate @bind-value="eventDto.EventDate" />
-    Tid:
-    <InputTime @bind-value="eventDto.EventDate" />
+    Datum och tid:
+    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="eventDto.EventDate" />
     <ValidationMessage For="() => eventDto.EventDate" />
 
     Plats:
