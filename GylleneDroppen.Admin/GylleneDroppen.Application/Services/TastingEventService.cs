@@ -12,6 +12,7 @@ public class TastingEventService(
     ITastingEventParticipantRepository tastingEventParticipantRepository,
     IWhiskyRepository whiskyRepository,
     ICurrentUserService currentUserService,
+    IMembershipService membershipService,
     ILogger<TastingEventService> logger) : ITastingEventService
 {
     public async Task<TastingEventDto?> GetTastingEventByIdAsync(Guid id)
@@ -293,6 +294,24 @@ public class TastingEventService(
         if (!tastingEvent.IsPublic && tastingEvent.OrganizedByUserId != userId)
             throw new UnauthorizedAccessException("Detta är ett privat event.");
 
+        var canRegister = await membershipService.CanUserRegisterForEventsAsync(userId);
+        if (!canRegister)
+        {
+            var membershipStatus = await membershipService.GetUserMembershipStatusAsync(userId);
+            if (membershipStatus.HasActiveMembership)
+            {
+                throw new InvalidOperationException("Ditt medlemskap har gått ut. Vänligen förnya det för att registrera dig för event.");
+            }
+            else if (membershipStatus.HasUsedTrial)
+            {
+                throw new InvalidOperationException("Du har redan använt din gratis provperiod. Vänligen köp ett medlemskap för att registrera dig för event.");
+            }
+            else
+            {
+                throw new InvalidOperationException("Du behöver ett aktivt medlemskap eller en gratis provperiod för att registrera dig för event.");
+            }
+        }
+
         if (tastingEvent.MaxParticipants.HasValue)
         {
             var currentCount = await tastingEventParticipantRepository.GetParticipantCountAsync(eventId);
@@ -313,6 +332,8 @@ public class TastingEventService(
 
         await tastingEventParticipantRepository.AddAsync(participant);
         await tastingEventParticipantRepository.SaveChangesAsync();
+
+        await membershipService.UseTrialForEventAsync(userId, eventId);
 
         logger.LogInformation("User {UserId} registered for event {EventId}", userId, eventId);
 

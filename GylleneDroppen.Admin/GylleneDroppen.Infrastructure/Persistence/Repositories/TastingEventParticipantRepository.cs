@@ -1,8 +1,8 @@
 using GylleneDroppen.Application.Interfaces.Repositories;
 using GylleneDroppen.Core.Entities;
-using GylleneDroppen.Infrastructure.Persistence;
-using GylleneDroppen.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
+
+namespace GylleneDroppen.Infrastructure.Persistence.Repositories;
 
 public class TastingEventParticipantRepository(ApplicationDbContext context)
     : Repository<TastingEventParticipant>(context), ITastingEventParticipantRepository
