@@ -10,7 +10,8 @@ namespace GylleneDroppen.Application.Services;
 
 public class AuthService(
     UserManager<ApplicationUser> userManager,
-    IEmailService emailService)
+    IEmailService emailService,
+    IMembershipService membershipService)
     : IAuthService
 {
     public async Task RegisterAsync(RegisterRequestDto dto)
@@ -27,6 +28,8 @@ public class AuthService(
 
         if (!result.Succeeded)
             throw new InvalidOperationException(string.Join(", ", result.Errors.Select(e => e.Description)));
+
+        await membershipService.CreateTrialForUserAsync(user.Id, user.Email);
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));

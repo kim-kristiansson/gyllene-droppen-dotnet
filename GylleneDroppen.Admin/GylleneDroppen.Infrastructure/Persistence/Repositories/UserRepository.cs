@@ -11,6 +11,11 @@ public class UserRepository(ApplicationDbContext context) : Repository<Applicati
         return await DbSet.FirstOrDefaultAsync(x => x.Email == email);
     }
 
+    public async Task<ApplicationUser?> GetByIdAsync(string id)
+    {
+        return await DbSet.FirstOrDefaultAsync(x => x.Id == id);
+    }
+
     public async Task<bool> ExistsByEmailAsync(string email)
     {
         return await DbSet.AnyAsync(x => x.Email == email);

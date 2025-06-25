@@ -12,6 +12,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TastingEvent> TastingEvents { get; set; }
     public DbSet<TastingEventParticipant> TastingEventParticipants { get; set; }
     public DbSet<TastingEventWhisky> TastingEventWhiskies { get; set; }
+    public DbSet<MembershipPeriod> MembershipPeriods { get; set; }
+    public DbSet<UserMembership> UserMemberships { get; set; }
+    public DbSet<UserTrialUsage> UserTrialUsages { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -259,6 +262,136 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
             entity.HasIndex(tew => tew.Order)
                 .HasDatabaseName("IX_TastingEventWhisky_Order");
+        });
+
+        // MembershipPeriod configuration
+        builder.Entity<MembershipPeriod>(entity =>
+        {
+            entity.HasKey(mp => mp.Id);
+
+            entity.Property(mp => mp.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(mp => mp.DurationInMonths)
+                .IsRequired();
+
+            entity.Property(mp => mp.Price)
+                .IsRequired()
+                .HasPrecision(10, 2);
+
+            entity.Property(mp => mp.CreatedByUserId)
+                .IsRequired();
+
+            // Relationships
+            entity.HasOne(mp => mp.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(mp => mp.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(mp => mp.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(mp => mp.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            entity.HasIndex(mp => mp.IsActive)
+                .HasDatabaseName("IX_MembershipPeriod_IsActive");
+
+            entity.HasIndex(mp => mp.DurationInMonths)
+                .HasDatabaseName("IX_MembershipPeriod_DurationInMonths");
+        });
+
+        // UserMembership configuration
+        builder.Entity<UserMembership>(entity =>
+        {
+            entity.HasKey(um => um.Id);
+
+            entity.Property(um => um.UserId)
+                .IsRequired();
+
+            entity.Property(um => um.MembershipPeriodId)
+                .IsRequired();
+
+            entity.Property(um => um.AmountPaid)
+                .IsRequired()
+                .HasPrecision(10, 2);
+
+            entity.Property(um => um.Notes)
+                .HasMaxLength(500);
+
+            entity.Property(um => um.CreatedByUserId)
+                .IsRequired();
+
+            // Relationships
+            entity.HasOne(um => um.User)
+                .WithMany(u => u.Memberships)
+                .HasForeignKey(um => um.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(um => um.MembershipPeriod)
+                .WithMany(mp => mp.UserMemberships)
+                .HasForeignKey(um => um.MembershipPeriodId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(um => um.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(um => um.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            entity.HasIndex(um => um.UserId)
+                .HasDatabaseName("IX_UserMembership_UserId");
+
+            entity.HasIndex(um => um.StartDate)
+                .HasDatabaseName("IX_UserMembership_StartDate");
+
+            entity.HasIndex(um => um.EndDate)
+                .HasDatabaseName("IX_UserMembership_EndDate");
+
+            entity.HasIndex(um => um.IsActive)
+                .HasDatabaseName("IX_UserMembership_IsActive");
+
+            entity.HasIndex(um => new { um.UserId, um.EndDate })
+                .HasDatabaseName("IX_UserMembership_UserId_EndDate");
+        });
+
+        // UserTrialUsage configuration
+        builder.Entity<UserTrialUsage>(entity =>
+        {
+            entity.HasKey(utu => utu.Id);
+
+            entity.Property(utu => utu.UserId)
+                .IsRequired();
+
+            entity.Property(utu => utu.Email)
+                .IsRequired()
+                .HasMaxLength(256);
+
+            entity.Property(utu => utu.Notes)
+                .HasMaxLength(500);
+
+            // Relationships
+            entity.HasOne(utu => utu.User)
+                .WithOne(u => u.TrialUsage)
+                .HasForeignKey<UserTrialUsage>(utu => utu.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(utu => utu.TrialUsedForEvent)
+                .WithMany()
+                .HasForeignKey(utu => utu.TrialUsedForEventId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes
+            entity.HasIndex(utu => utu.UserId)
+                .IsUnique()
+                .HasDatabaseName("IX_UserTrialUsage_UserId");
+
+            entity.HasIndex(utu => utu.Email)
+                .HasDatabaseName("IX_UserTrialUsage_Email");
+
+            entity.HasIndex(utu => utu.HasUsedTrial)
+                .HasDatabaseName("IX_UserTrialUsage_HasUsedTrial");
         });
     }
 }
