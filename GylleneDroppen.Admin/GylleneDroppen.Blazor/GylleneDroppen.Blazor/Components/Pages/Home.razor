@@ -1,7 +1,28 @@
 ﻿@page "/"
 
-<PageTitle>Start</PageTitle>
+<PageTitle>Start - Gyllene Droppen</PageTitle>
 
-<h1>Gyllene Droppen 🥃</h1>
-
-Whisky är inte snällt, det är ärligt.
+<AuthorizeView>
+    <Authorized>
+        <div class="text-center">
+            <h1>Välkommen tillbaka!</h1>
+            <p class="mb-3">
+                <em>Whisky är inte snällt, det är ärligt.</em>
+            </p>
+            
+            <div class="my-3">
+                <a href="/whiskies" class="btn btn-primary">Utforska Whiskies</a>
+                <a href="/provningar" class="btn btn-secondary" style="margin-left: 1rem;">Kommande Provningar</a>
+            </div>
+            
+            <hr class="my-3" />
+            
+            <p class="text-sm">
+                Välkommen till Gyllene Droppen - din portal för exklusiva whiskyprovningar.
+            </p>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <PublicHome />
+    </NotAuthorized>
+</AuthorizeView>

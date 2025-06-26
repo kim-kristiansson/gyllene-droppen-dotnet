@@ -1,0 +1,324 @@
+@page "/admin/medlemskapsperioder"
+@using Microsoft.AspNetCore.Authorization
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.Membership
+@using System.ComponentModel.DataAnnotations
+
+@inject IMembershipService MembershipService
+@inject ILogger<ManageMembershipPeriods> Logger
+
+@rendermode InteractiveServer
+
+@attribute [Authorize(Policy = "AdminOnly")]
+
+<PageTitle>Hantera medlemskapsperioder</PageTitle>
+
+<h1>Hantera medlemskapsperioder</h1>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert @(statusMessage.StartsWith("Fel:") ? "alert-danger" : "alert-success")">
+        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
+        <button type="button" class="btn btn-sm btn-secondary" @onclick="() => statusMessage = string.Empty">Stäng</button>
+    </div>
+}
+
+<div class="mb-4">
+    <button type="button" class="btn btn-primary" @onclick="ShowCreateForm">
+        Skapa ny medlemskapsperiod
+    </button>
+</div>
+
+@if (showCreateForm)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>@(editingPeriod != null ? "Redigera medlemskapsperiod" : "Skapa ny medlemskapsperiod")</h3>
+        </div>
+        <div class="card-body">
+            <EditForm Model="createRequest" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">Namn</label>
+                    <InputText id="name" class="form-control" @bind-Value="createRequest.Name" />
+                    <ValidationMessage For="@(() => createRequest.Name)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="duration" class="form-label">Varaktighet (månader)</label>
+                    <InputNumber id="duration" class="form-control" @bind-Value="createRequest.DurationInMonths" />
+                    <ValidationMessage For="@(() => createRequest.DurationInMonths)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="price" class="form-label">Pris (SEK)</label>
+                    <InputNumber id="price" class="form-control" @bind-Value="createRequest.Price" step="0.01" />
+                    <ValidationMessage For="@(() => createRequest.Price)" />
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check">
+                        <InputCheckbox id="isActive" class="form-check-input" @bind-Value="createRequest.IsActive" />
+                        <label class="form-check-label" for="isActive">
+                            Aktiv
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        @(editingPeriod != null ? "Uppdatera" : "Skapa")
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">
+                        Avbryt
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<h2>Alla medlemskapsperioder (@membershipPeriods.Count)</h2>
+
+@if (isLoading)
+{
+    <p>Laddar...</p>
+}
+else if (membershipPeriods.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Namn</th>
+                    <th>Varaktighet</th>
+                    <th>Pris</th>
+                    <th>Status</th>
+                    <th>Skapad</th>
+                    <th>Skapad av</th>
+                    <th>Åtgärder</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var period in membershipPeriods.OrderByDescending(p => p.CreatedDate))
+                {
+                    <tr class="@(period.IsActive ? "" : "table-secondary")">
+                        <td>@period.Name</td>
+                        <td>@period.DurationInMonths @(period.DurationInMonths == 1 ? "månad" : "månader")</td>
+                        <td>@period.Price.ToString("C")</td>
+                        <td>
+                            <span class="badge @(period.IsActive ? "bg-success" : "bg-secondary")">
+                                @(period.IsActive ? "Aktiv" : "Inaktiv")
+                            </span>
+                        </td>
+                        <td>@period.CreatedDate.ToString("yyyy-MM-dd")</td>
+                        <td>@period.CreatedByUserName</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        @onclick="() => ShowEditForm(period)" 
+                                        disabled="@isProcessing">
+                                    Redigera
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        @onclick="() => ConfirmDelete(period)"
+                                        disabled="@isProcessing">
+                                    Ta bort
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>Inga medlemskapsperioder hittades.</p>
+}
+
+@if (showDeleteConfirmation && periodToDelete != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bekräfta borttagning</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Är du säker på att du vill ta bort medlemskapsperioden <strong>@periodToDelete.Name</strong>?</p>
+                    <p class="text-warning">Detta kan påverka befintliga medlemskap som använder denna period.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">Avbryt</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDeletePeriod" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Ta bort
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<MembershipPeriodDto> membershipPeriods = new();
+    private CreateMembershipPeriodRequestDto createRequest = new();
+    private MembershipPeriodDto? editingPeriod = null;
+    private MembershipPeriodDto? periodToDelete = null;
+    private string statusMessage = string.Empty;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private bool showCreateForm = false;
+    private bool showDeleteConfirmation = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMembershipPeriods();
+    }
+
+    private async Task LoadMembershipPeriods()
+    {
+        try
+        {
+            isLoading = true;
+            membershipPeriods = await MembershipService.GetAllMembershipPeriodsAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading membership periods");
+            statusMessage = "Fel: Kunde inte ladda medlemskapsperioder";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        editingPeriod = null;
+        createRequest = new CreateMembershipPeriodRequestDto();
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void ShowEditForm(MembershipPeriodDto period)
+    {
+        editingPeriod = period;
+        createRequest = new CreateMembershipPeriodRequestDto
+        {
+            Name = period.Name,
+            DurationInMonths = period.DurationInMonths,
+            Price = period.Price,
+            IsActive = period.IsActive
+        };
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void CancelForm()
+    {
+        showCreateForm = false;
+        editingPeriod = null;
+        createRequest = new CreateMembershipPeriodRequestDto();
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            if (editingPeriod != null)
+            {
+                // Update existing period
+                await MembershipService.UpdateMembershipPeriodAsync(editingPeriod.Id, createRequest);
+                statusMessage = $"Medlemskapsperioden '{createRequest.Name}' har uppdaterats.";
+            }
+            else
+            {
+                // Create new period
+                await MembershipService.CreateMembershipPeriodAsync(createRequest);
+                statusMessage = $"Medlemskapsperioden '{createRequest.Name}' har skapats.";
+            }
+
+            await LoadMembershipPeriods();
+            CancelForm();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving membership period");
+            statusMessage = $"Fel: Kunde inte spara medlemskapsperioden. {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ConfirmDelete(MembershipPeriodDto period)
+    {
+        periodToDelete = period;
+        showDeleteConfirmation = true;
+        StateHasChanged();
+    }
+
+    private void CancelDelete()
+    {
+        periodToDelete = null;
+        showDeleteConfirmation = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDeletePeriod()
+    {
+        if (periodToDelete == null || isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            var success = await MembershipService.DeleteMembershipPeriodAsync(periodToDelete.Id);
+            
+            if (success)
+            {
+                statusMessage = $"Medlemskapsperioden '{periodToDelete.Name}' har tagits bort.";
+                await LoadMembershipPeriods();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte ta bort medlemskapsperioden. Den kan vara kopplad till befintliga medlemskap.";
+            }
+
+            CancelDelete();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting membership period {PeriodId}", periodToDelete.Id);
+            statusMessage = $"Fel: Kunde inte ta bort medlemskapsperioden. {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+}

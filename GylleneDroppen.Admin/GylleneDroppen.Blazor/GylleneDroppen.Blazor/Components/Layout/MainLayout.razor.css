@@ -1,3 +1,40 @@
+.main-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--color-gray-light);
+}
+
+.sidebar {
+    width: 250px;
+    background-color: var(--color-dark-brown);
+    flex-shrink: 0;
+}
+
+.main-content {
+    flex: 1;
+    overflow-x: auto;
+}
+
+.content-wrapper {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+    }
+    
+    .content-wrapper {
+        padding: 1rem;
+    }
+}
+
 #blazor-error-ui {
     color-scheme: light only;
     background: lightyellow;

@@ -1,0 +1,112 @@
+nav {
+    padding: 1rem;
+}
+
+nav p {
+    margin: 0.5rem 0;
+}
+
+nav p strong {
+    color: var(--color-gold);
+    font-size: 1.25rem;
+    font-family: var(--font-serif);
+    display: block;
+    margin: 1.5rem 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+nav ::deep a {
+    color: var(--color-beige);
+    text-decoration: none;
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+nav ::deep a:hover {
+    background-color: rgba(212, 175, 55, 0.1);
+    color: var(--color-gold);
+}
+
+nav ::deep a.active {
+    background-color: var(--color-gold);
+    color: var(--color-dark-brown);
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+form {
+    margin-top: 1rem;
+}
+
+form button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: transparent;
+    color: var(--color-beige);
+    border: 1px solid var(--color-gold);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+form button:hover {
+    background-color: var(--color-gold);
+    color: var(--color-dark-brown);
+}
+
+/* Logo/Title */
+p:first-child strong {
+    color: var(--color-gold) !important;
+    font-size: 1.5rem !important;
+    font-family: var(--font-serif);
+    display: block;
+    text-align: center;
+    margin: 0 0 2rem 0 !important;
+    padding: 1.5rem 0 !important;
+    border-bottom: 2px solid var(--color-gold) !important;
+}
+
+@media (max-width: 768px) {
+    input[type="checkbox"] {
+        display: block;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        cursor: pointer;
+        opacity: 0;
+        z-index: 2;
+    }
+
+    input[type="checkbox"] ~ div::before {
+        content: '☰';
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        color: var(--color-beige);
+        z-index: 1;
+    }
+
+    input[type="checkbox"]:checked ~ div nav {
+        display: block;
+    }
+
+    nav {
+        display: none;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background-color: var(--color-dark-brown);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
