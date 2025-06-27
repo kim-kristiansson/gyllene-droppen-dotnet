@@ -10,74 +10,165 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<button @onclick="GoBack">Tillbaka</button>
+<PageTitle>Skapa Provning</PageTitle>
 
-@if (!string.IsNullOrEmpty(statusMessage))
-{
-    <text>
-        @(statusMessage.StartsWith("Fel:")
-            ? $"Fel: {statusMessage}"
-            : $"Info: {statusMessage}")
-    </text>
-    <button @onclick="() => statusMessage = string.Empty">Stäng</button>
-}
+<div class="create-event-container">
+    <div class="create-event-header">
+        <h1>📅 Skapa Provning</h1>
+        <button @onclick="GoBack" class="back-button">← Tillbaka till översikt</button>
+    </div>
 
-<EditForm Model="eventDto" OnValidSubmit="SubmitCreateEventAsync">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    Titel:
-    <InputText @bind-value="eventDto.Title" />
-    <ValidationMessage For="() => eventDto.Title" />
-
-    Beskrivning:
-    <InputTextArea @bind-value="eventDto.Description" rows="3" />
-    <ValidationMessage For="() => eventDto.Description" />
-
-    Datum och tid:
-    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="eventDto.EventDate" />
-    <ValidationMessage For="() => eventDto.EventDate" />
-
-    Plats:
-    <InputText @bind-value="eventDto.Location" />
-    <ValidationMessage For="() => eventDto.Location" />
-
-    Max antal deltagare:
-    <InputNumber @bind-value="eventDto.MaxParticipants" />
-    <ValidationMessage For="() => eventDto.MaxParticipants" />
-
-    Publikt event:
-    <InputCheckbox @bind-value="eventDto.IsPublic" />
-
-    <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown" />
-    <button type="button" @onclick="SearchWhiskies">Sök</button>
-
-    @if (availableWhiskies.Any())
+    @if (!string.IsNullOrEmpty(statusMessage))
     {
-        <text>Tillgängliga whiskies:</text>
-        @foreach (var whisky in availableWhiskies)
-        {
-            <text>@($"{whisky.Name} - {whisky.Distillery} ({whisky.Country})")</text>
-            <button type="button" @onclick="() => AddWhisky(whisky)">Lägg till</button>
-        }
+        <div class="status-message @(statusMessage.StartsWith("Fel:") ? "error" : "success")">
+            <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty">✕</button>
+        </div>
     }
 
-    @if (selectedWhiskies.Any())
-    {
-        <text>Valda whiskies (@selectedWhiskies.Count):</text>
-        @foreach (var whisky in selectedWhiskies)
-        {
-            <text>@($"{whisky.Name} - {whisky.Distillery}")</text>
-            <button type="button" @onclick="() => RemoveWhisky(whisky)">Ta bort</button>
-        }
-    }
+    <EditForm Model="eventDto" OnValidSubmit="SubmitCreateEventAsync" class="event-form">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="validation-summary" />
 
-    <button type="submit" disabled="@isProcessing">
-        @(isProcessing ? "Skapar..." : "Skapa event")
-    </button>
+        <div class="form-section">
+            <h2 class="form-section-title">ℹ️ Grundinformation</h2>
+            
+            <div class="form-group">
+                <label class="form-label required-field">Titel:</label>
+                <InputText @bind-value="eventDto.Title" class="form-control" placeholder="T.ex. Highland Single Malts Evening" />
+                <ValidationMessage For="() => eventDto.Title" class="validation-message" />
+            </div>
 
-    <button type="button" @onclick="GoBack">Avbryt</button>
-</EditForm>
+            <div class="form-group">
+                <label class="form-label">Beskrivning:</label>
+                <InputTextArea @bind-value="eventDto.Description" rows="4" class="form-control form-textarea" 
+                               placeholder="Beskriv provningen, vad deltagarna kan förvänta sig..." />
+                <ValidationMessage For="() => eventDto.Description" class="validation-message" />
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label required-field">Datum och tid:</label>
+                    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="eventDto.EventDate" class="form-control" />
+                    <ValidationMessage For="() => eventDto.EventDate" class="validation-message" />
+                    <div class="form-tip">
+                        Välj datum och tid för när provningen ska äga rum.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Plats:</label>
+                    <InputText @bind-value="eventDto.Location" class="form-control" placeholder="T.ex. Konferenslokalen, Huvudkontoret" />
+                    <ValidationMessage For="() => eventDto.Location" class="validation-message" />
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Max antal deltagare:</label>
+                    <InputNumber @bind-value="eventDto.MaxParticipants" class="form-control" placeholder="T.ex. 20" />
+                    <ValidationMessage For="() => eventDto.MaxParticipants" class="validation-message" />
+                    <div class="form-tip">
+                        Lämna tomt för obegränsat antal deltagare.
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-checkbox-group">
+                        <InputCheckbox @bind-value="eventDto.IsPublic" />
+                        <label>Publikt event (synligt för alla medlemmar)</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section whisky-selection">
+            <h2 class="form-section-title">🥃 Välj Whiskies</h2>
+            
+            <div class="whisky-search">
+                <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown" 
+                       class="whisky-search-input" placeholder="Sök efter whisky, destilleri eller land..." />
+                <button type="button" @onclick="SearchWhiskies" class="search-btn">Sök</button>
+            </div>
+
+            <div class="whisky-grid">
+                <div class="whisky-section">
+                    <h3 class="whisky-section-title">Tillgängliga Whiskies</h3>
+                    <div class="whisky-list">
+                        @if (availableWhiskies.Any())
+                        {
+                            @foreach (var whisky in availableWhiskies)
+                            {
+                                <div class="whisky-item">
+                                    <div class="whisky-info">
+                                        <div class="whisky-name">@whisky.Name</div>
+                                        <div class="whisky-details">@whisky.Distillery (@whisky.Country)</div>
+                                    </div>
+                                    <button type="button" @onclick="() => AddWhisky(whisky)" class="whisky-action-btn">
+                                        Lägg till
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-whisky-state">
+                                @if (string.IsNullOrWhiteSpace(whiskySearchTerm))
+                                {
+                                    <p>Sök efter whiskies att lägga till i provningen.</p>
+                                }
+                                else
+                                {
+                                    <p>Inga whiskies hittades för "@whiskySearchTerm".</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="whisky-section">
+                    <h3 class="whisky-section-title">
+                        Valda Whiskies
+                        @if (selectedWhiskies.Any())
+                        {
+                            <span class="selected-whisky-count">@selectedWhiskies.Count</span>
+                        }
+                    </h3>
+                    <div class="whisky-list">
+                        @if (selectedWhiskies.Any())
+                        {
+                            @foreach (var whisky in selectedWhiskies)
+                            {
+                                <div class="whisky-item">
+                                    <div class="whisky-info">
+                                        <div class="whisky-name">@whisky.Name</div>
+                                        <div class="whisky-details">@whisky.Distillery</div>
+                                    </div>
+                                    <button type="button" @onclick="() => RemoveWhisky(whisky)" class="whisky-action-btn remove">
+                                        Ta bort
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-whisky-state">
+                                <p>Inga whiskies valda än. Lägg till whiskies från sökresultaten.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" @onclick="GoBack" class="btn-secondary">Avbryt</button>
+            <button type="submit" disabled="@isProcessing" class="btn btn-primary">
+                @(isProcessing ? "Skapar event..." : "Skapa event")
+            </button>
+        </div>
+    </EditForm>
+</div>
 
 @code {
     private CreateTastingEventRequestDto eventDto = new()

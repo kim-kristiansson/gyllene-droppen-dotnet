@@ -1,0 +1,270 @@
+/* Register Page Styles */
+.register-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.register-header h1 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.register-subtitle {
+    color: var(--color-text-light);
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+/* Trial Banner */
+.trial-banner {
+    background: linear-gradient(135deg, var(--color-info) 0%, rgba(70, 130, 180, 0.8) 100%);
+    color: white;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.trial-banner h3 {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.trial-banner p {
+    margin: 0;
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+/* Form Styling */
+.register-form {
+    margin-bottom: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section h2 {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.form-divider {
+    margin: 1.5rem 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-beige-dark), transparent);
+}
+
+/* Enhanced Form Groups */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-control {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.1);
+}
+
+/* Submit Button */
+.btn-register {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Department Selection */
+.department-section {
+    background: var(--color-beige-light);
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+}
+
+.department-section h3 {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--color-text);
+    margin-bottom: 0.75rem;
+}
+
+.department-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.department-option {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-beige-dark);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.department-option:hover {
+    border-color: var(--color-primary);
+    background: rgba(210, 105, 30, 0.05);
+}
+
+.department-option input[type="radio"] {
+    margin-right: 0.75rem;
+}
+
+.department-option label {
+    font-size: 0.875rem;
+    color: var(--color-text);
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Links Section */
+.auth-links {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-beige-dark);
+}
+
+.auth-links p {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-light);
+    font-size: 0.875rem;
+}
+
+.auth-links a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.auth-links a:hover {
+    color: var(--color-whisky-copper);
+    text-decoration: underline;
+}
+
+/* Status Messages */
+.status-message {
+    margin-bottom: 1.5rem;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.status-message.error {
+    background-color: rgba(220, 20, 60, 0.1);
+    color: var(--color-error);
+    border: 1px solid rgba(220, 20, 60, 0.2);
+}
+
+.status-message.success {
+    background-color: rgba(34, 139, 34, 0.1);
+    color: var(--color-success);
+    border: 1px solid rgba(34, 139, 34, 0.2);
+}
+
+/* Validation Styling */
+.validation-message {
+    color: var(--color-error);
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.validation-summary {
+    background-color: rgba(220, 20, 60, 0.1);
+    border: 1px solid rgba(220, 20, 60, 0.2);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.validation-summary ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--color-error);
+    font-size: 0.875rem;
+}
+
+/* Password Requirements */
+.password-requirements {
+    background: var(--color-beige-light);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+}
+
+.password-requirements h4 {
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+}
+
+.password-requirements ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--color-text-light);
+}
+
+/* Privacy Notice */
+.privacy-notice {
+    background: var(--color-beige-light);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-text-light);
+}
+
+.privacy-notice a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.privacy-notice a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .form-control {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .department-grid {
+        grid-template-columns: 1fr;
+    }
+}

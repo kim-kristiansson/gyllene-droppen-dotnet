@@ -15,103 +15,235 @@
 
 <PageTitle>Admin Dashboard</PageTitle>
 
-<h1>Admin Dashboard</h1>
-<p>Välkommen till admin-panelen!</p>
-
-<h2>System Information</h2>
-<p><strong>Server tid:</strong> @DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</p>
-<p><strong>Användare inloggad som:</strong> @currentUserEmail</p>
-<p><strong>Användar-ID:</strong> <code>@currentUserId</code></p>
-
-<div>
-    <div>
-        <h2>Användarstatistik</h2>
-        <p><strong>Totalt antal användare:</strong> @totalUsers</p>
-        <p><strong>Bekräftade e-postadresser:</strong> @confirmedEmails</p>
-        <p><strong>Obekräftade e-postadresser:</strong> @(totalUsers - confirmedEmails)</p>
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>🚀 Admin Dashboard</h1>
     </div>
 
-    <div>
-        <h2>Whisky-statistik</h2>
-        <p><strong>Totalt antal whiskies:</strong> @totalWhiskies</p>
-        <p><strong>Antal provningar:</strong> @totalTastings</p>
-        <p><strong>Mest populära land:</strong> @mostPopularCountry</p>
-        <p><strong>Mest populära region:</strong> @mostPopularRegion</p>
-        <p><strong>Genomsnittlig ålder:</strong> @averageAge år</p>
-        <p><strong>Genomsnittlig ABV:</strong> @averageAbv%</p>
+    <div class="dashboard-welcome">
+        <h2>Välkommen tillbaka!</h2>
+        <p>Här är din översikt över Gyllene Droppen systemet.</p>
     </div>
-</div>
 
-<h2>Senaste aktivitet</h2>
+    <div class="system-info">
+        <h2>⚙️ System Information</h2>
+        <div class="system-info-grid">
+            <div class="system-info-item">
+                <div class="system-info-label">Server tid</div>
+                <div class="system-info-value">@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</div>
+            </div>
+            <div class="system-info-item">
+                <div class="system-info-label">Inloggad som</div>
+                <div class="system-info-value">@currentUserEmail</div>
+            </div>
+            <div class="system-info-item">
+                <div class="system-info-label">Användar-ID</div>
+                <div class="system-info-value">
+                    <span class="user-id">@currentUserId</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-@if (recentTastings.Any())
-{
-    <div>
-        <h3>Senaste provningar</h3>
-        @foreach (var tasting in recentTastings.Take(5))
+    <div class="stats-grid">
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <div class="stats-card-icon">👥</div>
+                <h3 class="stats-card-title">Användarstatistik</h3>
+            </div>
+            <div class="stats-list">
+                <div class="stat-item">
+                    <span class="stat-label">Totalt antal användare</span>
+                    <span class="stat-value highlight">@totalUsers</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Bekräftade e-postadresser</span>
+                    <span class="stat-value">@confirmedEmails</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Obekräftade e-postadresser</span>
+                    <span class="stat-value">@(totalUsers - confirmedEmails)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <div class="stats-card-icon">🥃</div>
+                <h3 class="stats-card-title">Whisky-statistik</h3>
+            </div>
+            <div class="stats-list">
+                <div class="stat-item">
+                    <span class="stat-label">Totalt antal whiskies</span>
+                    <span class="stat-value highlight">@totalWhiskies</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Antal provningar</span>
+                    <span class="stat-value">@totalTastings</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Mest populära land</span>
+                    <span class="stat-value">@mostPopularCountry</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Mest populära region</span>
+                    <span class="stat-value">@mostPopularRegion</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Genomsnittlig ålder</span>
+                    <span class="stat-value">@averageAge.ToString("F1") år</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Genomsnittlig ABV</span>
+                    <span class="stat-value">@averageAbv.ToString("F1")%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="activity-section">
+        <div class="activity-header">
+            <h2 class="activity-title">📊 Senaste aktivitet</h2>
+        </div>
+
+        <div class="activity-grid">
+            <div class="activity-card">
+                <h3 class="activity-card-title">🍷 Senaste provningar</h3>
+                <div class="activity-list">
+                    @if (recentTastings.Any())
+                    {
+                        @foreach (var tasting in recentTastings.Take(5))
+                        {
+                            <div class="activity-item">
+                                <div class="activity-item-title">@tasting.EventTitle - @tasting.WhiskyName</div>
+                                <div class="activity-item-details">@tasting.TastingDate.ToString("yyyy-MM-dd") av @tasting.OrganizedByUserName</div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-activity">
+                            <div class="empty-activity-icon">🍷</div>
+                            <p>Inga provningar genomförda än.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="activity-card">
+                <h3 class="activity-card-title">🥃 Senast tillagda whiskies</h3>
+                <div class="activity-list">
+                    @if (featuredWhiskies.Any())
+                    {
+                        @foreach (var whisky in featuredWhiskies.Take(5))
+                        {
+                            <div class="activity-item">
+                                <div class="activity-item-title">@whisky.Name - @whisky.Distillery</div>
+                                <div class="activity-item-details">@whisky.CreatedDate.ToString("yyyy-MM-dd") av @whisky.CreatedByUserName</div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-activity">
+                            <div class="empty-activity-icon">🥃</div>
+                            <p>Inga whiskies tillagda än.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-actions">
+        <div class="admin-actions-header">
+            <h2 class="admin-actions-title">⚡ Admin Actions</h2>
+        </div>
+
+        <div class="actions-grid">
+            <a href="/admin/anvandare" class="action-card">
+                <div class="action-icon">👥</div>
+                <div class="action-content">
+                    <div class="action-title">Hantera användare</div>
+                    <div class="action-description">Hantera medlemmar och styrelse</div>
+                </div>
+            </a>
+
+            <a href="/admin/whiskies" class="action-card">
+                <div class="action-icon">🥃</div>
+                <div class="action-content">
+                    <div class="action-title">Hantera whiskies</div>
+                    <div class="action-description">Redigera och organisera whisky-samlingen</div>
+                </div>
+            </a>
+
+            <a href="/admin/whiskies/create" class="action-card">
+                <div class="action-icon">➕</div>
+                <div class="action-content">
+                    <div class="action-title">Lägg till ny whisky</div>
+                    <div class="action-description">Utöka samlingen med nya whiskies</div>
+                </div>
+            </a>
+
+            <a href="/whiskies" class="action-card">
+                <div class="action-icon">🔍</div>
+                <div class="action-content">
+                    <div class="action-title">Visa alla whiskies</div>
+                    <div class="action-description">Bläddra i hela whisky-samlingen</div>
+                </div>
+            </a>
+
+            <a href="/provningar" class="action-card">
+                <div class="action-icon">📅</div>
+                <div class="action-content">
+                    <div class="action-title">Hantera provningar</div>
+                    <div class="action-description">Organisera och planera whiskyprovningar</div>
+                </div>
+            </a>
+
+            <a href="/admin/medlemskap" class="action-card">
+                <div class="action-icon">💎</div>
+                <div class="action-content">
+                    <div class="action-title">Hantera medlemskap</div>
+                    <div class="action-description">Medlemsskap och provperioder</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="dashboard-controls">
+        <div>
+            <button type="button" @onclick="RefreshStats" class="refresh-btn" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <div class="loading-spinner"></div>
+                    <span>Uppdaterar...</span>
+                }
+                else
+                {
+                    <span>🔄</span>
+                    <span>Uppdatera statistik</span>
+                }
+            </button>
+        </div>
+
+        @if (lastUpdated.HasValue)
         {
-            <div>
-                <strong>@tasting.EventTitle</strong> - @tasting.WhiskyName
-                <br>
-                <small>@tasting.TastingDate.ToString("yyyy-MM-dd") av @tasting.OrganizedByUserName</small>
+            <div class="last-updated">
+                Senast uppdaterad: @lastUpdated.Value.ToString("HH:mm:ss")
             </div>
         }
     </div>
-}
 
-@if (featuredWhiskies.Any())
-{
-    <div>
-        <h3>Senast tillagda whiskies</h3>
-        @foreach (var whisky in featuredWhiskies.Take(5))
-        {
-            <div>
-                <strong>@whisky.Name</strong> - @whisky.Distillery
-                <br>
-                <small>@whisky.CreatedDate.ToString("yyyy-MM-dd") av @whisky.CreatedByUserName</small>
-            </div>
-        }
+    <div class="quick-links">
+        <h2 class="quick-links-title">🔗 Snabblänkar</h2>
+        <ul class="quick-links-list">
+            <li><a href="/admin/anvandare">Befordra/degradera administratörer</a></li>
+            <li><a href="/konto/hantera">Hantera ditt konto</a></li>
+            <li><a href="/">Tillbaka till startsidan</a></li>
+        </ul>
     </div>
-}
-
-<h2>Admin Actions</h2>
-
-<div>
-    <p>
-        <a href="/admin/anvandare">Hantera användare</a>
-    </p>
-    <p>
-        <a href="/admin/whiskies">Hantera whiskies</a>
-    </p>
-    <p>
-        <a href="/admin/whiskies/create">Lägg till ny whisky</a>
-    </p>
-    <p>
-        <a href="/whiskies">Visa alla whiskies</a>
-    </p>
 </div>
-
-<p>
-    <button type="button" @onclick="RefreshStats">Uppdatera statistik</button>
-</p>
-
-@if (isLoading)
-{
-    <p>Uppdaterar...</p>
-}
-
-@if (lastUpdated.HasValue)
-{
-    <p><small>Senast uppdaterad: @lastUpdated.Value.ToString("HH:mm:ss")</small></p>
-}
-
-<h2>Snabblänkar</h2>
-
-<ul>
-    <li><a href="/admin/anvandare">Befordra/degradera administratörer</a></li>
-    <li><a href="/konto/hantera">Hantera ditt konto</a></li>
-    <li><a href="/">Tillbaka till startsidan</a></li>
-</ul>
 
 @code {
     private string currentUserEmail = "";

@@ -13,7 +13,9 @@
 
 <PageTitle>Hantera medlemskapsperioder</PageTitle>
 
-<h1>Hantera medlemskapsperioder</h1>
+<div class="page-header">
+    <h1>Hantera medlemskapsperioder</h1>
+</div>
 
 @if (!string.IsNullOrEmpty(statusMessage))
 {
@@ -92,7 +94,7 @@
 }
 else if (membershipPeriods.Any())
 {
-    <div class="table-responsive">
+    <div class="table-responsive table-container">
         <table class="table table-striped">
             <thead>
                 <tr>

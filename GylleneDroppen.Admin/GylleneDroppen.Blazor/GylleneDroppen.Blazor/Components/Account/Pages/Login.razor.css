@@ -1,0 +1,198 @@
+/* Login Page Styles */
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-header h1 {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+    color: var(--color-text-light);
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+/* Form Styling */
+.login-form {
+    margin-bottom: 2rem;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section h2 {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.form-divider {
+    margin: 1.5rem 0;
+    border: none;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-beige-dark), transparent);
+}
+
+/* Enhanced Form Controls */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-control {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.1);
+}
+
+/* Remember Me Checkbox */
+.form-check {
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-check label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-text);
+    cursor: pointer;
+}
+
+/* Submit Button */
+.btn-login {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Links Section */
+.auth-links {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-beige-dark);
+}
+
+.auth-links p {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-light);
+    font-size: 0.875rem;
+}
+
+.auth-links a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.auth-links a:hover {
+    color: var(--color-whisky-copper);
+    text-decoration: underline;
+}
+
+/* Status Messages */
+.status-message {
+    margin-bottom: 1.5rem;
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.status-message.error {
+    background-color: rgba(220, 20, 60, 0.1);
+    color: var(--color-error);
+    border: 1px solid rgba(220, 20, 60, 0.2);
+}
+
+.status-message.success {
+    background-color: rgba(34, 139, 34, 0.1);
+    color: var(--color-success);
+    border: 1px solid rgba(34, 139, 34, 0.2);
+}
+
+/* Validation Styling */
+.validation-message {
+    color: var(--color-error);
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.validation-summary {
+    background-color: rgba(220, 20, 60, 0.1);
+    border: 1px solid rgba(220, 20, 60, 0.2);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.validation-summary ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: var(--color-error);
+    font-size: 0.875rem;
+}
+
+/* External Login Section */
+.external-login {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.external-login h3 {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+.external-providers {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-external {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-beige-dark);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-external:hover {
+    background-color: var(--color-beige-light);
+    border-color: var(--color-primary);
+    text-decoration: none;
+    color: var(--color-text);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .form-control {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}

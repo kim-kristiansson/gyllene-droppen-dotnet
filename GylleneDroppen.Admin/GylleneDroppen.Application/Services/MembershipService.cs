@@ -261,11 +261,13 @@ public class MembershipService(
         var trial = await userTrialUsageRepository.GetByUserIdAsync(userId);
 
         var hasActiveMembership = currentMembership?.IsCurrentlyValid ?? false;
-        var canRegister = hasActiveMembership || (trial != null && !hasUsedTrial);
+        var hasTrialAvailable = trial != null && !hasUsedTrial;
+        var canRegister = hasActiveMembership || hasTrialAvailable;
 
         string statusMessage;
         string badgeText;
         string badgeClass;
+        DateTime? membershipEndDate = null;
 
         if (hasActiveMembership && currentMembership != null)
         {
@@ -273,8 +275,9 @@ public class MembershipService(
             statusMessage = $"Medlem till {currentMembership.EndDate:yyyy-MM-dd}";
             badgeText = $"Medlem ({daysRemaining} dagar kvar)";
             badgeClass = daysRemaining <= 7 ? "badge-warning" : "badge-success";
+            membershipEndDate = currentMembership.EndDate;
         }
-        else if (trial != null && !hasUsedTrial)
+        else if (hasTrialAvailable)
         {
             statusMessage = "Gratisprov tillgängligt";
             badgeText = "Gratisprov";
@@ -297,7 +300,9 @@ public class MembershipService(
         {
             HasActiveMembership = hasActiveMembership,
             HasUsedTrial = hasUsedTrial,
+            HasTrialAvailable = hasTrialAvailable,
             CanRegisterForEvents = canRegister,
+            MembershipEndDate = membershipEndDate,
             CurrentMembership = currentMembership,
             StatusMessage = statusMessage,
             BadgeText = badgeText,

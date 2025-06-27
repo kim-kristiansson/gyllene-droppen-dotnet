@@ -4,22 +4,83 @@
 
 <AuthorizeView>
     <Authorized>
-        <div class="text-center">
-            <h1>Välkommen tillbaka!</h1>
-            <p class="mb-3">
-                <em>Whisky är inte snällt, det är ärligt.</em>
-            </p>
-            
-            <div class="my-3">
-                <a href="/whiskies" class="btn btn-primary">Utforska Whiskies</a>
-                <a href="/provningar" class="btn btn-secondary" style="margin-left: 1rem;">Kommande Provningar</a>
+        <div class="home-hero">
+            <div class="hero-content">
+                <h1>Välkommen tillbaka!</h1>
+                <p class="hero-quote">
+                    "Whisky är inte snällt, det är ärligt."
+                </p>
+                
+                <div class="hero-actions">
+                    <a href="/whiskies" class="btn btn-primary btn-lg">🥃 Utforska Whiskies</a>
+                    <a href="/provningar" class="btn btn-gold btn-lg">📅 Kommande Provningar</a>
+                </div>
+                
+                <hr class="whisky-divider" />
+                
+                <p class="hero-description">
+                    Välkommen till Gyllene Droppen - din portal för exklusiva whiskyprovningar och den finaste samlingen av destillerade skatter.
+                </p>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stat-card">
+                <span class="stat-number">42</span>
+                <span class="stat-label">Whiskies i samlingen</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">8</span>
+                <span class="stat-label">Kommande provningar</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">156</span>
+                <span class="stat-label">Medlemmar</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number">23</span>
+                <span class="stat-label">Genomförda event</span>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <a href="/admin" class="action-card">
+                <span class="action-icon">⚙️</span>
+                <h3 class="action-title">Administration</h3>
+                <p class="action-description">Hantera medlemmar, whiskies och provningar</p>
+            </a>
+            <a href="/provningar/skapa" class="action-card">
+                <span class="action-icon">➕</span>
+                <h3 class="action-title">Skapa Provning</h3>
+                <p class="action-description">Organisera en ny whiskyprovning</p>
+            </a>
+            <a href="/admin/whiskies" class="action-card">
+                <span class="action-icon">📝</span>
+                <h3 class="action-title">Lägg till Whisky</h3>
+                <p class="action-description">Utöka samlingen med nya whiskies</p>
+            </a>
+        </div>
+
+        <div class="recent-activity">
+            <div class="activity-header">
+                <h2>Senaste aktivitet</h2>
+                <a href="/provningar" class="btn btn-outline-primary btn-sm">Visa alla</a>
             </div>
             
-            <hr class="my-3" />
+            <div class="activity-item">
+                <div class="activity-meta">För 2 dagar sedan</div>
+                <div class="activity-content">Ny provning skapad: "Highland Single Malts Evening"</div>
+            </div>
             
-            <p class="text-sm">
-                Välkommen till Gyllene Droppen - din portal för exklusiva whiskyprovningar.
-            </p>
+            <div class="activity-item">
+                <div class="activity-meta">För 1 vecka sedan</div>
+                <div class="activity-content">5 nya medlemmar registrerade</div>
+            </div>
+            
+            <div class="activity-item">
+                <div class="activity-meta">För 2 veckor sedan</div>
+                <div class="activity-content">Macallan 18 års tillagd i samlingen</div>
+            </div>
         </div>
     </Authorized>
     <NotAuthorized>

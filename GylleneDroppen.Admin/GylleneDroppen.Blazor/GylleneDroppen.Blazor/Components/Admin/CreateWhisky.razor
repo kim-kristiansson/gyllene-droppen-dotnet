@@ -13,142 +13,175 @@
 
 <PageTitle>Lägg till Whisky</PageTitle>
 
-<h1>Lägg till Whisky</h1>
+<div class="create-whisky-container">
+    <div class="create-whisky-header">
+        <h1>🥃 Lägg till Whisky</h1>
+        <button @onclick="GoBack" class="back-button">← Tillbaka till översikt</button>
+    </div>
 
-<div>
-    <button @onclick="GoBack">← Tillbaka</button>
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="status-message @(statusMessage.StartsWith("Fel:") ? "error" : "success")">
+            <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty">✕</button>
+        </div>
+    }
+
+    <EditForm Model="whiskyDto" OnValidSubmit="SubmitCreateWhiskyAsync" class="whisky-form">
+        <DataAnnotationsValidator/>
+        <ValidationSummary class="validation-summary"/>
+
+        <fieldset class="form-fieldset">
+            <legend>📸 Bild</legend>
+            <div class="image-section">
+                <ImageUpload CurrentImagePath="@currentImagePath"
+                             OnImageUploaded="HandleImageUploaded"
+                             OnImageRemoved="HandleImageRemoved"/>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-fieldset">
+            <legend>ℹ️ Grundinformation</legend>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label required-field">Namn:</label>
+                    <InputText @bind-Value="whiskyDto.Name" class="form-control" placeholder="T.ex. Macallan 18"/>
+                    <ValidationMessage For="() => whiskyDto.Name" class="validation-message"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required-field">Destilleri:</label>
+                    <InputText @bind-Value="whiskyDto.Distillery" class="form-control" placeholder="T.ex. Macallan Distillery"/>
+                    <ValidationMessage For="() => whiskyDto.Distillery" class="validation-message"/>
+                </div>
+            </div>
+
+            <div class="form-grid-3">
+                <div class="form-group">
+                    <label class="form-label required-field">Land:</label>
+                    <InputSelect @bind-Value="whiskyDto.Country" class="form-control">
+                        <option value="">Välj land</option>
+                        @foreach (var country in WhiskyConstants.Countries)
+                        {
+                            <option value="@country">@country</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => whiskyDto.Country" class="validation-message"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Region:</label>
+                    <InputSelect @bind-Value="whiskyDto.Region" class="form-control">
+                        <option value="">Välj region</option>
+                        @foreach (var region in WhiskyConstants.CommonRegions)
+                        {
+                            <option value="@region">@region</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => whiskyDto.Region" class="validation-message"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required-field">Typ:</label>
+                    <InputSelect @bind-Value="whiskyDto.Type" class="form-control">
+                        <option value="">Välj typ</option>
+                        @foreach (var type in WhiskyConstants.WhiskyTypes)
+                        {
+                            <option value="@type">@type</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => whiskyDto.Type" class="validation-message"/>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Ålder:</label>
+                    <div class="number-input-group">
+                        <InputNumber @bind-Value="whiskyDto.Age" class="form-control" placeholder="T.ex. 18"/>
+                        <span class="input-suffix">år (lämna tomt för NAS)</span>
+                    </div>
+                    <ValidationMessage For="() => whiskyDto.Age" class="validation-message"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required-field">Alkoholhalt:</label>
+                    <div class="number-input-group">
+                        <InputNumber @bind-Value="whiskyDto.Abv" step="0.1" class="form-control" placeholder="T.ex. 43.0"/>
+                        <span class="input-suffix">%</span>
+                    </div>
+                    <ValidationMessage For="() => whiskyDto.Abv" class="validation-message"/>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Pris:</label>
+                    <div class="number-input-group">
+                        <InputNumber @bind-Value="whiskyDto.Price" step="0.01" class="form-control" placeholder="T.ex. 2500.00"/>
+                        <span class="input-suffix">kr (valfritt)</span>
+                    </div>
+                    <ValidationMessage For="() => whiskyDto.Price" class="validation-message"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Flaskstorlek:</label>
+                    <div class="number-input-group">
+                        <InputNumber @bind-Value="whiskyDto.BottleSize" class="form-control" placeholder="T.ex. 700"/>
+                        <span class="input-suffix">ml (valfritt)</span>
+                    </div>
+                    <ValidationMessage For="() => whiskyDto.BottleSize" class="validation-message"/>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-fieldset tasting-notes">
+            <legend>🍷 Provningsanteckningar (valfritt)</legend>
+            
+            <div class="form-tip">
+                Lägg till dina provningsanteckningar för att hjälpa andra medlemmar förstå whiskyn bättre.
+            </div>
+
+            <div class="tasting-grid">
+                <div class="form-group tasting-note">
+                    <label class="form-label">Färg:</label>
+                    <InputTextArea @bind-Value="whiskyDto.Color" rows="2" class="form-control form-textarea" 
+                                   placeholder="T.ex. Djup mahogny med kopparreflexer"/>
+                    <ValidationMessage For="() => whiskyDto.Color" class="validation-message"/>
+                </div>
+
+                <div class="form-group tasting-note">
+                    <label class="form-label">Doft:</label>
+                    <InputTextArea @bind-Value="whiskyDto.Nose" rows="3" class="form-control form-textarea" 
+                                   placeholder="T.ex. Rik med toner av sherry, mörka frukter och kryddor"/>
+                    <ValidationMessage For="() => whiskyDto.Nose" class="validation-message"/>
+                </div>
+
+                <div class="form-group tasting-note">
+                    <label class="form-label">Smak:</label>
+                    <InputTextArea @bind-Value="whiskyDto.Palate" rows="3" class="form-control form-textarea" 
+                                   placeholder="T.ex. Fyllig och komplex med torkad frukt, choklad och rök"/>
+                    <ValidationMessage For="() => whiskyDto.Palate" class="validation-message"/>
+                </div>
+
+                <div class="form-group tasting-note">
+                    <label class="form-label">Eftersmak:</label>
+                    <InputTextArea @bind-Value="whiskyDto.Finish" rows="3" class="form-control form-textarea" 
+                                   placeholder="T.ex. Lång och varm med kryddig ek och mörk choklad"/>
+                    <ValidationMessage For="() => whiskyDto.Finish" class="validation-message"/>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="form-actions">
+            <button type="button" @onclick="GoBack" class="btn-secondary">Avbryt</button>
+            <button type="submit" disabled="@isProcessing" class="btn btn-primary">
+                @(isProcessing ? "Skapar whisky..." : "Skapa whisky")
+            </button>
+        </div>
+    </EditForm>
 </div>
-
-@if (!string.IsNullOrEmpty(statusMessage))
-{
-    <div>
-        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
-        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
-    </div>
-}
-
-<EditForm Model="whiskyDto" OnValidSubmit="SubmitCreateWhiskyAsync">
-    <DataAnnotationsValidator/>
-    <ValidationSummary/>
-
-    <fieldset>
-        <legend>Bild</legend>
-        <ImageUpload CurrentImagePath="@currentImagePath"
-                     OnImageUploaded="HandleImageUploaded"
-                     OnImageRemoved="HandleImageRemoved"/>
-    </fieldset>
-
-    <fieldset>
-        <legend>Grundinformation</legend>
-
-        <div>
-            <label>Namn:</label>
-            <InputText @bind-Value="whiskyDto.Name"/>
-            <ValidationMessage For="() => whiskyDto.Name"/>
-        </div>
-
-        <div>
-            <label>Destilleri:</label>
-            <InputText @bind-Value="whiskyDto.Distillery"/>
-            <ValidationMessage For="() => whiskyDto.Distillery"/>
-        </div>
-
-        <div>
-            <label>Land:</label>
-            <InputSelect @bind-Value="whiskyDto.Country">
-                <option value="">Välj land</option>
-                @foreach (var country in WhiskyConstants.Countries)
-                {
-                    <option value="@country">@country</option>
-                }
-            </InputSelect>
-            <ValidationMessage For="() => whiskyDto.Country"/>
-        </div>
-
-        <div>
-            <label>Region:</label>
-            <InputSelect @bind-Value="whiskyDto.Region">
-                <option value="">Välj region</option>
-                @foreach (var region in WhiskyConstants.CommonRegions)
-                {
-                    <option value="@region">@region</option>
-                }
-            </InputSelect>
-            <ValidationMessage For="() => whiskyDto.Region"/>
-        </div>
-
-        <div>
-            <label>Typ:</label>
-            <InputSelect @bind-Value="whiskyDto.Type">
-                <option value="">Välj typ</option>
-                @foreach (var type in WhiskyConstants.WhiskyTypes)
-                {
-                    <option value="@type">@type</option>
-                }
-            </InputSelect>
-            <ValidationMessage For="() => whiskyDto.Type"/>
-        </div>
-
-        <div>
-            <label>Ålder (år, lämna tomt för NAS):</label>
-            <InputNumber @bind-Value="whiskyDto.Age"/>
-            <ValidationMessage For="() => whiskyDto.Age"/>
-        </div>
-
-        <div>
-            <label>Alkoholhalt (%):</label>
-            <InputNumber @bind-Value="whiskyDto.Abv" step="0.1"/>
-            <ValidationMessage For="() => whiskyDto.Abv"/>
-        </div>
-
-        <div>
-            <label>Pris (kr, valfritt):</label>
-            <InputNumber @bind-Value="whiskyDto.Price" step="0.01"/>
-            <ValidationMessage For="() => whiskyDto.Price"/>
-        </div>
-
-        <div>
-            <label>Flaskstorlek (ml, valfritt):</label>
-            <InputNumber @bind-Value="whiskyDto.BottleSize"/>
-            <ValidationMessage For="() => whiskyDto.BottleSize"/>
-        </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>Provningsanteckningar (valfritt)</legend>
-
-        <div>
-            <label>Färg:</label>
-            <InputTextArea @bind-Value="whiskyDto.Color" rows="2"/>
-            <ValidationMessage For="() => whiskyDto.Color"/>
-        </div>
-
-        <div>
-            <label>Doft:</label>
-            <InputTextArea @bind-Value="whiskyDto.Nose" rows="3"/>
-            <ValidationMessage For="() => whiskyDto.Nose"/>
-        </div>
-
-        <div>
-            <label>Smak:</label>
-            <InputTextArea @bind-Value="whiskyDto.Palate" rows="3"/>
-            <ValidationMessage For="() => whiskyDto.Palate"/>
-        </div>
-
-        <div>
-            <label>Eftersmak:</label>
-            <InputTextArea @bind-Value="whiskyDto.Finish" rows="3"/>
-            <ValidationMessage For="() => whiskyDto.Finish"/>
-        </div>
-    </fieldset>
-
-    <div>
-        <button type="submit" disabled="@isProcessing">
-            @(isProcessing ? "Skapar..." : "Skapa whisky")
-        </button>
-        <button type="button" @onclick="GoBack">Avbryt</button>
-    </div>
-</EditForm>
 
 @code {
     private CreateWhiskyRequestDto whiskyDto = new();

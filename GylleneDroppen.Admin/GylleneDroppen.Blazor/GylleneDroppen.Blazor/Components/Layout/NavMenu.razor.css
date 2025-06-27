@@ -1,112 +1,183 @@
+/* Logo Section */
+p:first-child {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0 !important;
+}
+
+p:first-child strong {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    color: var(--color-gold);
+    letter-spacing: 1px;
+    display: block;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* Navigation */
 nav {
-    padding: 1rem;
+    padding: 1.5rem 0;
 }
 
 nav p {
-    margin: 0.5rem 0;
+    margin: 0;
+    padding: 0;
 }
 
 nav p strong {
-    color: var(--color-gold);
-    font-size: 1.25rem;
-    font-family: var(--font-serif);
     display: block;
-    margin: 1.5rem 0 1rem 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    padding: 0.5rem 1.5rem;
+    color: var(--color-gold-light);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 1rem;
+    opacity: 0.7;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    border: none;
 }
 
+nav p:nth-child(2) strong {
+    margin-top: 0;
+}
+
+/* Navigation Links */
 nav ::deep a {
-    color: var(--color-beige);
-    text-decoration: none;
     display: block;
-    padding: 0.75rem 1rem;
-    border-radius: var(--radius-md);
-    transition: all 0.3s ease;
+    padding: 0.625rem 1.5rem;
+    color: var(--color-beige-light);
+    text-decoration: none;
+    font-size: 0.9375rem;
     font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
 nav ::deep a:hover {
-    background-color: rgba(212, 175, 55, 0.1);
-    color: var(--color-gold);
+    color: var(--color-white);
+    background-color: rgba(255, 255, 255, 0.05);
+    padding-left: 1.75rem;
 }
 
 nav ::deep a.active {
-    background-color: var(--color-gold);
-    color: var(--color-dark-brown);
+    color: var(--color-gold);
+    background-color: rgba(212, 175, 55, 0.1);
+    font-weight: 600;
 }
 
-input[type="checkbox"] {
+nav ::deep a.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background-color: var(--color-gold);
+}
+
+/* Navigation Toggle */
+input[type="checkbox"][title="Navigation menu"] {
     display: none;
 }
 
+/* Logout Form */
 form {
-    margin-top: 1rem;
+    margin: 1rem 0 0;
+    padding: 0 1.5rem;
 }
 
 form button {
     width: 100%;
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 1rem;
     background-color: transparent;
-    color: var(--color-beige);
-    border: 1px solid var(--color-gold);
+    color: var(--color-beige-light);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-md);
-    cursor: pointer;
+    font-size: 0.875rem;
     font-weight: 500;
-    transition: all 0.3s ease;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 form button:hover {
-    background-color: var(--color-gold);
-    color: var(--color-dark-brown);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-white);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Logo/Title */
-p:first-child strong {
-    color: var(--color-gold) !important;
-    font-size: 1.5rem !important;
-    font-family: var(--font-serif);
-    display: block;
-    text-align: center;
-    margin: 0 0 2rem 0 !important;
-    padding: 1.5rem 0 !important;
-    border-bottom: 2px solid var(--color-gold) !important;
-}
-
-@media (max-width: 768px) {
-    input[type="checkbox"] {
+@media (max-width: 991px) {
+    input[type="checkbox"][title="Navigation menu"] {
         display: block;
         position: absolute;
         top: 1rem;
         right: 1rem;
-        width: 40px;
-        height: 40px;
-        cursor: pointer;
+        width: 2rem;
+        height: 2rem;
         opacity: 0;
-        z-index: 2;
+        cursor: pointer;
+        z-index: 1002;
     }
-
-    input[type="checkbox"] ~ div::before {
-        content: '☰';
+    
+    /* Hamburger Icon */
+    input[type="checkbox"] ~ div::before,
+    input[type="checkbox"] ~ div::after {
+        content: '';
         position: absolute;
-        top: 1rem;
         right: 1rem;
-        font-size: 1.5rem;
-        color: var(--color-beige);
-        z-index: 1;
+        width: 1.5rem;
+        height: 2px;
+        background-color: var(--color-gold);
+        transition: all 0.3s ease;
     }
-
-    input[type="checkbox"]:checked ~ div nav {
-        display: block;
+    
+    input[type="checkbox"] ~ div::before {
+        top: 1.25rem;
     }
-
-    nav {
-        display: none;
+    
+    input[type="checkbox"] ~ div::after {
+        top: 1.75rem;
+    }
+    
+    /* Middle line */
+    p:first-child::after {
+        content: '';
         position: absolute;
-        top: 60px;
-        left: 0;
-        right: 0;
-        background-color: var(--color-dark-brown);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        right: 1rem;
+        top: 1.5rem;
+        width: 1.5rem;
+        height: 2px;
+        background-color: var(--color-gold);
+        transition: all 0.3s ease;
+    }
+    
+    /* Hide navigation by default on mobile */
+    nav {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    /* Show navigation when checkbox is checked */
+    input[type="checkbox"][title="Navigation menu"]:checked ~ div nav {
+        max-height: 100vh;
+    }
+    
+    /* Animate hamburger to X */
+    input[type="checkbox"]:checked ~ div::before {
+        transform: rotate(45deg);
+        top: 1.5rem;
+    }
+    
+    input[type="checkbox"]:checked ~ p:first-child::after {
+        opacity: 0;
+    }
+    
+    input[type="checkbox"]:checked ~ div::after {
+        transform: rotate(-45deg);
+        top: 1.5rem;
     }
 }

@@ -1,0 +1,529 @@
+@page "/admin/medlemskap"
+@using Microsoft.AspNetCore.Authorization
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.Membership
+@using GylleneDroppen.Application.Dtos.User
+@using System.ComponentModel.DataAnnotations
+
+@inject IMembershipService MembershipService
+@inject IUserManagementService UserManagementService
+@inject ILogger<ManageUserMemberships> Logger
+
+@rendermode InteractiveServer
+
+@attribute [Authorize(Policy = "AdminOnly")]
+
+<PageTitle>Hantera medlemskap</PageTitle>
+
+<div class="page-header">
+    <h1>Hantera medlemskap</h1>
+</div>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert @(statusMessage.StartsWith("Fel:") ? "alert-danger" : "alert-success")">
+        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
+        <button type="button" class="btn btn-sm btn-secondary" @onclick="() => statusMessage = string.Empty">Stäng</button>
+    </div>
+}
+
+<div class="row stats-row">
+    <div class="col-md-4">
+        <div class="stats-card">
+            <h5 class="card-title">Aktiva medlemskap</h5>
+            <p class="display-4">@activeMemberships.Count</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card">
+            <h5 class="card-title">Utgående medlemskap (30 dagar)</h5>
+            <p class="display-4">@expiringMemberships.Count</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card">
+            <h5 class="card-title">Provmedlemskap använda</h5>
+            <p class="display-4">@trialUsageCount</p>
+        </div>
+    </div>
+</div>
+
+<div class="mb-4">
+    <button type="button" class="btn btn-primary" @onclick="ShowCreateForm">
+        Skapa nytt medlemskap
+    </button>
+</div>
+
+@if (showCreateForm)
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Skapa nytt medlemskap</h3>
+        </div>
+        <div class="card-body">
+            <EditForm Model="createRequest" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label for="user" class="form-label">Välj medlem</label>
+                    <InputSelect id="user" class="form-control" @bind-Value="createRequest.UserId">
+                        <option value="">-- Välj medlem --</option>
+                        @foreach (var user in allUsers.OrderBy(u => u.FullName))
+                        {
+                            <option value="@user.Id.ToString()">@user.FullName (@user.Email)</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => createRequest.UserId)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="period" class="form-label">Välj medlemskapsperiod</label>
+                    <InputSelect id="period" class="form-control" @bind-Value="createRequest.MembershipPeriodId">
+                        <option value="">-- Välj period --</option>
+                        @foreach (var period in activePeriods)
+                        {
+                            <option value="@period.Id">@period.Name - @period.DurationInMonths månader (@period.Price.ToString("C"))</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => createRequest.MembershipPeriodId)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="startDate" class="form-label">Startdatum</label>
+                    <InputDate id="startDate" class="form-control" @bind-Value="createRequest.StartDate" />
+                    <ValidationMessage For="@(() => createRequest.StartDate)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="amountPaid" class="form-label">Betalt belopp (SEK)</label>
+                    <InputNumber id="amountPaid" class="form-control" @bind-Value="createRequest.AmountPaid" step="0.01" />
+                    <ValidationMessage For="@(() => createRequest.AmountPaid)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Anteckningar</label>
+                    <InputTextArea id="notes" class="form-control" @bind-Value="createRequest.Notes" rows="3" />
+                    <ValidationMessage For="@(() => createRequest.Notes)" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Skapa medlemskap
+                    </button>
+                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">
+                        Avbryt
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "active" ? "active" : "")" href="#" @onclick="@(() => activeTab = "active")" @onclick:preventDefault="true">
+            Aktiva medlemskap (@activeMemberships.Count)
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "expiring" ? "active" : "")" href="#" @onclick="@(() => activeTab = "expiring")" @onclick:preventDefault="true">
+            Utgående medlemskap (@expiringMemberships.Count)
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "all" ? "active" : "")" href="#" @onclick="@(() => activeTab = "all")" @onclick:preventDefault="true">
+            Alla medlemskap
+        </a>
+    </li>
+</ul>
+
+@if (isLoading)
+{
+    <p>Laddar...</p>
+}
+else
+{
+    <div class="table-responsive table-container">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Medlem</th>
+                    <th>E-post</th>
+                    <th>Medlemskapstyp</th>
+                    <th>Startdatum</th>
+                    <th>Slutdatum</th>
+                    <th>Dagar kvar</th>
+                    <th>Betalt</th>
+                    <th>Status</th>
+                    <th>Åtgärder</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var membership in GetFilteredMemberships())
+                {
+                    <tr class="@(membership.IsExpired ? "table-danger" : membership.DaysRemaining <= 30 ? "table-warning" : "")">
+                        <td>@membership.UserName</td>
+                        <td>@membership.UserEmail</td>
+                        <td>@membership.MembershipPeriodName</td>
+                        <td>@membership.StartDate.ToString("yyyy-MM-dd")</td>
+                        <td>@membership.EndDate.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            @if (membership.IsExpired)
+                            {
+                                <span class="text-danger">Utgången</span>
+                            }
+                            else
+                            {
+                                <span class="@(membership.DaysRemaining <= 30 ? "text-warning" : "")">
+                                    @membership.DaysRemaining dagar
+                                </span>
+                            }
+                        </td>
+                        <td>@membership.AmountPaid.ToString("C")</td>
+                        <td>
+                            <span class="badge @(membership.IsActive && !membership.IsExpired ? "bg-success" : "bg-secondary")">
+                                @(membership.IsActive && !membership.IsExpired ? "Aktivt" : "Inaktivt")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                @if (!membership.IsExpired)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            @onclick="() => ShowExtendForm(membership)" 
+                                            disabled="@isProcessing">
+                                        Förläng
+                                    </button>
+                                }
+                                @if (membership.IsActive)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            @onclick="() => ConfirmDeactivate(membership)"
+                                            disabled="@isProcessing">
+                                        Avaktivera
+                                    </button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (showExtendForm && membershipToExtend != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Förläng medlemskap</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Förläng medlemskap för <strong>@membershipToExtend.UserName</strong></p>
+                    <p>Nuvarande slutdatum: <strong>@membershipToExtend.EndDate.ToString("yyyy-MM-dd")</strong></p>
+                    
+                    <div class="mb-3">
+                        <label for="extendPeriod" class="form-label">Välj förlängningsperiod</label>
+                        <select id="extendPeriod" class="form-control" @bind="extendPeriodId">
+                            <option value="">-- Välj period --</option>
+                            @foreach (var period in activePeriods)
+                            {
+                                <option value="@period.Id">@period.Name - @period.DurationInMonths månader (@period.Price.ToString("C"))</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="extendAmount" class="form-label">Betalt belopp (SEK)</label>
+                        <input type="number" id="extendAmount" class="form-control" @bind="extendAmountPaid" step="0.01" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="extendNotes" class="form-label">Anteckningar</label>
+                        <textarea id="extendNotes" class="form-control" @bind="extendNotes" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelExtend">Avbryt</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmExtend" disabled="@(isProcessing || extendPeriodId == Guid.Empty)">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Förläng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showDeactivateConfirmation && membershipToDeactivate != null)
+{
+    <div class="modal show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Bekräfta avaktivering</h5>
+                </div>
+                <div class="modal-body">
+                    <p>Är du säker på att du vill avaktivera medlemskapet för <strong>@membershipToDeactivate.UserName</strong>?</p>
+                    <p class="text-warning">Medlemmen kommer inte längre kunna registrera sig för nya provningar.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDeactivate">Avbryt</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDeactivateMembership" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Avaktivera
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<UserMembershipDto> allMemberships = new();
+    private List<UserMembershipDto> activeMemberships = new();
+    private List<UserMembershipDto> expiringMemberships = new();
+    private List<MembershipPeriodDto> activePeriods = new();
+    private List<UserResponseDto> allUsers = new();
+    private CreateUserMembershipRequestDto createRequest = new();
+    private UserMembershipDto? membershipToExtend = null;
+    private UserMembershipDto? membershipToDeactivate = null;
+    private string statusMessage = string.Empty;
+    private string activeTab = "active";
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private bool showCreateForm = false;
+    private bool showExtendForm = false;
+    private bool showDeactivateConfirmation = false;
+    private int trialUsageCount = 0;
+    
+    // Extension form fields
+    private Guid extendPeriodId = Guid.Empty;
+    private decimal extendAmountPaid = 0;
+    private string extendNotes = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            
+            // Load all data in parallel
+            var tasksToRun = new List<Task>
+            {
+                Task.Run(async () => activeMemberships = await MembershipService.GetAllActiveMembershipsAsync()),
+                Task.Run(async () => expiringMemberships = await MembershipService.GetExpiringMembershipsAsync()),
+                Task.Run(async () => activePeriods = await MembershipService.GetActiveMembershipPeriodsAsync()),
+                Task.Run(async () => allUsers = await UserManagementService.GetAllUsersAsync()),
+                Task.Run(async () => trialUsageCount = await MembershipService.GetTrialUsageCountAsync())
+            };
+
+            await Task.WhenAll(tasksToRun);
+
+            // Combine all memberships for the "all" tab
+            allMemberships = activeMemberships.Union(expiringMemberships).Distinct().ToList();
+            
+            // Also load expired memberships
+            foreach (var user in allUsers)
+            {
+                var userMemberships = await MembershipService.GetUserMembershipsAsync(user.Id.ToString());
+                foreach (var membership in userMemberships)
+                {
+                    if (!allMemberships.Any(m => m.Id == membership.Id))
+                    {
+                        allMemberships.Add(membership);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading membership data");
+            statusMessage = "Fel: Kunde inte ladda medlemskapsdata";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private List<UserMembershipDto> GetFilteredMemberships()
+    {
+        return activeTab switch
+        {
+            "active" => activeMemberships.OrderBy(m => m.EndDate).ToList(),
+            "expiring" => expiringMemberships.OrderBy(m => m.EndDate).ToList(),
+            _ => allMemberships.OrderByDescending(m => m.StartDate).ToList()
+        };
+    }
+
+    private void ShowCreateForm()
+    {
+        createRequest = new CreateUserMembershipRequestDto
+        {
+            StartDate = DateTime.UtcNow.Date
+        };
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void CancelForm()
+    {
+        showCreateForm = false;
+        createRequest = new CreateUserMembershipRequestDto();
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            var result = await MembershipService.CreateUserMembershipAsync(createRequest);
+            
+            var user = allUsers.FirstOrDefault(u => u.Id.ToString() == createRequest.UserId);
+            statusMessage = $"Medlemskap har skapats för {user?.FullName ?? "användaren"}.";
+            
+            await LoadData();
+            CancelForm();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating user membership");
+            statusMessage = $"Fel: Kunde inte skapa medlemskap. {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowExtendForm(UserMembershipDto membership)
+    {
+        membershipToExtend = membership;
+        extendPeriodId = Guid.Empty;
+        extendAmountPaid = 0;
+        extendNotes = string.Empty;
+        showExtendForm = true;
+        StateHasChanged();
+    }
+
+    private void CancelExtend()
+    {
+        membershipToExtend = null;
+        showExtendForm = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmExtend()
+    {
+        if (membershipToExtend == null || extendPeriodId == Guid.Empty || isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            var success = await MembershipService.ExtendUserMembershipAsync(
+                membershipToExtend.UserId, 
+                extendPeriodId, 
+                extendAmountPaid, 
+                extendNotes);
+
+            if (success)
+            {
+                statusMessage = $"Medlemskap för {membershipToExtend.UserName} har förlängts.";
+                await LoadData();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte förlänga medlemskapet.";
+            }
+
+            CancelExtend();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error extending membership {MembershipId}", membershipToExtend.Id);
+            statusMessage = $"Fel: Kunde inte förlänga medlemskapet. {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ConfirmDeactivate(UserMembershipDto membership)
+    {
+        membershipToDeactivate = membership;
+        showDeactivateConfirmation = true;
+        StateHasChanged();
+    }
+
+    private void CancelDeactivate()
+    {
+        membershipToDeactivate = null;
+        showDeactivateConfirmation = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDeactivateMembership()
+    {
+        if (membershipToDeactivate == null || isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            var success = await MembershipService.DeactivateUserMembershipAsync(membershipToDeactivate.Id);
+            
+            if (success)
+            {
+                statusMessage = $"Medlemskap för {membershipToDeactivate.UserName} har avaktiverats.";
+                await LoadData();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte avaktivera medlemskapet.";
+            }
+
+            CancelDeactivate();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deactivating membership {MembershipId}", membershipToDeactivate.Id);
+            statusMessage = $"Fel: Kunde inte avaktivera medlemskapet. {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+}

@@ -18,131 +18,182 @@
 
 <PageTitle>Användarhantering</PageTitle>
 
-<h1>Användarhantering</h1>
-
-@if (!string.IsNullOrEmpty(statusMessage))
-{
-    <div>
-        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
-        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+<div class="manage-users-container">
+    <div class="page-header">
+        <h1>👥 Användarhantering</h1>
+        <div class="header-actions">
+            <span class="user-count">Totalt: @users.Count användare</span>
+        </div>
     </div>
-}
 
-@{
-    var regularUsers = users.Where(u => u.Role != "Admin").ToList();
-}
-
-<h2>Alla medlemmar (@regularUsers.Count)</h2>
-
-@if (isLoading)
-{
-    <p>Laddar...</p>
-}
-else if (regularUsers.Any())
-{
-    <table>
-        <thead>
-        <tr>
-            <th>E-post</th>
-            <th>Namn</th>
-            <th>Roll</th>
-            <th>Åtgärder</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var user in regularUsers)
-        {
-            var uid = user.Id.ToString();
-
-            <tr>
-                <td>@user.Email</td>
-                <td>@user.FullName</td>
-                <td>@(user.Role == "User" ? "Medlem" : user.Role)</td>
-                <td>
-                    <button type="button" @onclick="async () => await PromoteUser(uid)">
-                        Lägg till i styrelsen
-                    </button>
-                </td>
-            </tr>
-        }
-
-        </tbody>
-    </table>
-}
-else
-{
-    <p>Inga medlemmar hittades.</p>
-}
-
-<h2>Styrelsen (@adminUsers.Count)</h2>
-
-@if (adminUsers.Any())
-{
-    @foreach (var admin in adminUsers)
+    @if (!string.IsNullOrEmpty(statusMessage))
     {
-        <div>
-            <p><strong>@admin.FullName</strong> - @admin.Email</p>
-            <p>Roll: Styrelsemedlem @(admin.Id.ToString() == currentUserId ? "(Du)" : "")</p>
-
-            @if (adminDepartments.ContainsKey(admin.Id.ToString()))
-            {
-                <p>Ansvarsområde: <strong>@Departments.GetDisplayName(adminDepartments[admin.Id.ToString()])</strong>
-                </p>
-            }
-            else
-            {
-                <p>Ansvarsområde: <em>Inget tilldelat</em></p>
-            }
-
-            <div>
-                @if (admin.Id.ToString() != currentUserId)
-                {
-                    <button type="button" @onclick="async () => await DemoteUser(admin.Id.ToString())"
-                            disabled="@isProcessing">
-                        Ta bort från styrelsen
-                    </button>
-                }
-
-                @if (showDepartmentForm && selectedAdminId == admin.Id.ToString())
-                {
-                    <select @bind="selectedDepartment">
-                        <option value="">Välj ansvarsområde</option>
-                        @foreach (var dept in Departments.All)
-                        {
-                            <option value="@dept.Value">@dept.DisplayName</option>
-                        }
-                    </select>
-                    <button type="button" @onclick="async () => await SetDepartment(admin.Id.ToString())"
-                            disabled="@isProcessing">
-                        Sätt ansvarsområde
-                    </button>
-                    <button type="button" @onclick="CancelDepartmentEdit">
-                        Avbryt
-                    </button>
-                }
-                else
-                {
-                    <button type="button" @onclick="() => ShowDepartmentForm(admin.Id.ToString())"
-                            disabled="@isProcessing">
-                        @(adminDepartments.ContainsKey(admin.Id.ToString()) ? "Ändra ansvarsområde" : "Sätt ansvarsområde")
-                    </button>
-                }
-
-                @if (adminDepartments.ContainsKey(admin.Id.ToString()))
-                {
-                    <button type="button" @onclick="async () => await RemoveDepartment(admin.Id.ToString())"
-                            disabled="@isProcessing">
-                        Ta bort ansvarsområde
-                    </button>
-                }
-            </div>
+        <div class="status-message @(statusMessage.StartsWith("Fel:") ? "error" : "success")">
+            <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty">✕</button>
         </div>
     }
-}
-else
-{
-    <p>Inga styrelsemedlemmar hittades.</p>
-}
+
+    @{
+        var regularUsers = users.Where(u => u.Role != "Admin").ToList();
+    }
+
+    <div class="user-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                👤 Alla medlemmar
+                <span class="user-count">@regularUsers.Count</span>
+            </h2>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                Laddar medlemmar...
+            </div>
+        }
+        else if (regularUsers.Any())
+        {
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>E-postadress</th>
+                        <th>Namn</th>
+                        <th>Roll</th>
+                        <th>Åtgärder</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in regularUsers)
+                    {
+                        var uid = user.Id.ToString();
+
+                        <tr>
+                            <td>
+                                <div class="user-email">@user.Email</div>
+                            </td>
+                            <td>
+                                <div class="user-name">@user.FullName</div>
+                            </td>
+                            <td>
+                                <span class="user-role member">
+                                    @(user.Role == "User" ? "Medlem" : user.Role)
+                                </span>
+                            </td>
+                            <td>
+                                <div class="user-actions">
+                                    <button type="button" @onclick="async () => await PromoteUser(uid)" 
+                                            class="btn-promote" disabled="@isProcessing">
+                                        Lägg till i styrelsen
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">👤</div>
+                <h3>Inga medlemmar hittades</h3>
+                <p>Det finns inga registrerade medlemmar att visa.</p>
+            </div>
+        }
+    </div>
+
+    <div class="user-section">
+        <div class="section-header">
+            <h2 class="section-title">
+                👑 Styrelsen
+                <span class="user-count">@adminUsers.Count</span>
+            </h2>
+        </div>
+
+        @if (adminUsers.Any())
+        {
+            <div class="admin-grid">
+                @foreach (var admin in adminUsers)
+                {
+                    <div class="admin-card @(admin.Id.ToString() == currentUserId ? "current-user" : "")">
+                        <div class="admin-info">
+                            <div class="admin-name">@admin.FullName</div>
+                            <div class="admin-email">@admin.Email</div>
+                            <div class="admin-role">
+                                🛡️ Styrelsemedlem @(admin.Id.ToString() == currentUserId ? "(Du)" : "")
+                            </div>
+                        </div>
+
+                        <div class="admin-department @(adminDepartments.ContainsKey(admin.Id.ToString()) ? "" : "no-department")">
+                            <div class="department-label">Ansvarsområde</div>
+                            @if (adminDepartments.ContainsKey(admin.Id.ToString()))
+                            {
+                                <div class="department-name">@Departments.GetDisplayName(adminDepartments[admin.Id.ToString()])</div>
+                            }
+                            else
+                            {
+                                <div class="department-name">Inget tilldelat</div>
+                            }
+                        </div>
+
+                        <div class="admin-actions">
+                            @if (admin.Id.ToString() != currentUserId)
+                            {
+                                <button type="button" @onclick="async () => await DemoteUser(admin.Id.ToString())"
+                                        disabled="@isProcessing" class="btn-demote">
+                                    Ta bort från styrelsen
+                                </button>
+                            }
+
+                            @if (showDepartmentForm && selectedAdminId == admin.Id.ToString())
+                            {
+                                <select @bind="selectedDepartment" class="department-select">
+                                    <option value="">Välj ansvarsområde</option>
+                                    @foreach (var dept in Departments.All)
+                                    {
+                                        <option value="@dept.Value">@dept.DisplayName</option>
+                                    }
+                                </select>
+                                <button type="button" @onclick="async () => await SetDepartment(admin.Id.ToString())"
+                                        disabled="@isProcessing" class="btn btn-primary btn-sm">
+                                    Sätt ansvarsområde
+                                </button>
+                                <button type="button" @onclick="CancelDepartmentEdit" class="btn btn-secondary btn-sm">
+                                    Avbryt
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" @onclick="() => ShowDepartmentForm(admin.Id.ToString())"
+                                        disabled="@isProcessing" class="btn btn-outline-primary btn-sm">
+                                    @(adminDepartments.ContainsKey(admin.Id.ToString()) ? "Ändra ansvarsområde" : "Sätt ansvarsområde")
+                                </button>
+                            }
+
+                            @if (adminDepartments.ContainsKey(admin.Id.ToString()))
+                            {
+                                <button type="button" @onclick="async () => await RemoveDepartment(admin.Id.ToString())"
+                                        disabled="@isProcessing" class="btn btn-outline-secondary btn-sm">
+                                    Ta bort ansvarsområde
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">👑</div>
+                <h3>Inga styrelsemedlemmar hittades</h3>
+                <p>Det finns inga styrelsemedlemmar att visa.</p>
+            </div>
+        }
+    </div>
+</div>
 
 @code {
     private List<UserResponseDto> users = new();

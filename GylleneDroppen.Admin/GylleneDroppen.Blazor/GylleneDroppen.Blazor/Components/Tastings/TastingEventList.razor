@@ -1,98 +1,183 @@
 @page "/provningar"
 @using GylleneDroppen.Application.Interfaces.Services
 @using GylleneDroppen.Application.Dtos.TastingEvent
+@using GylleneDroppen.Application.Dtos.Membership
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 
 @inject ITastingEventService TastingEventService
+@inject IMembershipService MembershipService
 @inject NavigationManager NavigationManager
 @inject ICurrentUserService CurrentUserService
 
 @rendermode InteractiveServer
 
-@* Logic-only version, all styling removed *@
+<PageTitle>Provningar</PageTitle>
+
+<div class="page-header">
+    <h1>Provningar</h1>
+</div>
 
 <AuthorizeView>
     <Authorized>
-        <button @onclick="CreateNewEvent">Skapa nytt event</button>
+        @if (membershipStatus != null)
+        {
+            <div class="membership-status @(membershipStatus.HasActiveMembership ? "active" : membershipStatus.HasTrialAvailable ? "trial" : "expired")">
+                @if (membershipStatus.HasActiveMembership)
+                {
+                    <p>✨ Ditt medlemskap är aktivt till: <strong>@membershipStatus.MembershipEndDate?.ToString("yyyy-MM-dd")</strong></p>
+                }
+                else if (membershipStatus.HasTrialAvailable)
+                {
+                    <p>🎁 Du har en gratis provmedlemskap tillgänglig</p>
+                }
+                else if (membershipStatus.HasUsedTrial)
+                {
+                    <p>⚠️ Du har använt ditt provmedlemskap. Köp medlemskap för att fortsätta delta i event.</p>
+                }
+            </div>
+        }
+        
+        <div class="btn-create">
+            <button class="btn btn-primary" @onclick="CreateNewEvent">
+                Skapa nytt event
+            </button>
+        </div>
     </Authorized>
 </AuthorizeView>
 
 @if (isLoading)
 {
-    @Text("Laddar event...")
+    <div class="loading">
+        <p>Laddar provningar...</p>
+    </div>
 }
 else
 {
-    @Text($"Kommande event ({upcomingEvents.Count})")
+    <div class="events-section">
+        <h2 class="section-title">
+            Kommande provningar
+            <span class="event-count">@upcomingEvents.Count</span>
+        </h2>
 
-    if (upcomingEvents.Any())
-    {
-        foreach (var e in upcomingEvents)
+        @if (upcomingEvents.Any())
         {
-            @Text(e.Title)
-            @Text($"Datum: {e.EventDate:yyyy-MM-dd HH:mm}")
-
-            if (!string.IsNullOrEmpty(e.Location))
+            @foreach (var e in upcomingEvents)
             {
-                @Text($"Plats: {e.Location}")
+                <div class="event-card">
+                    <h3 class="event-title">@e.Title</h3>
+                    
+                    <div class="event-meta">
+                        <div class="event-meta-item">
+                            <strong>📅 Datum:</strong> @e.EventDate.ToString("yyyy-MM-dd HH:mm")
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(e.Location))
+                        {
+                            <div class="event-meta-item">
+                                <strong>📍 Plats:</strong> @e.Location
+                            </div>
+                        }
+                        
+                        <div class="event-meta-item">
+                            <strong>👤 Organiserad av:</strong> @e.OrganizedByUserName
+                        </div>
+                        
+                        <div class="event-meta-item">
+                            <strong>🥃 Whiskies:</strong> @e.WhiskyCount st
+                        </div>
+                        
+                        <div class="event-meta-item">
+                            <strong>👥 Deltagare:</strong> @e.ParticipantCount@(e.MaxParticipants.HasValue ? $"/{e.MaxParticipants}" : "") st
+                        </div>
+                        
+                        <div class="event-meta-item">
+                            <strong>🌐 Typ:</strong> @(e.IsPublic ? "Publik" : "Privat")
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(e.Description))
+                    {
+                        <div class="event-description">
+                            <strong>Beskrivning:</strong> @e.Description
+                        </div>
+                    }
+
+                    <div class="event-actions">
+                        @EventActions(e)
+                    </div>
+                </div>
             }
-
-            if (!string.IsNullOrEmpty(e.Description))
-            {
-                @Text($"Beskrivning: {e.Description}")
-            }
-
-            @Text($"Organiserad av: {e.OrganizedByUserName}")
-            @Text($"Antal whiskies: {e.WhiskyCount}")
-            @Text($"Antal deltagare: {e.ParticipantCount}")
-
-            if (e.MaxParticipants.HasValue)
-            {
-                @Text($"Max deltagare: {e.MaxParticipants}")
-            }
-
-            @Text($"Publikt: {(e.IsPublic ? "Ja" : "Nej")}")
-
-            @EventActions(e)
         }
-    }
-    else
-    {
-        @Text("Inga kommande event.")
-    }
-
-    @Text($"Tidigare event ({pastEvents.Count})")
-
-    if (pastEvents.Any())
-    {
-        foreach (var e in pastEvents)
+        else
         {
-            @Text(e.Title)
-            @Text($"Datum: {e.EventDate:yyyy-MM-dd HH:mm}")
-
-            if (!string.IsNullOrEmpty(e.Location))
-            {
-                @Text($"Plats: {e.Location}")
-            }
-
-            @Text($"Organiserad av: {e.OrganizedByUserName}")
-            @Text($"Antal whiskies: {e.WhiskyCount}")
-            @Text($"Antal deltagare: {e.ParticipantCount}")
-
-            @Button("Visa detaljer", () => ViewEvent(e.Id))
+            <div class="empty-state">
+                <p>Inga kommande provningar.</p>
+            </div>
         }
-    }
-    else
-    {
-        @Text("Inga tidigare event.")
-    }
+    </div>
+
+    <div class="events-section">
+        <h2 class="section-title">
+            Tidigare provningar
+            <span class="event-count">@pastEvents.Count</span>
+        </h2>
+
+        @if (pastEvents.Any())
+        {
+            @foreach (var e in pastEvents)
+            {
+                <div class="event-card past">
+                    <h3 class="event-title">@e.Title</h3>
+                    
+                    <div class="event-meta">
+                        <div class="event-meta-item">
+                            <strong>📅 Datum:</strong> @e.EventDate.ToString("yyyy-MM-dd HH:mm")
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(e.Location))
+                        {
+                            <div class="event-meta-item">
+                                <strong>📍 Plats:</strong> @e.Location
+                            </div>
+                        }
+                        
+                        <div class="event-meta-item">
+                            <strong>👤 Organiserad av:</strong> @e.OrganizedByUserName
+                        </div>
+                        
+                        <div class="event-meta-item">
+                            <strong>🥃 Whiskies:</strong> @e.WhiskyCount st
+                        </div>
+                        
+                        <div class="event-meta-item">
+                            <strong>👥 Deltagare:</strong> @e.ParticipantCount st
+                        </div>
+                    </div>
+
+                    <div class="event-actions">
+                        <button class="btn btn-outline-primary" @onclick="() => ViewEvent(e.Id)">
+                            Visa detaljer
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <p>Inga tidigare provningar.</p>
+            </div>
+        }
+    </div>
 }
 
 @if (!string.IsNullOrEmpty(statusMessage))
 {
-    @Text($"{(statusMessage.StartsWith("Fel:") ? "Fel" : "Info")}: {statusMessage}")
-    @Button("Stäng", () => statusMessage = string.Empty)
+    <div class="alert @(statusMessage.StartsWith("Fel:") ? "alert-danger" : "alert-success")">
+        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
+        <button type="button" class="btn btn-sm btn-secondary" @onclick="() => statusMessage = string.Empty">Stäng</button>
+    </div>
 }
 
 @code {
@@ -103,12 +188,30 @@ else
     private bool isProcessing = false;
     private string statusMessage = string.Empty;
     private string? currentUserId;
+    private UserMembershipStatusDto? membershipStatus;
 
     protected override async Task OnInitializedAsync()
     {
         currentUserId = CurrentUserService.GetUserId();
         await LoadEvents();
         await LoadUserRegistrations();
+        await LoadMembershipStatus();
+    }
+
+    private async Task LoadMembershipStatus()
+    {
+        if (!string.IsNullOrEmpty(currentUserId))
+        {
+            try
+            {
+                membershipStatus = await MembershipService.GetUserMembershipStatusAsync(currentUserId);
+            }
+            catch
+            {
+                membershipStatus = null;
+            }
+        }
+        StateHasChanged();
     }
 
     private async Task LoadEvents()
@@ -160,6 +263,11 @@ else
         if (!e.IsPublic) return false;
         if (e.EventDate < DateTime.Now) return false;
         if (e.MaxParticipants.HasValue && e.ParticipantCount >= e.MaxParticipants.Value) return false;
+        
+        // Check membership status
+        if (membershipStatus == null) return false;
+        if (!membershipStatus.CanRegisterForEvents) return false;
+        
         return true;
     }
 
@@ -220,22 +328,49 @@ else
 
     private RenderFragment EventActions(TastingEventDto e) => builder =>
     {
-        builder.AddContent(0, Button("Visa detaljer", () => ViewEvent(e.Id)));
+        // View details button
+        builder.OpenElement(0, "button");
+        builder.AddAttribute(1, "class", "btn btn-outline-primary");
+        builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => ViewEvent(e.Id)));
+        builder.AddContent(3, "Visa detaljer");
+        builder.CloseElement();
         
-        builder.OpenComponent<AuthorizeView>(1);
-        builder.AddAttribute(2, "Authorized", (RenderFragment<AuthenticationState>)(context =>
+        builder.OpenComponent<AuthorizeView>(4);
+        builder.AddAttribute(5, "Authorized", (RenderFragment<AuthenticationState>)(context =>
         {
             var fragment = new RenderFragment(childBuilder =>
             {
                 if (CanEditEvent(e))
                 {
-                    childBuilder.AddContent(0, Button("Redigera", () => EditEvent(e.Id)));
+                    childBuilder.OpenElement(0, "button");
+                    childBuilder.AddAttribute(1, "class", "btn btn-secondary");
+                    childBuilder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => EditEvent(e.Id)));
+                    childBuilder.AddContent(3, "Redigera");
+                    childBuilder.CloseElement();
                 }
 
                 if (CanRegisterForEvent(e))
                 {
                     var isRegistered = isUserRegistered.ContainsKey(e.Id) && isUserRegistered[e.Id];
-                    childBuilder.AddContent(1, Button(isRegistered ? "Avregistrera" : "Registrera", async () => await RegisterForEvent(e.Id)));
+                    var buttonClass = isRegistered ? "btn btn-outline-danger" : "btn btn-gold";
+                    var buttonText = isRegistered ? "Avregistrera" : "Registrera";
+                    
+                    childBuilder.OpenElement(4, "button");
+                    childBuilder.AddAttribute(5, "class", buttonClass);
+                    childBuilder.AddAttribute(6, "onclick", EventCallback.Factory.Create(this, async () => await RegisterForEvent(e.Id)));
+                    childBuilder.AddAttribute(7, "disabled", isProcessing);
+                    childBuilder.AddContent(8, buttonText);
+                    childBuilder.CloseElement();
+                }
+                else if (membershipStatus != null && !membershipStatus.CanRegisterForEvents)
+                {
+                    if (membershipStatus.HasUsedTrial)
+                    {
+                        childBuilder.OpenElement(9, "span");
+                        childBuilder.AddAttribute(10, "class", "membership-required");
+                        childBuilder.AddContent(11, "Kräver medlemskap");
+                        childBuilder.CloseElement();
+                    }
                 }
             });
             return fragment;
