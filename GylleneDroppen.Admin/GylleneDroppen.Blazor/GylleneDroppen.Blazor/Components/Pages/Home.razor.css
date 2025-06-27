@@ -19,22 +19,17 @@
     right: 0;
     bottom: 0;
     background: 
-        /* Manuscript illumination */
-        radial-gradient(circle at 25% 25%, rgba(184, 134, 11, 0.12) 0%, transparent 15%),
-        radial-gradient(circle at 75% 75%, rgba(218, 165, 32, 0.08) 0%, transparent 12%),
-        /* Age spots */
-        radial-gradient(circle at 15% 60%, rgba(139, 69, 19, 0.06) 0%, transparent 2%),
-        radial-gradient(circle at 85% 40%, rgba(160, 82, 45, 0.05) 0%, transparent 1.5%),
-        /* Paper texture */
-        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.02) 50%, transparent 51%),
-        linear-gradient(-45deg, transparent 49%, rgba(122, 110, 95, 0.015) 50%, transparent 51%);
+        /* Gentle illumination */
+        radial-gradient(circle at 25% 25%, rgba(184, 134, 11, 0.06) 0%, transparent 25%),
+        radial-gradient(circle at 75% 75%, rgba(218, 165, 32, 0.04) 0%, transparent 20%),
+        /* Subtle paper texture */
+        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.01) 50%, transparent 51%),
+        linear-gradient(-45deg, transparent 49%, rgba(122, 110, 95, 0.008) 50%, transparent 51%);
     background-size: 
         400px 400px,
         350px 350px,
-        100px 100px,
-        80px 80px,
-        6px 6px,
-        8px 8px;
+        8px 8px,
+        10px 10px;
     pointer-events: none;
 }
 

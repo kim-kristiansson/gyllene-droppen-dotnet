@@ -12,11 +12,11 @@
     --color-secondary: #8B4513; /* Heritage brown */
     --color-accent: #CD853F; /* Brushed copper */
     
-    /* Background Colors - Aged Parchment */
-    --color-background: #F4F1E8; /* Aged parchment */
-    --color-surface: #F7F4EB; /* Light parchment */
-    --color-surface-light: #FAF7F0; /* Cream parchment */
-    --color-surface-elevated: #FDFBF5; /* Elevated cream */
+    /* Background Colors - Elegant Parchment */
+    --color-background: #F0EDE4; /* Warm parchment */
+    --color-surface: #F3F0E7; /* Light parchment */
+    --color-surface-light: #F6F3EA; /* Cream parchment */
+    --color-surface-elevated: #F8F6F0; /* Pure cream */
     
     /* Leather and Wood Tones */
     --color-leather: #8B4513; /* Rich leather */
@@ -42,15 +42,15 @@
     --color-warning: #F4A460;
     --color-info: #4682B4;
     
-    /* Utility Colors - Parchment Tones */
+    /* Utility Colors - Refined Parchment */
     --color-border: #D4C4A8;
     --color-border-light: #E1D5C1;
     --color-hover: rgba(139, 125, 107, 0.1);
-    --color-white: #FDFBF5;
+    --color-white: #F8F6F0;
     --color-black: #2B1810;
     --color-charcoal: #3D2419;
     
-    /* Neutral tones - Parchment variations */
+    /* Neutral tones - Elegant variations */
     --color-beige: #E8DCC6;
     --color-beige-light: #EDE2D0;
     --color-beige-dark: #DFD1B8;
@@ -117,36 +117,23 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     
-    /* Old parchment texture with aging effects */
+    /* Subtle parchment texture */
     background-image: 
-        /* Age spots and stains */
-        radial-gradient(circle at 15% 25%, rgba(139, 69, 19, 0.08) 0%, transparent 2%),
-        radial-gradient(circle at 85% 15%, rgba(160, 82, 45, 0.06) 0%, transparent 1.5%),
-        radial-gradient(circle at 65% 85%, rgba(101, 67, 33, 0.05) 0%, transparent 1%),
-        radial-gradient(circle at 25% 75%, rgba(139, 69, 19, 0.04) 0%, transparent 1.8%),
-        /* Paper grain texture */
-        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.03) 50%, transparent 51%),
-        linear-gradient(-45deg, transparent 49%, rgba(122, 110, 95, 0.025) 50%, transparent 51%),
-        /* Fiber texture */
-        linear-gradient(0deg, transparent 48%, rgba(160, 140, 115, 0.02) 49%, rgba(160, 140, 115, 0.02) 51%, transparent 52%),
-        linear-gradient(90deg, transparent 48%, rgba(150, 130, 105, 0.015) 49%, rgba(150, 130, 105, 0.015) 51%, transparent 52%),
-        /* Overall aging gradient */
-        radial-gradient(ellipse at center, var(--color-surface-light) 0%, var(--color-background) 70%);
+        /* Gentle paper grain texture */
+        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.015) 50%, transparent 51%),
+        linear-gradient(-45deg, transparent 49%, rgba(122, 110, 95, 0.01) 50%, transparent 51%),
+        /* Fine fiber texture */
+        linear-gradient(0deg, transparent 49%, rgba(160, 140, 115, 0.008) 50%, transparent 51%),
+        linear-gradient(90deg, transparent 49%, rgba(150, 130, 105, 0.006) 50%, transparent 51%),
+        /* Gentle depth gradient */
+        radial-gradient(ellipse at center, var(--color-surface-light) 0%, var(--color-background) 80%);
     background-size: 
-        300px 300px,
-        250px 250px,
-        180px 180px,
-        200px 200px,
-        8px 8px,
         12px 12px,
-        3px 100%,
-        100% 4px,
+        16px 16px,
+        4px 100%,
+        100% 5px,
         100% 100%;
     background-position: 
-        15% 25%, 
-        85% 15%,
-        65% 85%,
-        25% 75%,
         0% 0%,
         0% 0%,
         0% 0%,
@@ -482,12 +469,9 @@ a:hover {
     right: 0;
     bottom: 0;
     background: 
-        /* Parchment aging effects */
-        radial-gradient(circle at 25% 20%, rgba(139, 69, 19, 0.04) 0%, transparent 3%),
-        radial-gradient(circle at 75% 80%, rgba(160, 82, 45, 0.03) 0%, transparent 2%),
-        /* Paper fiber texture */
-        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.02) 50%, transparent 51%),
-        linear-gradient(-45deg, transparent 49%, rgba(122, 110, 95, 0.015) 50%, transparent 51%);
+        /* Subtle paper texture */
+        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.01) 50%, transparent 51%),
+        linear-gradient(-45deg, transparent 49%, rgba(122, 110, 95, 0.008) 50%, transparent 51%);
     pointer-events: none;
 }
 

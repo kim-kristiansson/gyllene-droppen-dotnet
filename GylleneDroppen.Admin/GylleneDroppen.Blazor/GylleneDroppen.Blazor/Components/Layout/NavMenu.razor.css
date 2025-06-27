@@ -17,11 +17,10 @@ p:first-child::before {
     right: 0;
     bottom: 0;
     background: 
-        /* Manuscript illumination */
-        radial-gradient(circle at 50% 30%, rgba(184, 134, 11, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 20% 80%, rgba(218, 165, 32, 0.06) 0%, transparent 30%),
-        /* Parchment texture */
-        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.02) 50%, transparent 51%);
+        /* Gentle illumination */
+        radial-gradient(circle at 50% 30%, rgba(184, 134, 11, 0.04) 0%, transparent 50%),
+        /* Subtle texture */
+        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.01) 50%, transparent 51%);
     pointer-events: none;
 }
 

@@ -2,11 +2,9 @@
     display: flex;
     min-height: 100vh;
     background-color: var(--color-background);
-    /* Natural elegant atmosphere */
+    /* Gentle elegant atmosphere */
     background-image: 
-        radial-gradient(circle at 20% 50%, rgba(166, 149, 130, 0.03) 0%, transparent 60%),
-        radial-gradient(circle at 80% 80%, rgba(184, 160, 130, 0.025) 0%, transparent 70%),
-        linear-gradient(45deg, transparent 45%, rgba(139, 125, 107, 0.01) 55%, transparent 75%);
+        linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.008) 50%, transparent 51%);
 }
 
 .sidebar {
@@ -29,28 +27,18 @@
     left: 0;
     right: 0;
     bottom: 0;
-    /* Old manuscript parchment texture */
+    /* Elegant parchment texture */
     background-image: 
-        /* Age spots */
-        radial-gradient(circle at 20% 30%, rgba(139, 69, 19, 0.06) 0%, transparent 1.5%),
-        radial-gradient(circle at 80% 70%, rgba(160, 82, 45, 0.05) 0%, transparent 1%),
-        radial-gradient(circle at 40% 80%, rgba(101, 67, 33, 0.04) 0%, transparent 1.2%),
-        /* Paper fiber patterns */
-        linear-gradient(0deg, transparent 49%, rgba(139, 125, 107, 0.02) 50%, transparent 51%),
-        linear-gradient(90deg, transparent 49%, rgba(122, 110, 95, 0.015) 50%, transparent 51%),
-        /* Subtle parchment grain */
-        radial-gradient(ellipse at 60% 40%, rgba(212, 196, 168, 0.03) 0%, transparent 80%);
+        /* Fine paper grain */
+        linear-gradient(0deg, transparent 49%, rgba(139, 125, 107, 0.01) 50%, transparent 51%),
+        linear-gradient(90deg, transparent 49%, rgba(122, 110, 95, 0.008) 50%, transparent 51%),
+        /* Gentle depth */
+        radial-gradient(ellipse at 60% 40%, rgba(212, 196, 168, 0.015) 0%, transparent 80%);
     background-size: 
-        200px 200px,
-        150px 150px,
-        180px 180px,
-        2px 100%,
-        100% 3px,
+        3px 100%,
+        100% 4px,
         300px 200px;
     background-position: 
-        20% 30%,
-        80% 70%,
-        40% 80%,
         0% 0%,
         0% 0%,
         center center;
