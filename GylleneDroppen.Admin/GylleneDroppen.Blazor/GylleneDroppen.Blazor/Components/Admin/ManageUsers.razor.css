@@ -1,0 +1,443 @@
+/* Mobile-first design for Admin Users */
+
+/* Base mobile styles */
+.status-message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.status-message.success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.status-message.error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.status-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 12px;
+}
+
+/* Mobile user cards */
+.mobile-user-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mobile-user-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.mobile-user-card .user-email {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: var(--color-text);
+}
+
+.mobile-user-card .user-name {
+    font-size: 14px;
+    color: var(--color-text-light);
+    margin-bottom: 12px;
+}
+
+.mobile-user-card .user-role {
+    display: inline-block;
+    padding: 4px 12px;
+    background: var(--color-info);
+    color: white;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.mobile-user-card .user-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.mobile-user-card .btn-promote {
+    flex: 1;
+    padding: 10px 16px;
+    background: var(--color-success);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+}
+
+/* Hide table on mobile */
+.users-table {
+    display: none;
+}
+
+/* Admin cards mobile */
+.admin-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.admin-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.admin-card.current-user {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.1);
+}
+
+.admin-info {
+    margin-bottom: 16px;
+}
+
+.admin-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--color-text);
+}
+
+.admin-email {
+    font-size: 14px;
+    color: var(--color-text-light);
+    margin-bottom: 8px;
+}
+
+.admin-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: rgba(139, 69, 19, 0.1);
+    color: var(--color-leather);
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-department {
+    background: var(--color-surface-light);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 12px;
+    margin: 12px 0;
+}
+
+.admin-department.no-department {
+    opacity: 0.6;
+}
+
+.department-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.department-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.admin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-border);
+}
+
+.admin-actions button {
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    min-height: 44px;
+    border: 1px solid transparent;
+}
+
+.btn-demote {
+    background: var(--color-error);
+    color: white;
+}
+
+.btn, .btn-primary, .btn-secondary, .btn-outline-primary, .btn-outline-secondary {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--color-secondary);
+    color: white;
+}
+
+.btn-outline-primary {
+    background: transparent;
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.department-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    margin-bottom: 8px;
+    min-height: 44px;
+}
+
+/* Loading and empty states */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 48px 24px;
+    color: var(--color-text-light);
+}
+
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 12px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--color-text-muted);
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--color-text-light);
+}
+
+.empty-state p {
+    font-size: 14px;
+}
+
+/* Multiple departments styles */
+.departments-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.department-tag {
+    display: inline-block;
+    padding: 4px 8px;
+    background: rgba(139, 69, 19, 0.1);
+    color: var(--color-leather);
+    border: 1px solid rgba(139, 69, 19, 0.2);
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.departments-form {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--color-surface-light);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+}
+
+.departments-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.department-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--color-text);
+}
+
+.department-checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.departments-form-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Tablet (768px+) */
+@media (min-width: 768px) {
+    /* Show table, hide cards */
+    .mobile-user-cards {
+        display: none;
+    }
+    
+    .users-table {
+        display: table;
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--color-surface);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .users-table th {
+        background: var(--color-primary);
+        color: white;
+        padding: 12px 16px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .users-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .users-table tbody tr:hover {
+        background: var(--color-surface-light);
+    }
+    
+    .users-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .user-email {
+        font-weight: 600;
+        color: var(--color-text);
+    }
+    
+    .user-name {
+        font-size: 14px;
+        color: var(--color-text-light);
+    }
+    
+    .user-role.member {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--color-info);
+        color: white;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .user-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-promote {
+        padding: 8px 16px;
+        background: var(--color-success);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    
+    /* Admin grid for tablets */
+    .admin-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .admin-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
+    .admin-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+    }
+    
+    .admin-card {
+        padding: 20px;
+    }
+}

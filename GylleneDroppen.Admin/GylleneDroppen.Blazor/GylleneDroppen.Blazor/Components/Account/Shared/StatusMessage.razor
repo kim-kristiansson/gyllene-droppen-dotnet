@@ -1,8 +1,14 @@
 ﻿@if (!string.IsNullOrEmpty(DisplayMessage))
 {
-    var statusMessageClass = DisplayMessage.StartsWith("Error") ? "danger" : "success";
-    <div role="alert">
-        @DisplayMessage
+    var isError = DisplayMessage.StartsWith("Fel") || DisplayMessage.StartsWith("Error");
+    var backgroundColor = isError ? "rgba(239, 68, 68, 0.1)" : "rgba(74, 124, 78, 0.1)";
+    var borderColor = isError ? "#EF4444" : "#4A7C4E";
+    var textColor = isError ? "#EF4444" : "#4A7C4E";
+    
+    <div role="alert" 
+         style="padding: 1rem; margin-bottom: 1.5rem; background: @backgroundColor; border: 1px solid @borderColor; border-radius: 0.375rem; color: @textColor; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 1.25rem;">@(isError ? "⚠️" : "✅")</span>
+        <span>@DisplayMessage</span>
     </div>
 }
 

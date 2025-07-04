@@ -1,0 +1,270 @@
+@page "/admin/regioner"
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("/admin/lander-regioner", replace: true);
+    }
+}
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.WhiskyMetadata
+@using Microsoft.AspNetCore.Authorization
+@inject IWhiskyMetadataService WhiskyMetadataService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Policy = "AdminOnly")]
+@rendermode InteractiveServer
+
+<PageTitle>Hantera Regioner</PageTitle>
+
+<div class="page-wrapper">
+<div class="page-content">
+    <div class="page-header-section">
+        <h1 class="page-title">🏔️ Hantera Regioner</h1>
+        <div class="header-actions">
+            <span class="item-count">Totalt: @regions.Count regioner</span>
+            <button @onclick="ShowCreateForm" class="btn btn-primary">
+                ➕ Lägg till ny region
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="status-message @(statusMessage.StartsWith("Fel:") ? "error" : "success")">
+            <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" class="status-close">✕</button>
+        </div>
+    }
+
+    @if (showCreateForm)
+    {
+        <div class="form-container">
+            <h3>@(editingRegion != null ? "Redigera Region" : "Lägg till Ny Region")</h3>
+            <EditForm Model="regionDto" OnValidSubmit="SubmitRegionAsync" class="form">
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="validation-message"/>
+
+                <div class="form-field">
+                    <label class="form-label">Namn: <span class="required">*</span></label>
+                    <InputText @bind-Value="regionDto.Name" class="form-input" placeholder="T.ex. Speyside" />
+                    <ValidationMessage For="() => regionDto.Name" class="validation-message" />
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Land: <span class="required">*</span></label>
+                    <InputSelect @bind-Value="regionDto.CountryId" class="form-input">
+                        <option value="">Välj land</option>
+                        @foreach (var country in countries.OrderBy(c => c.Name))
+                        {
+                            <option value="@country.Id">@country.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => regionDto.CountryId" class="validation-message" />
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Beskrivning:</label>
+                    <InputTextArea @bind-Value="regionDto.Description" rows="3" class="form-textarea" 
+                                   placeholder="Beskriv regionen och dess whiskytraditioner..." />
+                    <ValidationMessage For="() => regionDto.Description" class="validation-message" />
+                </div>
+
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner"></span>
+                            <span>@(editingRegion != null ? "Uppdaterar..." : "Skapar...")</span>
+                        }
+                        else
+                        {
+                            <span>@(editingRegion != null ? "💾 Uppdatera" : "➕ Skapa")</span>
+                        }
+                    </button>
+                    <button type="button" @onclick="CancelForm" class="btn btn-secondary">
+                        Avbryt
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            Laddar regioner...
+        </div>
+    }
+    else if (regions.Any())
+    {
+        <div class="items-grid">
+            @foreach (var region in regions.OrderBy(r => r.CountryName).ThenBy(r => r.Name))
+            {
+                <div class="item-card">
+                    <div class="item-header">
+                        <h3 class="item-name">@region.Name</h3>
+                        <span class="item-country">@region.CountryName</span>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(region.Description))
+                    {
+                        <div class="item-description">@region.Description</div>
+                    }
+
+                    <div class="item-meta">
+                        <small>Skapat: @region.CreatedDate.ToString("yyyy-MM-dd")</small>
+                        @if (region.UpdatedDate.HasValue)
+                        {
+                            <small>Uppdaterat: @region.UpdatedDate.Value.ToString("yyyy-MM-dd")</small>
+                        }
+                    </div>
+
+                    <div class="item-actions">
+                        <button @onclick="() => EditRegion(region)" class="btn btn-outline-primary btn-sm">
+                            ✏️ Redigera
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🏔️</div>
+            <h3>Inga regioner hittades</h3>
+            <p>Börja med att lägga till din första whiskyregion.</p>
+            <button @onclick="ShowCreateForm" class="btn btn-primary">
+                ➕ Lägg till första regionen
+            </button>
+        </div>
+    }
+</div>
+</div>
+
+@code {
+    private List<RegionDto> regions = new();
+    private List<CountryDto> countries = new();
+    private CreateRegionRequestDto regionDto = new();
+    private RegionDto? editingRegion = null;
+    private string statusMessage = string.Empty;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private bool showCreateForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            regions = await WhiskyMetadataService.GetAllRegionsAsync();
+            countries = await WhiskyMetadataService.GetAllCountriesAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: Kunde inte ladda data. {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        editingRegion = null;
+        regionDto = new CreateRegionRequestDto();
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void EditRegion(RegionDto region)
+    {
+        editingRegion = region;
+        regionDto = new CreateRegionRequestDto
+        {
+            Name = region.Name,
+            CountryId = region.CountryId,
+            Description = region.Description,
+        };
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void CancelForm()
+    {
+        showCreateForm = false;
+        editingRegion = null;
+        regionDto = new();
+        StateHasChanged();
+    }
+
+    private async Task SubmitRegionAsync()
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            statusMessage = string.Empty;
+
+            if (editingRegion != null)
+            {
+                var updateDto = new UpdateRegionRequestDto
+                {
+                    Name = regionDto.Name,
+                    CountryId = regionDto.CountryId,
+                    Description = regionDto.Description,
+                };
+                
+                var updated = await WhiskyMetadataService.UpdateRegionAsync(editingRegion.Id, updateDto);
+                if (updated != null)
+                {
+                    statusMessage = "Region uppdaterad framgångsrikt!";
+                }
+                else
+                {
+                    statusMessage = "Fel: Kunde inte uppdatera region.";
+                }
+            }
+            else
+            {
+                var created = await WhiskyMetadataService.CreateRegionAsync(regionDto);
+                if (created != null)
+                {
+                    statusMessage = "Region skapad framgångsrikt!";
+                }
+                else
+                {
+                    statusMessage = "Fel: Kunde inte skapa region.";
+                }
+            }
+
+            if (!statusMessage.StartsWith("Fel:"))
+            {
+                await LoadData();
+                CancelForm();
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+}

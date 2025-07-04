@@ -1,7 +1,167 @@
-﻿@page "/"
+@page "/"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.TastingEvent
+@using Microsoft.AspNetCore.Authorization
 
-<PageTitle>Start</PageTitle>
+@inject IWhiskyService WhiskyService
+@inject ITastingEventService TastingEventService
+@inject IUserManagementService UserManagementService
 
-<h1>Gyllene Droppen 🥃</h1>
+@rendermode InteractiveServer
 
-Whisky är inte snällt, det är ärligt.
+<PageTitle>Start - Gyllene Droppen</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+                <div class="home-header" style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                    <h1 style="font-size: 2.5rem; color: #2B1810; margin: 0 0 1rem 0; font-weight: 600;">🥃 Välkommen tillbaka!</h1>
+                    <p style="font-size: 1.125rem; font-style: italic; color: #5C4A3A; margin: 0; font-family: Georgia, serif;">
+                        "Whisky är inte snällt, det är ärligt."
+                    </p>
+                </div>
+                
+                <div class="hero-actions" style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 3rem;">
+                    <a href="/whiskies" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; text-decoration: none; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">Utforska Whiskies</a>
+                    <a href="/provningar" style="padding: 0.75rem 1.5rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; text-decoration: none; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Kommande Provningar</a>
+                </div>
+
+                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
+                    <div class="stat-card" style="text-align: center; padding: 2rem 1.5rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                        <span style="font-size: 2.5rem; font-weight: 600; color: #8B4513; display: block; margin-bottom: 0.5rem; font-family: Georgia, serif;">@stats.WhiskyCount</span>
+                        <span style="font-size: 0.9rem; color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Whiskies i samlingen</span>
+                    </div>
+                    <div class="stat-card" style="text-align: center; padding: 2rem 1.5rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                        <span style="font-size: 2.5rem; font-weight: 600; color: #8B4513; display: block; margin-bottom: 0.5rem; font-family: Georgia, serif;">@stats.UpcomingEventsCount</span>
+                        <span style="font-size: 0.9rem; color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Kommande provningar</span>
+                    </div>
+                    <div class="stat-card" style="text-align: center; padding: 2rem 1.5rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                        <span style="font-size: 2.5rem; font-weight: 600; color: #8B4513; display: block; margin-bottom: 0.5rem; font-family: Georgia, serif;">@stats.TotalUsersCount</span>
+                        <span style="font-size: 0.9rem; color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Medlemmar</span>
+                    </div>
+                    <div class="stat-card" style="text-align: center; padding: 2rem 1.5rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                        <span style="font-size: 2.5rem; font-weight: 600; color: #8B4513; display: block; margin-bottom: 0.5rem; font-family: Georgia, serif;">@stats.PastEventsCount</span>
+                        <span style="font-size: 0.9rem; color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Genomförda event</span>
+                    </div>
+                </div>
+
+                <div class="actions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
+                    <a href="/admin" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">🔧 Administration</h3>
+                        <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Hantera medlemmar, whiskies och provningar</p>
+                    </a>
+                    <a href="/provningar/skapa" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">📅 Skapa Provning</h3>
+                        <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Organisera en ny whiskyprovning</p>
+                    </a>
+                    <a href="/admin/whiskies" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">🥃 Hantera Whiskies</h3>
+                        <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Utöka samlingen med nya whiskies</p>
+                    </a>
+                </div>
+
+                <div class="activity-section" style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-top: 3rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                    <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #B09B7C;">
+                        <h2 style="font-size: 1.5rem; margin: 0; color: #2B1810; font-weight: 600; font-family: Georgia, serif;">📈 Senaste aktivitet</h2>
+                        <a href="/provningar" style="padding: 0.5rem 1rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.25rem; text-decoration: none; font-size: 0.875rem; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Visa alla</a>
+                    </div>
+                    
+                    <div class="activity-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                        @if (recentEvents.Any())
+                        {
+                            @foreach (var eventItem in recentEvents.Take(3))
+                            {
+                                <div class="activity-item" style="padding: 1rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.375rem; transition: all 0.2s ease;" onmouseover="this.style.background='#F5F0E8'; this.style.borderColor='#8B4513';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C';">
+                                    <span style="font-size: 0.875rem; color: #5C4A3A; display: block; margin-bottom: 0.25rem; font-family: Georgia, serif;">@GetRelativeTime(eventItem.EventDate)</span>
+                                    <span style="font-weight: 500; color: #2B1810; font-family: Georgia, serif;">Provning: "@eventItem.Title"</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="activity-item" style="padding: 1rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.375rem; text-align: center;">
+                                <span style="font-weight: 500; color: #5C4A3A; font-family: Georgia, serif;">Ingen aktivitet att visa</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <PublicHome />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private (int WhiskyCount, int UpcomingEventsCount, int TotalUsersCount, int PastEventsCount) stats = (0, 0, 0, 0);
+    private List<TastingEventDto> recentEvents = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatistics();
+        await LoadRecentActivity();
+    }
+
+    private async Task LoadStatistics()
+    {
+        try
+        {
+            var whiskySearchResult = await WhiskyService.SearchWhiskiesAsync(new Application.Dtos.Whisky.WhiskySearchDto { PageSize = 1 });
+            var upcomingEvents = await TastingEventService.GetUpcomingTastingEventsAsync(1);
+            var pastEvents = await TastingEventService.GetPastTastingEventsAsync(1000); // Get all past events to count
+            var totalUsers = await UserManagementService.GetAllUsersAsync();
+
+            stats = (
+                WhiskyCount: whiskySearchResult.TotalCount,
+                UpcomingEventsCount: upcomingEvents.Count,
+                TotalUsersCount: totalUsers.Count,
+                PastEventsCount: pastEvents.Count
+            );
+        }
+        catch (Exception)
+        {
+            // If any service call fails, keep default values
+            stats = (0, 0, 0, 0);
+        }
+    }
+
+    private async Task LoadRecentActivity()
+    {
+        try
+        {
+            var allEvents = await TastingEventService.GetUpcomingTastingEventsAsync(50);
+            allEvents.AddRange(await TastingEventService.GetPastTastingEventsAsync(50));
+            
+            recentEvents = allEvents
+                .OrderByDescending(e => e.EventDate)
+                .Take(5)
+                .ToList();
+        }
+        catch (Exception)
+        {
+            recentEvents = new List<TastingEventDto>();
+        }
+    }
+
+    private string GetRelativeTime(DateTime dateTime)
+    {
+        var timeSpan = DateTime.Now - dateTime;
+        
+        if (timeSpan.Days > 365)
+            return $"För {timeSpan.Days / 365} år sedan";
+        if (timeSpan.Days > 30)
+            return $"För {timeSpan.Days / 30} månader sedan";
+        if (timeSpan.Days > 7)
+            return $"För {timeSpan.Days / 7} veckor sedan";
+        if (timeSpan.Days > 0)
+            return $"För {timeSpan.Days} dagar sedan";
+        if (timeSpan.Hours > 0)
+            return $"För {timeSpan.Hours} timmar sedan";
+        if (timeSpan.Minutes > 0)
+            return $"För {timeSpan.Minutes} minuter sedan";
+        
+        return "Just nu";
+    }
+}

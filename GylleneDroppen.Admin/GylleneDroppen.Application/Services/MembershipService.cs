@@ -261,11 +261,13 @@ public class MembershipService(
         var trial = await userTrialUsageRepository.GetByUserIdAsync(userId);
 
         var hasActiveMembership = currentMembership?.IsCurrentlyValid ?? false;
-        var canRegister = hasActiveMembership || (trial != null && !hasUsedTrial);
+        var hasTrialAvailable = trial != null && !hasUsedTrial;
+        var canRegister = hasActiveMembership || hasTrialAvailable;
 
         string statusMessage;
         string badgeText;
         string badgeClass;
+        DateTime? membershipEndDate = null;
 
         if (hasActiveMembership && currentMembership != null)
         {
@@ -273,8 +275,9 @@ public class MembershipService(
             statusMessage = $"Medlem till {currentMembership.EndDate:yyyy-MM-dd}";
             badgeText = $"Medlem ({daysRemaining} dagar kvar)";
             badgeClass = daysRemaining <= 7 ? "badge-warning" : "badge-success";
+            membershipEndDate = currentMembership.EndDate;
         }
-        else if (trial != null && !hasUsedTrial)
+        else if (hasTrialAvailable)
         {
             statusMessage = "Gratisprov tillgängligt";
             badgeText = "Gratisprov";
@@ -297,7 +300,9 @@ public class MembershipService(
         {
             HasActiveMembership = hasActiveMembership,
             HasUsedTrial = hasUsedTrial,
+            HasTrialAvailable = hasTrialAvailable,
             CanRegisterForEvents = canRegister,
+            MembershipEndDate = membershipEndDate,
             CurrentMembership = currentMembership,
             StatusMessage = statusMessage,
             BadgeText = badgeText,
@@ -307,8 +312,25 @@ public class MembershipService(
 
     public async Task<bool> CanUserRegisterForEventsAsync(string userId)
     {
+        // First check if user has a trial record, create one if missing
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user != null && !string.IsNullOrEmpty(user.Email))
+        {
+            await EnsureUserHasTrialAsync(userId, user.Email);
+        }
+        
         var status = await GetUserMembershipStatusAsync(userId);
         return status.CanRegisterForEvents;
+    }
+
+    public async Task EnsureUserHasTrialAsync(string userId, string email)
+    {
+        var existingTrial = await userTrialUsageRepository.GetByUserIdAsync(userId);
+        if (existingTrial == null)
+        {
+            // User doesn't have a trial record - create one
+            await CreateTrialForUserAsync(userId, email);
+        }
     }
 
     public async Task<List<UserMembershipDto>> GetAllActiveMembershipsAsync()
@@ -338,7 +360,7 @@ public class MembershipService(
             Price = period.Price,
             IsActive = period.IsActive,
             CreatedDate = period.CreatedDate,
-            CreatedByUserName = period.CreatedByUser?.Email ?? "Unknown"
+            CreatedByUserName = period.CreatedByUser?.Email ?? "Okänd"
         };
     }
 
@@ -350,9 +372,9 @@ public class MembershipService(
             Id = membership.Id,
             UserId = membership.UserId,
             UserName = $"{membership.User?.FirstName} {membership.User?.LastName}".Trim(),
-            UserEmail = membership.User?.Email ?? "Unknown",
+            UserEmail = membership.User?.Email ?? "Okänd",
             MembershipPeriodId = membership.MembershipPeriodId,
-            MembershipPeriodName = membership.MembershipPeriod?.Name ?? "Unknown",
+            MembershipPeriodName = membership.MembershipPeriod?.Name ?? "Okänd",
             DurationInMonths = membership.MembershipPeriod?.DurationInMonths ?? 0,
             StartDate = membership.StartDate,
             EndDate = membership.EndDate,
@@ -362,7 +384,7 @@ public class MembershipService(
             IsCurrentlyValid = membership.IsCurrentlyValid,
             Notes = membership.Notes,
             CreatedDate = membership.CreatedDate,
-            CreatedByUserName = membership.CreatedByUser?.Email ?? "Unknown",
+            CreatedByUserName = membership.CreatedByUser?.Email ?? "Okänd",
             DaysRemaining = daysRemaining > 0 ? daysRemaining : 0
         };
     }

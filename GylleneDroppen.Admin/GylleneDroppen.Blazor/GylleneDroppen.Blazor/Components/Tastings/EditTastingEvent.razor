@@ -1,0 +1,265 @@
+@page "/provningar/redigera/{EventId:guid}"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.TastingEvent
+@using GylleneDroppen.Application.Dtos.Whisky
+@using GylleneDroppen.Application.Dtos.Address
+@using Microsoft.AspNetCore.Authorization
+@inject ITastingEventService TastingEventService
+@inject IWhiskyService WhiskyService
+@inject IAddressService AddressService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<style>
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Mobile responsive */
+    @@media (max-width: 768px) {
+        .edit-header {
+            flex-direction: column !important;
+            gap: 1rem !important;
+            text-align: center !important;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .form-actions {
+            flex-direction: column-reverse !important;
+        }
+        
+        .form-actions button {
+            width: 100% !important;
+        }
+    }
+</style>
+
+<PageTitle>Redigera Provning</PageTitle>
+
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+<div style="max-width: 900px; margin: 0 auto; padding: 0 1.5rem;">
+    <div class="edit-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 2.25rem; color: #2B1810; margin: 0; font-weight: 600; font-family: Georgia, serif;">📅 Redigera Provning</h1>
+        <button @onclick="GoBack" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">← Tillbaka till provning</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div style="padding: 1rem 1.5rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444;" : "background: rgba(74, 124, 78, 0.15); border: 1px solid #4A7C4E; color: #4A7C4E;")">
+            <span style="font-family: Georgia, serif;"><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0.25rem; opacity: 0.8; transition: opacity 0.2s ease; font-family: Georgia, serif;" onmouseover="this.style.opacity='1';" onmouseout="this.style.opacity='0.8';">✕</button>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div style="display: flex; justify-content: center; align-items: center; padding: 3rem; color: #5D4037; font-size: 1.125rem;">
+            <div style="display: inline-block; width: 2rem; height: 2rem; border: 3px solid #B09B7C; border-radius: 50%; border-top-color: #8B4513; animation: spin 1s linear infinite; margin-right: 0.75rem;"></div>
+            Laddar provning...
+        </div>
+    }
+    else if (eventDto != null)
+    {
+        <EditForm Model="eventDto" OnValidSubmit="SubmitUpdateEventAsync">
+            <DataAnnotationsValidator/>
+            <ValidationSummary style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; border-radius: 0.375rem; padding: 1rem; margin-bottom: 1.5rem; color: #EF4444; font-size: 0.875rem; font-family: Georgia, serif;"/>
+
+            <fieldset style="margin-bottom: 2rem; padding: 1.5rem; background: #DAD3C7; border-radius: 0.5rem; border: 1px solid #B09B7C; position: relative;">
+                <legend style="font-family: Georgia, serif; font-size: 1.125rem; font-weight: 600; color: #2B1810; padding: 0 0.75rem; background: #8B4513; color: white; border-radius: 0.25rem; border: 1px solid #B09B7C;">ℹ️ Grundinformation</legend>
+                
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Titel: <span style="color: #EF4444;">*</span></label>
+                    <InputText @bind-value="eventDto.Title" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;" placeholder="T.ex. Highland Single Malts Evening" />
+                    <ValidationMessage For="() => eventDto.Title" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Beskrivning:</label>
+                    <InputTextArea @bind-value="eventDto.Description" rows="4" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease; min-height: 80px; resize: vertical;" 
+                                   placeholder="Beskriv provningen, vad deltagarna kan förvänta sig..." />
+                    <ValidationMessage For="() => eventDto.Description" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+                </div>
+
+                <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Starttid: <span style="color: #EF4444;">*</span></label>
+                        <input type="datetime-local" @bind="eventDto.EventDate" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;" />
+                        <ValidationMessage For="() => eventDto.EventDate" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+                        <div style="background: rgba(139, 69, 19, 0.1); border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: #8B4513; margin-top: 0.5rem; font-family: Georgia, serif;">
+                            💡 Välj datum och tid för när provningen ska börja.
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Sluttid:</label>
+                        <input type="datetime-local" @bind="eventDto.EndTime" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;" />
+                        <ValidationMessage For="() => eventDto.EndTime" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+                        <div style="background: rgba(139, 69, 19, 0.1); border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: #8B4513; margin-top: 0.5rem; font-family: Georgia, serif;">
+                            💡 Valfritt - när provningen förväntas avsluta.
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <label style="font-weight: 600; color: #2B1810; font-family: Georgia, serif; font-size: 0.875rem;">Adress:</label>
+                    </div>
+                    
+                    <InputSelect @bind-Value="eventDto.AddressId" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;">
+                        <option value="">-- Välj adress --</option>
+                        @foreach (var address in availableAddresses)
+                        {
+                            <option value="@address.Id">@address.Name - @address.FullAddress</option>
+                        }
+                    </InputSelect>
+                    <div style="background: rgba(139, 69, 19, 0.1); border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: #8B4513; margin-top: 0.5rem; font-family: Georgia, serif;">
+                        💡 Välj en sparad adress för provningen.
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Max antal deltagare:</label>
+                    <InputNumber @bind-value="eventDto.MaxParticipants" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;" placeholder="T.ex. 20" />
+                    <ValidationMessage For="() => eventDto.MaxParticipants" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+                    <div style="background: rgba(139, 69, 19, 0.1); border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: #8B4513; margin-top: 0.5rem; font-family: Georgia, serif;">
+                        💡 Lämna tomt för obegränsat antal deltagare.
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem;">
+                        <InputCheckbox @bind-value="eventDto.IsPublic" style="width: 1.125rem; height: 1.125rem; cursor: pointer;" />
+                        <label style="font-size: 0.875rem; color: #2B1810; font-weight: 500; cursor: pointer; font-family: Georgia, serif;">Publikt event (synligt för alla medlemmar)</label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #B09B7C;">
+                <button type="button" @onclick="GoBack" style="padding: 0.875rem 1.5rem; background: #DFD9CE; border: 1px solid #B09B7C; color: #2B1810; border-radius: 0.375rem; font-weight: 600; cursor: pointer; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Avbryt</button>
+                <button type="submit" disabled="@isProcessing" style="padding: 0.875rem 2rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; font-weight: 600; cursor: pointer; font-family: Georgia, serif; transition: all 0.2s ease; position: relative; overflow: hidden; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")" onmouseover="if (!@isProcessing) { this.style.background='#6B3410'; }" onmouseout="if (!@isProcessing) { this.style.background='#8B4513'; }">
+                    @if (isProcessing)
+                    {
+                        <span style="display: inline-block; width: 1rem; height: 1rem; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-right: 0.5rem;"></span>
+                    }
+                    @(isProcessing ? "Uppdaterar..." : "💾 Uppdatera provning")
+                </button>
+            </div>
+        </EditForm>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 3rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+            <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">❓</div>
+            <h1 style="font-size: 2rem; color: #2B1810; margin: 0 0 1rem 0; font-weight: 600; font-family: Georgia, serif;">Provning hittades inte</h1>
+            <p style="font-size: 1.125rem; margin: 0 0 2rem 0; color: #5C4A3A; font-family: Georgia, serif;">Den begärda provningen kunde inte hittas eller så har du inte behörighet att redigera den.</p>
+            <button @onclick="GoBack" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">Tillbaka till provningar</button>
+        </div>
+    }
+</div>
+</div>
+
+@code {
+    [Parameter] public Guid EventId { get; set; }
+
+    private UpdateTastingEventRequestDto eventDto = new();
+    private List<AddressResponseDto> availableAddresses = new();
+    private string statusMessage = string.Empty;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEvent();
+        await LoadAddresses();
+    }
+
+    private async Task LoadAddresses()
+    {
+        try
+        {
+            availableAddresses = await AddressService.GetActiveAddressesAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid laddning av adresser: {ex.Message}";
+        }
+    }
+
+    private async Task LoadEvent()
+    {
+        try
+        {
+            isLoading = true;
+            var existingEvent = await TastingEventService.GetTastingEventByIdAsync(EventId);
+            
+            if (existingEvent != null)
+            {
+                eventDto = new UpdateTastingEventRequestDto
+                {
+                    Id = EventId,
+                    Title = existingEvent.Title,
+                    Description = existingEvent.Description,
+                    EventDate = existingEvent.EventDate,
+                    EndTime = existingEvent.EndTime,
+                    Location = existingEvent.Location,
+                    AddressId = existingEvent.AddressId,
+                    MaxParticipants = existingEvent.MaxParticipants,
+                    IsPublic = existingEvent.IsPublic
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: Kunde inte ladda provning. {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SubmitUpdateEventAsync()
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            statusMessage = string.Empty;
+
+            var updatedEvent = await TastingEventService.UpdateTastingEventAsync(eventDto);
+            
+            if (updatedEvent != null)
+            {
+                statusMessage = "Provning uppdaterad framgångsrikt!";
+                await Task.Delay(1500); // Show success message briefly
+                NavigationManager.NavigateTo($"/provningar/{EventId}");
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte uppdatera provning.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo($"/provningar/{EventId}");
+    }
+}

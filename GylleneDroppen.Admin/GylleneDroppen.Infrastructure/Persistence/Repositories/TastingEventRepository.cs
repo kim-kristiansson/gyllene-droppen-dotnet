@@ -11,6 +11,8 @@ public class TastingEventRepository(ApplicationDbContext context)
     {
         return await DbSet
             .Include(te => te.OrganizedByUser)
+            .Include(te => te.Address)
+            .ThenInclude(a => a!.CreatedByUser)
             .Include(te => te.TastingEventWhiskies)
             .ThenInclude(tew => tew.Whisky)
             .Include(te => te.TastingEventWhiskies)
@@ -24,6 +26,7 @@ public class TastingEventRepository(ApplicationDbContext context)
     {
         return await DbSet
             .Include(te => te.OrganizedByUser)
+            .Include(te => te.Address)
             .Include(te => te.TastingEventWhiskies)
             .Include(te => te.Participants)
             .Where(te => te.EventDate >= DateTime.UtcNow)
@@ -36,6 +39,7 @@ public class TastingEventRepository(ApplicationDbContext context)
     {
         return await DbSet
             .Include(te => te.OrganizedByUser)
+            .Include(te => te.Address)
             .Include(te => te.TastingEventWhiskies)
             .Include(te => te.Participants)
             .Where(te => te.EventDate < DateTime.UtcNow)
@@ -48,6 +52,7 @@ public class TastingEventRepository(ApplicationDbContext context)
     {
         return await DbSet
             .Include(te => te.OrganizedByUser)
+            .Include(te => te.Address)
             .Include(te => te.TastingEventWhiskies)
             .Include(te => te.Participants)
             .Where(te => te.OrganizedByUserId == userId)
@@ -59,6 +64,7 @@ public class TastingEventRepository(ApplicationDbContext context)
     {
         return await DbSet
             .Include(te => te.OrganizedByUser)
+            .Include(te => te.Address)
             .Include(te => te.TastingEventWhiskies)
             .Include(te => te.Participants)
             .Where(te => te.IsPublic)

@@ -85,11 +85,11 @@ public class TastingHistoryService(
         {
             Id = tastingHistory.Id,
             WhiskyId = tastingHistory.WhiskyId,
-            WhiskyName = tastingHistory.Whisky?.Name ?? "Unknown",
+            WhiskyName = tastingHistory.Whisky?.Name ?? "Okänd",
             EventTitle = tastingHistory.EventTitle,
             TastingDate = tastingHistory.TastingDate,
             Notes = tastingHistory.Notes,
-            OrganizedByUserName = tastingHistory.OrganizedByUser?.Email ?? "Unknown",
+            OrganizedByUserName = tastingHistory.OrganizedByUser?.Email ?? "Okänd",
             CreatedDate = tastingHistory.CreatedDate
         };
     }

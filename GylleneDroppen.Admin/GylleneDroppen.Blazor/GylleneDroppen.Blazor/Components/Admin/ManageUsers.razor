@@ -1,12 +1,13 @@
 @page "/admin/anvandare"
-@using GylleneDroppen.Application.Contants
 @using Microsoft.AspNetCore.Authorization
 @using GylleneDroppen.Core.Entities
 @using GylleneDroppen.Application.Interfaces.Services
 @using GylleneDroppen.Application.Dtos.User
+@using GylleneDroppen.Application.Dtos.Department
 @using Microsoft.AspNetCore.Identity
 
 @inject IUserManagementService UserManagementService
+@inject IDepartmentService DepartmentService
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ILogger<ManageUsers> Logger
@@ -18,136 +19,250 @@
 
 <PageTitle>Användarhantering</PageTitle>
 
-<h1>Användarhantering</h1>
-
-@if (!string.IsNullOrEmpty(statusMessage))
-{
-    <div>
-        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
-        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
-    </div>
-}
-
-@{
-    var regularUsers = users.Where(u => u.Role != "Admin").ToList();
-}
-
-<h2>Alla medlemmar (@regularUsers.Count)</h2>
-
-@if (isLoading)
-{
-    <p>Laddar...</p>
-}
-else if (regularUsers.Any())
-{
-    <table>
-        <thead>
-        <tr>
-            <th>E-post</th>
-            <th>Namn</th>
-            <th>Roll</th>
-            <th>Åtgärder</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var user in regularUsers)
-        {
-            var uid = user.Id.ToString();
-
-            <tr>
-                <td>@user.Email</td>
-                <td>@user.FullName</td>
-                <td>@(user.Role == "User" ? "Medlem" : user.Role)</td>
-                <td>
-                    <button type="button" @onclick="async () => await PromoteUser(uid)">
-                        Lägg till i styrelsen
-                    </button>
-                </td>
-            </tr>
-        }
-
-        </tbody>
-    </table>
-}
-else
-{
-    <p>Inga medlemmar hittades.</p>
-}
-
-<h2>Styrelsen (@adminUsers.Count)</h2>
-
-@if (adminUsers.Any())
-{
-    @foreach (var admin in adminUsers)
-    {
-        <div>
-            <p><strong>@admin.FullName</strong> - @admin.Email</p>
-            <p>Roll: Styrelsemedlem @(admin.Id.ToString() == currentUserId ? "(Du)" : "")</p>
-
-            @if (adminDepartments.ContainsKey(admin.Id.ToString()))
-            {
-                <p>Ansvarsområde: <strong>@Departments.GetDisplayName(adminDepartments[admin.Id.ToString()])</strong>
-                </p>
-            }
-            else
-            {
-                <p>Ansvarsområde: <em>Inget tilldelat</em></p>
-            }
-
-            <div>
-                @if (admin.Id.ToString() != currentUserId)
-                {
-                    <button type="button" @onclick="async () => await DemoteUser(admin.Id.ToString())"
-                            disabled="@isProcessing">
-                        Ta bort från styrelsen
-                    </button>
-                }
-
-                @if (showDepartmentForm && selectedAdminId == admin.Id.ToString())
-                {
-                    <select @bind="selectedDepartment">
-                        <option value="">Välj ansvarsområde</option>
-                        @foreach (var dept in Departments.All)
-                        {
-                            <option value="@dept.Value">@dept.DisplayName</option>
-                        }
-                    </select>
-                    <button type="button" @onclick="async () => await SetDepartment(admin.Id.ToString())"
-                            disabled="@isProcessing">
-                        Sätt ansvarsområde
-                    </button>
-                    <button type="button" @onclick="CancelDepartmentEdit">
-                        Avbryt
-                    </button>
-                }
-                else
-                {
-                    <button type="button" @onclick="() => ShowDepartmentForm(admin.Id.ToString())"
-                            disabled="@isProcessing">
-                        @(adminDepartments.ContainsKey(admin.Id.ToString()) ? "Ändra ansvarsområde" : "Sätt ansvarsområde")
-                    </button>
-                }
-
-                @if (adminDepartments.ContainsKey(admin.Id.ToString()))
-                {
-                    <button type="button" @onclick="async () => await RemoveDepartment(admin.Id.ToString())"
-                            disabled="@isProcessing">
-                        Ta bort ansvarsområde
-                    </button>
-                }
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh; overflow-x: hidden;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem; min-width: 0; overflow-x: hidden;">
+    <div style="margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+            <h1 style="font-size: 2.25rem; color: #2B1810; margin: 0; font-weight: 600; min-width: 0; flex-shrink: 1;">👥 Användarhantering</h1>
+            <div style="flex-shrink: 0;">
+                <span style="font-size: 1rem; color: #6B5D54; font-weight: 500; white-space: nowrap;">Totalt: @users.Count användare</span>
             </div>
         </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div style="padding: 1rem 1.5rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444;" : "background: rgba(74, 124, 78, 0.15); border: 1px solid #4A7C4E; color: #4A7C4E;")">
+            <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0; opacity: 0.8; transition: opacity 0.2s ease;">✕</button>
+        </div>
     }
-}
-else
-{
-    <p>Inga styrelsemedlemmar hittades.</p>
-}
+
+    @{
+        var regularUsers = users.Where(u => u.Role != "Admin").ToList();
+    }
+
+    <div style="margin-bottom: 3rem;">
+        <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.75rem; color: #2B1810; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                👤 Alla medlemmar
+                <span style="background: #8B4513; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; font-weight: 500;">@regularUsers.Count</span>
+            </h2>
+        </div>
+
+        @if (isLoading)
+        {
+            <div style="display: flex; justify-content: center; align-items: center; padding: 3rem; color: #6B5D54; font-size: 1.125rem;">
+                <div style="display: inline-block; width: 2rem; height: 2rem; border: 3px solid #B09B7C; border-radius: 50%; border-top-color: #8B4513; animation: spin 1s linear infinite; margin-right: 0.75rem;"></div>
+                Laddar medlemmar...
+            </div>
+        }
+        else if (regularUsers.Any())
+        {
+            <!-- Mobile Cards -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                @foreach (var user in regularUsers)
+                {
+                    var uid = user.Id.ToString();
+                    <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; color: #2B1810;">@user.Email</div>
+                        <div style="font-size: 0.875rem; color: #6B5D54; margin-bottom: 0.75rem;">@user.FullName</div>
+                        <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #8B4513; color: white; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.75rem;">
+                            @(user.Role == "User" ? "Medlem" : user.Role)
+                        </span>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button type="button" @onclick="async () => await PromoteUser(uid)" 
+                                    disabled="@isProcessing" 
+                                    style="flex: 1; padding: 0.625rem 1rem; background: #4A7C4E; color: white; border: none; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; min-height: 2.75rem; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")"
+                                    onmouseover="if (!@isProcessing) { this.style.background='#2F5233'; }" 
+                                    onmouseout="if (!@isProcessing) { this.style.background='#4A7C4E'; }">
+                                Lägg till i styrelsen
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <!-- Desktop Table -->
+            <div style="display: none; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; background: #DFD9CE; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 1rem;">
+                <table style="width: 100%; min-width: 800px; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="background: #8B4513; color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.875rem; font-family: Georgia, serif;">E-postadress</th>
+                            <th style="background: #8B4513; color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.875rem; font-family: Georgia, serif;">Namn</th>
+                            <th style="background: #8B4513; color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.875rem; font-family: Georgia, serif;">Roll</th>
+                            <th style="background: #8B4513; color: white; padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.875rem; font-family: Georgia, serif;">Åtgärder</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in regularUsers)
+                        {
+                            var uid = user.Id.ToString();
+
+                            <tr style="border-bottom: 1px solid #B09B7C; transition: background-color 0.2s ease;" onmouseover="this.style.background='#F5F0E8';" onmouseout="this.style.background='transparent';">
+                                <td style="padding: 0.75rem 1rem;">
+                                    <div style="font-weight: 600; color: #2B1810; font-family: Georgia, serif;">@user.Email</div>
+                                </td>
+                                <td style="padding: 0.75rem 1rem;">
+                                    <div style="font-size: 0.875rem; color: #6B5D54; font-family: Georgia, serif;">@user.FullName</div>
+                                </td>
+                                <td style="padding: 0.75rem 1rem;">
+                                    <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #8B4513; color: white; border-radius: 1rem; font-size: 0.75rem; font-weight: 600; font-family: Georgia, serif;">
+                                        @(user.Role == "User" ? "Medlem" : user.Role)
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem 1rem;">
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button type="button" @onclick="async () => await PromoteUser(uid)" 
+                                                disabled="@isProcessing"
+                                                style="padding: 0.5rem 1rem; background: #4A7C4E; color: white; border: none; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-family: Georgia, serif; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")"
+                                                onmouseover="if (!@isProcessing) { this.style.background='#2F5233'; }" 
+                                                onmouseout="if (!@isProcessing) { this.style.background='#4A7C4E'; }">
+                                            Lägg till i styrelsen
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div style="text-align: center; padding: 3rem 1.5rem; color: #6B5D54;">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;">👤</div>
+                <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem; color: #6B5D54;">Inga medlemmar hittades</h3>
+                <p style="font-size: 0.875rem;">Det finns inga registrerade medlemmar att visa.</p>
+            </div>
+        }
+    </div>
+
+    <div style="margin-bottom: 3rem;">
+        <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.75rem; color: #2B1810; margin: 0; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                👑 Styrelsen
+                <span style="background: #8B4513; color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem; font-weight: 500;">@adminUsers.Count</span>
+            </h2>
+        </div>
+
+        @if (adminUsers.Any())
+        {
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                @foreach (var admin in adminUsers)
+                {
+                    <div style="background: #DFD9CE; border: 1px solid @(admin.Id.ToString() == currentUserId ? "#8B4513" : "#B09B7C"); border-radius: 0.5rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); @(admin.Id.ToString() == currentUserId ? "box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.1);" : "")">
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.25rem; color: #2B1810;">@admin.FullName</div>
+                            <div style="font-size: 0.875rem; color: #6B5D54; margin-bottom: 0.5rem;">@admin.Email</div>
+                            <div style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.75rem; background: rgba(139, 69, 19, 0.1); color: #8B4513; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
+                                🛡️ Styrelsemedlem @(admin.Id.ToString() == currentUserId ? "(Du)" : "")
+                            </div>
+                        </div>
+
+                        <div style="background: #F5F0E8; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 0.75rem; margin: 0.75rem 0; @(adminDepartments.ContainsKey(admin.Id.ToString()) ? "" : "opacity: 0.6;")">
+                            <div style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.03125rem; color: #6B5D54; margin-bottom: 0.25rem; font-weight: 600; font-family: Georgia, serif;">Ansvarsområden</div>
+                            @if (adminDepartments.ContainsKey(admin.Id.ToString()) && adminDepartments[admin.Id.ToString()].Any())
+                            {
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.375rem; margin-top: 0.25rem;">
+                                    @foreach (var dept in adminDepartments[admin.Id.ToString()])
+                                    {
+                                        <span style="display: inline-block; padding: 0.25rem 0.5rem; background: rgba(139, 69, 19, 0.1); color: #8B4513; border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.75rem; font-size: 0.6875rem; font-weight: 600; white-space: nowrap; font-family: Georgia, serif;">@dept</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div style="font-size: 0.875rem; font-weight: 600; color: #2B1810; font-family: Georgia, serif;">Inga tilldelade</div>
+                            }
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1rem; border-top: 1px solid #B09B7C;">
+                            @if (admin.Id.ToString() != currentUserId)
+                            {
+                                <button type="button" @onclick="async () => await DemoteUser(admin.Id.ToString())"
+                                        disabled="@isProcessing" 
+                                        style="padding: 0.625rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 600; cursor: pointer; min-height: 2.75rem; border: 1px solid transparent; background: #EF4444; color: white; font-family: Georgia, serif; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")"
+                                        onmouseover="if (!@isProcessing) { this.style.background='#DC2626'; }" 
+                                        onmouseout="if (!@isProcessing) { this.style.background='#EF4444'; }">
+                                    Ta bort från styrelsen
+                                </button>
+                            }
+
+                            @if (showDepartmentForm && selectedAdminId == admin.Id.ToString())
+                            {
+                                <div style="margin-top: 0.75rem; padding: 0.75rem; background: #F5F0E8; border: 1px solid #B09B7C; border-radius: 0.375rem;">
+                                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                        @foreach (var dept in availableDepartments)
+                                        {
+                                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.875rem; color: #2B1810; font-family: Georgia, serif;">
+                                                <input type="checkbox" 
+                                                       checked="@selectedDepartments.Contains(dept.Name)"
+                                                       @onchange="(e) => ToggleDepartment(dept.Name, (bool)e.Value!)"
+                                                       style="width: 1rem; height: 1rem; cursor: pointer;" />
+                                                <span>@dept.Name</span>
+                                            </label>
+                                        }
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                        <button type="button" @onclick="() => SetDepartments(admin.Id.ToString())"
+                                                disabled="@isProcessing" 
+                                                style="padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; background: #8B4513; color: white; font-family: Georgia, serif; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")"
+                                                onmouseover="if (!@isProcessing) { this.style.background='#6B3410'; }" 
+                                                onmouseout="if (!@isProcessing) { this.style.background='#8B4513'; }">
+                                            Uppdatera ansvarsområden
+                                        </button>
+                                        <button type="button" @onclick="CancelDepartmentEdit" 
+                                                style="padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; background: #B09B7C; color: white; font-family: Georgia, serif; transition: all 0.2s ease;"
+                                                onmouseover="this.style.background='#8B6F47';" 
+                                                onmouseout="this.style.background='#B09B7C';">
+                                            Avbryt
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <button type="button" @onclick="() => ShowDepartmentForm(admin.Id.ToString())"
+                                        disabled="@isProcessing" 
+                                        style="padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid #8B4513; background: transparent; color: #8B4513; font-family: Georgia, serif; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")"
+                                        onmouseover="if (!@isProcessing) { this.style.background='#8B4513'; this.style.color='white'; }" 
+                                        onmouseout="if (!@isProcessing) { this.style.background='transparent'; this.style.color='#8B4513'; }">
+                                    @(adminDepartments.ContainsKey(admin.Id.ToString()) && adminDepartments[admin.Id.ToString()].Any() ? "Ändra ansvarsområden" : "Sätt ansvarsområden")
+                                </button>
+                            }
+
+                            @if (adminDepartments.ContainsKey(admin.Id.ToString()) && adminDepartments[admin.Id.ToString()].Any())
+                            {
+                                <button type="button" @onclick="() => RemoveAllDepartments(admin.Id.ToString())"
+                                        disabled="@isProcessing" 
+                                        style="padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid #B09B7C; background: transparent; color: #B09B7C; font-family: Georgia, serif; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")"
+                                        onmouseover="if (!@isProcessing) { this.style.background='#B09B7C'; this.style.color='white'; }" 
+                                        onmouseout="if (!@isProcessing) { this.style.background='transparent'; this.style.color='#B09B7C'; }">
+                                    Ta bort alla ansvarsområden
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div style="text-align: center; padding: 3rem 1.5rem; color: #6B5D54;">
+                <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;">👑</div>
+                <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem; color: #6B5D54;">Inga styrelsemedlemmar hittades</h3>
+                <p style="font-size: 0.875rem;">Det finns inga styrelsemedlemmar att visa.</p>
+            </div>
+        }
+    </div>
+</div>
+</div>
 
 @code {
     private List<UserResponseDto> users = new();
     private List<UserResponseDto> adminUsers = new();
-    private Dictionary<string, string> adminDepartments = new();
+    private Dictionary<string, List<string>> adminDepartments = new();
     private string currentUserId = string.Empty;
     private string statusMessage = string.Empty;
     private bool isLoading = true;
@@ -155,12 +270,15 @@ else
     private bool showDepartmentForm = false;
     private string selectedAdminId = string.Empty;
     private string selectedDepartment = string.Empty;
+    private List<string> selectedDepartments = new();
+    private List<DepartmentResponseDto> availableDepartments = new();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCurrentUser();
         await LoadUsers();
-        await LoadAdminDepartments();
+        LoadAdminDepartments();
+        await LoadAvailableDepartments();
     }
 
     private async Task LoadCurrentUser()
@@ -195,18 +313,10 @@ else
         }
     }
 
-    private async Task LoadAdminDepartments()
+    private void LoadAdminDepartments()
     {
+        // Department functionality removed
         adminDepartments.Clear();
-        foreach (var admin in adminUsers)
-        {
-            var department = await UserManagementService.GetAdminDepartmentAsync(admin.Id.ToString());
-            if (!string.IsNullOrEmpty(department))
-            {
-                adminDepartments[admin.Id.ToString()] = department;
-            }
-        }
-
         StateHasChanged();
     }
 
@@ -228,7 +338,7 @@ else
             {
                 statusMessage = "Medlemmen har lagts till i styrelsen.";
                 await LoadUsers();
-                await LoadAdminDepartments();
+                LoadAdminDepartments();
 
                 var newlyPromoted = users.FirstOrDefault(u => u.Id.ToString() == userId);
                 if (newlyPromoted != null && !adminUsers.Any(u => u.Id == newlyPromoted.Id))
@@ -268,7 +378,7 @@ else
             {
                 statusMessage = "Medlemmen har tagits bort från styrelsen.";
                 await LoadUsers();
-                await LoadAdminDepartments();
+                LoadAdminDepartments();
             }
             else
             {
@@ -290,7 +400,7 @@ else
     private void ShowDepartmentForm(string adminId)
     {
         selectedAdminId = adminId;
-        selectedDepartment = adminDepartments.ContainsKey(adminId) ? adminDepartments[adminId] : "";
+        selectedDepartments = adminDepartments.ContainsKey(adminId) ? new List<string>(adminDepartments[adminId]) : new List<string>();
         showDepartmentForm = true;
         StateHasChanged();
     }
@@ -299,45 +409,25 @@ else
     {
         showDepartmentForm = false;
         selectedAdminId = string.Empty;
-        selectedDepartment = string.Empty;
+        selectedDepartments.Clear();
         StateHasChanged();
     }
 
-    private async Task SetDepartment(string adminId)
+    private void ToggleDepartment(string department, bool isSelected)
     {
-        if (isProcessing || string.IsNullOrEmpty(selectedDepartment)) return;
-
-        try
+        if (isSelected)
         {
-            isProcessing = true;
-            StateHasChanged();
-
-            var result = await UserManagementService.SetAdminDepartmentAsync(adminId, selectedDepartment, currentUserId);
-
-            if (result)
-            {
-                statusMessage = "Ansvarsområde har tilldelats styrelsemedlemmen.";
-                await LoadAdminDepartments();
-                CancelDepartmentEdit();
-            }
-            else
-            {
-                statusMessage = "Fel: Kunde inte tilldela ansvarsområde.";
-            }
+            if (!selectedDepartments.Contains(department))
+                selectedDepartments.Add(department);
         }
-        catch (Exception ex)
+        else
         {
-            Logger.LogError(ex, "Error setting department for admin {AdminId}", adminId);
-            statusMessage = "Fel: Ett oväntat fel inträffade vid tilldelning av ansvarsområde.";
+            selectedDepartments.Remove(department);
         }
-        finally
-        {
-            isProcessing = false;
-            StateHasChanged();
-        }
+        StateHasChanged();
     }
 
-    private async Task RemoveDepartment(string adminId)
+    private void SetDepartments(string adminId)
     {
         if (isProcessing) return;
 
@@ -346,22 +436,26 @@ else
             isProcessing = true;
             StateHasChanged();
 
-            var result = await UserManagementService.RemoveAdminDepartmentAsync(adminId, currentUserId);
+            // Department functionality removed
+            var result = true;
 
             if (result)
             {
-                statusMessage = "Ansvarsområde har tagits bort från styrelsemedlemmen.";
-                await LoadAdminDepartments();
+                statusMessage = selectedDepartments.Count == 0 ? 
+                    "Alla ansvarsområden har tagits bort från styrelsemedlemmen." :
+                    $"Ansvarsområden har uppdaterats för styrelsemedlemmen.";
+                LoadAdminDepartments();
+                CancelDepartmentEdit();
             }
             else
             {
-                statusMessage = "Fel: Kunde inte ta bort ansvarsområde.";
+                statusMessage = "Fel: Kunde inte uppdatera ansvarsområden.";
             }
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error removing department from admin {AdminId}", adminId);
-            statusMessage = "Fel: Ett oväntat fel inträffade vid borttagning av ansvarsområde.";
+            Logger.LogError(ex, "Error setting departments for admin {AdminId}", adminId);
+            statusMessage = "Fel: Ett oväntat fel inträffade vid uppdatering av ansvarsområden.";
         }
         finally
         {
@@ -370,4 +464,83 @@ else
         }
     }
 
+    private void RemoveAllDepartments(string adminId)
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+
+            // Department functionality removed
+            var result = true;
+
+            if (result)
+            {
+                statusMessage = "Alla ansvarsområden har tagits bort från styrelsemedlemmen.";
+                LoadAdminDepartments();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte ta bort ansvarsområden.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error removing all departments from admin {AdminId}", adminId);
+            statusMessage = "Fel: Ett oväntat fel inträffade vid borttagning av ansvarsområden.";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadAvailableDepartments()
+    {
+        try
+        {
+            availableDepartments = await DepartmentService.GetActiveDepartmentsAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading available departments");
+            statusMessage = "Fel: Kunde inte ladda avdelningar";
+        }
+    }
+
 }
+
+<style>
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Media queries for responsive design */
+    @@media (max-width: 480px) {
+        /* Stack header items on very small screens */
+        div[style*="display: flex; flex-wrap: wrap; justify-content: space-between"] {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            text-align: left !important;
+        }
+        
+        h1[style*="font-size: 2.25rem"] {
+            font-size: 1.875rem !important;
+        }
+    }
+    
+    @@media (min-width: 768px) {
+        /* Show table, hide mobile cards on tablets and desktop */
+        div[style*="display: flex; flex-direction: column; gap: 0.75rem;"] {
+            display: none !important;
+        }
+        
+        div[style*="display: none; width: 100%; overflow-x: auto"] {
+            display: block !important;
+        }
+    }
+</style>

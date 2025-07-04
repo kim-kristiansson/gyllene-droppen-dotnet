@@ -1,6 +1,7 @@
 using GylleneDroppen.Application.Dtos.Whisky;
 using GylleneDroppen.Application.Interfaces.Repositories;
 using GylleneDroppen.Application.Interfaces.Services;
+using GylleneDroppen.Core.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace GylleneDroppen.Application.Services;
@@ -42,9 +43,8 @@ public class WhiskyService(
             Distillery = dto.Distillery,
             Age = dto.Age,
             Abv = dto.Abv,
-            Region = dto.Region,
-            Type = dto.Type,
-            Country = dto.Country,
+            RegionId = dto.RegionId,
+            WhiskyTypeId = dto.WhiskyTypeId,
             Color = dto.Color,
             Nose = dto.Nose,
             Palate = dto.Palate,
@@ -84,9 +84,8 @@ public class WhiskyService(
         whisky.Distillery = dto.Distillery;
         whisky.Age = dto.Age;
         whisky.Abv = dto.Abv;
-        whisky.Region = dto.Region;
-        whisky.Type = dto.Type;
-        whisky.Country = dto.Country;
+        whisky.RegionId = dto.RegionId;
+        whisky.WhiskyTypeId = dto.WhiskyTypeId;
         whisky.Color = dto.Color;
         whisky.Nose = dto.Nose;
         whisky.Palate = dto.Palate;
@@ -176,9 +175,11 @@ public class WhiskyService(
             Distillery = whisky.Distillery,
             Age = whisky.Age,
             Abv = whisky.Abv,
-            Region = whisky.Region,
-            Type = whisky.Type,
-            Country = whisky.Country,
+            RegionId = whisky.RegionId,
+            Region = whisky.Region?.Name ?? "Okänd",
+            WhiskyTypeId = whisky.WhiskyTypeId,
+            Type = whisky.WhiskyType?.Name ?? "Okänd",
+            Country = whisky.Region?.Country?.Name ?? whisky.WhiskyType?.OriginCountry?.Name ?? "Okänd",
             Color = whisky.Color,
             Nose = whisky.Nose,
             Palate = whisky.Palate,
@@ -188,7 +189,7 @@ public class WhiskyService(
             ImagePath = whisky.ImagePath,
             CreatedDate = whisky.CreatedDate,
             UpdatedDate = whisky.UpdatedDate,
-            CreatedByUserName = whisky.CreatedByUser?.Email ?? "Unknown",
+            CreatedByUserName = whisky.CreatedByUser?.Email ?? "Okänd",
             UpdatedByUserName = whisky.UpdatedByUser?.Email,
             TastingCount = whisky.TastingHistories?.Count ?? 0
         };

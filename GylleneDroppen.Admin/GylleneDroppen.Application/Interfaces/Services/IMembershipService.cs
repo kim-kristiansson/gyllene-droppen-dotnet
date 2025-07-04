@@ -24,6 +24,7 @@ public interface IMembershipService
     Task<bool> HasEmailUsedTrialAsync(string email);
     Task CreateTrialForUserAsync(string userId, string email);
     Task<bool> UseTrialForEventAsync(string userId, Guid eventId);
+    Task EnsureUserHasTrialAsync(string userId, string email);
 
     // Membership Status
     Task<UserMembershipStatusDto> GetUserMembershipStatusAsync(string userId);

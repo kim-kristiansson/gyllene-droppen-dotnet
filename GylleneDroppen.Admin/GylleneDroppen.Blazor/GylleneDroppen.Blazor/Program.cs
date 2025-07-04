@@ -11,6 +11,8 @@ using GylleneDroppen.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 using _Imports = GylleneDroppen.Blazor.Client._Imports;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +31,9 @@ builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuth
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddScoped<IAppEnvironment, ApplicationEnvironment>();
+
+// Add localization services
+builder.Services.AddLocalization();
 
 builder.Logging.AddConsole();
 
@@ -49,7 +54,15 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireDigit = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+})
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
@@ -76,6 +89,14 @@ catch (Exception ex)
     Console.WriteLine($"❌ Error during data seeding: {ex.Message}");
 }
 
+// Configure Swedish culture for date/time formatting
+var supportedCultures = new[] { new CultureInfo("sv-SE") };
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("sv-SE"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -92,6 +113,8 @@ else
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 

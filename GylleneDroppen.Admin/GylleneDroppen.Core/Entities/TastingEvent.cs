@@ -11,7 +11,12 @@ public class TastingEvent
 
     [Required] public DateTime EventDate { get; set; }
 
+    public DateTime? EndTime { get; set; }
+
     [MaxLength(200)] public string? Location { get; set; }
+
+    public Guid? AddressId { get; set; }
+    public Address? Address { get; set; }
 
     [Range(1, 100)] public int? MaxParticipants { get; set; }
 

@@ -1,11 +1,12 @@
 @page "/admin/whiskies/edit/{WhiskyId:guid}"
 @using GylleneDroppen.Application.Interfaces.Services
 @using GylleneDroppen.Application.Dtos.Whisky
-@using GylleneDroppen.Core.Constants
+@using GylleneDroppen.Application.Dtos.WhiskyMetadata
 @using Microsoft.AspNetCore.Authorization
 @using GylleneDroppen.Blazor.Components.Shared
 
 @inject IWhiskyService WhiskyService
+@inject IWhiskyMetadataService WhiskyMetadataService
 @inject NavigationManager NavigationManager
 
 @attribute [Authorize(Policy = "AdminOnly")]
@@ -13,20 +14,23 @@
 
 <PageTitle>Redigera Whisky</PageTitle>
 
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
 @if (whiskyDto != null)
 {
-    <h1>Redigera @whiskyDto.Name</h1>
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+        <h1 style="font-size: 2.25rem; color: #2B1810; margin: 0; font-weight: 600;">✏️ Redigera @whiskyDto.Name</h1>
+    </div>
 
-    <div>
-        <button @onclick="GoBack">← Tillbaka</button>
-        <button @onclick="GoToWhisky">Visa whisky</button>
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+        <button @onclick="GoBack" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">← Tillbaka</button>
+        <button @onclick="GoToWhisky" style="padding: 0.75rem 1.25rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#5D4037';" onmouseout="this.style.background='#8B4513';">Visa whisky</button>
     </div>
 
     @if (!string.IsNullOrEmpty(statusMessage))
     {
-        <div>
-            <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
-            <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+        <div style="padding: 1rem 1.5rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444;" : "background: rgba(74, 124, 78, 0.15); border: 1px solid #4A7C4E; color: #4A7C4E;")">
+            <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0; opacity: 0.8; transition: opacity 0.2s ease;">✕</button>
         </div>
     }
 
@@ -34,141 +38,150 @@
         <DataAnnotationsValidator/>
         <ValidationSummary/>
 
-        <fieldset>
-            <legend>Bild</legend>
+        <fieldset style="border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem; background: #DAD3C7;">
+            <legend style="font-weight: 600; color: #8B4513; font-family: Georgia, serif; padding: 0 0.5rem;">🖼️ Bild</legend>
             <ImageUpload WhiskyId="@WhiskyId"
                          CurrentImagePath="@currentImagePath"
                          OnImageUploaded="HandleImageUploaded"
                          OnImageRemoved="HandleImageRemoved"/>
         </fieldset>
 
-        <fieldset>
-            <legend>Grundinformation</legend>
+        <fieldset style="border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem; background: #DAD3C7;">
+            <legend style="font-weight: 600; color: #8B4513; font-family: Georgia, serif; padding: 0 0.5rem;">📝 Grundinformation</legend>
 
-            <div>
-                <label>Namn:</label>
-                <InputText @bind-Value="whiskyDto.Name"/>
-                <ValidationMessage For="() => whiskyDto.Name"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Namn:</label>
+                <InputText @bind-Value="whiskyDto.Name" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" />
+                <ValidationMessage For="() => whiskyDto.Name" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Destilleri:</label>
-                <InputText @bind-Value="whiskyDto.Distillery"/>
-                <ValidationMessage For="() => whiskyDto.Distillery"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Destilleri:</label>
+                <InputText @bind-Value="whiskyDto.Distillery" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" />
+                <ValidationMessage For="() => whiskyDto.Distillery" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Land:</label>
-                <InputSelect @bind-Value="whiskyDto.Country">
-                    <option value="">Välj land</option>
-                    @foreach (var country in WhiskyConstants.Countries)
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Land:</label>
+                <InputSelect @bind-Value="selectedCountryId" @bind-Value:after="OnCountryChanged" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                    <option value="">Inget land valt</option>
+                    @foreach (var country in countries.OrderBy(c => c.Name))
                     {
-                        <option value="@country">@country</option>
+                        <option value="@country.Id">@country.Name</option>
                     }
                 </InputSelect>
-                <ValidationMessage For="() => whiskyDto.Country"/>
+                <ValidationMessage For="() => selectedCountryId" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Region:</label>
-                <InputSelect @bind-Value="whiskyDto.Region">
-                    <option value="">Välj region</option>
-                    @foreach (var region in WhiskyConstants.CommonRegions)
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Region:</label>
+                <InputSelect @bind-Value="whiskyDto.RegionId" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" disabled="@(!selectedCountryId.HasValue)">
+                    <option value="">@(!selectedCountryId.HasValue ? "Välj land först" : "Ingen region vald")</option>
+                    @foreach (var region in GetFilteredRegions())
                     {
-                        <option value="@region">@region</option>
+                        <option value="@region.Id">@region.Name</option>
                     }
                 </InputSelect>
-                <ValidationMessage For="() => whiskyDto.Region"/>
+                <ValidationMessage For="() => whiskyDto.RegionId" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Typ:</label>
-                <InputSelect @bind-Value="whiskyDto.Type">
-                    <option value="">Välj typ</option>
-                    @foreach (var type in WhiskyConstants.WhiskyTypes)
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Typ:</label>
+                <InputSelect @bind-Value="whiskyDto.WhiskyTypeId" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" disabled="@(!selectedCountryId.HasValue)">
+                    <option value="">@(!selectedCountryId.HasValue ? "Välj land först" : "Ingen typ vald")</option>
+                    @foreach (var type in GetFilteredWhiskyTypes())
                     {
-                        <option value="@type">@type</option>
+                        <option value="@type.Id">@type.Name</option>
                     }
                 </InputSelect>
-                <ValidationMessage For="() => whiskyDto.Type"/>
+                <ValidationMessage For="() => whiskyDto.WhiskyTypeId" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Ålder (år, lämna tomt för NAS):</label>
-                <InputNumber @bind-Value="whiskyDto.Age"/>
-                <ValidationMessage For="() => whiskyDto.Age"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Ålder (år, lämna tomt för NAS):</label>
+                <InputNumber @bind-Value="whiskyDto.Age" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" />
+                <ValidationMessage For="() => whiskyDto.Age" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Alkoholhalt (%):</label>
-                <InputNumber @bind-Value="whiskyDto.Abv" step="0.1"/>
-                <ValidationMessage For="() => whiskyDto.Abv"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Alkoholhalt (%):</label>
+                <InputNumber @bind-Value="whiskyDto.Abv" step="0.1" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" />
+                <ValidationMessage For="() => whiskyDto.Abv" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Pris (kr, valfritt):</label>
-                <InputNumber @bind-Value="whiskyDto.Price" step="0.01"/>
-                <ValidationMessage For="() => whiskyDto.Price"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Pris (kr, valfritt):</label>
+                <InputNumber @bind-Value="whiskyDto.Price" step="0.01" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" />
+                <ValidationMessage For="() => whiskyDto.Price" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Flaskstorlek (ml, valfritt):</label>
-                <InputNumber @bind-Value="whiskyDto.BottleSize"/>
-                <ValidationMessage For="() => whiskyDto.BottleSize"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Flaskstorlek (ml, valfritt):</label>
+                <InputNumber @bind-Value="whiskyDto.BottleSize" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" />
+                <ValidationMessage For="() => whiskyDto.BottleSize" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
         </fieldset>
 
-        <fieldset>
-            <legend>Provningsanteckningar (valfritt)</legend>
+        <fieldset style="border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 2rem; background: #DAD3C7;">
+            <legend style="font-weight: 600; color: #8B4513; font-family: Georgia, serif; padding: 0 0.5rem;">🍷 Provningsanteckningar (valfritt)</legend>
 
-            <div>
-                <label>Färg:</label>
-                <InputTextArea @bind-Value="whiskyDto.Color" rows="2"/>
-                <ValidationMessage For="() => whiskyDto.Color"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Färg:</label>
+                <InputTextArea @bind-Value="whiskyDto.Color" rows="2" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; resize: vertical;" />
+                <ValidationMessage For="() => whiskyDto.Color" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Doft:</label>
-                <InputTextArea @bind-Value="whiskyDto.Nose" rows="3"/>
-                <ValidationMessage For="() => whiskyDto.Nose"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Doft:</label>
+                <InputTextArea @bind-Value="whiskyDto.Nose" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; resize: vertical;" />
+                <ValidationMessage For="() => whiskyDto.Nose" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Smak:</label>
-                <InputTextArea @bind-Value="whiskyDto.Palate" rows="3"/>
-                <ValidationMessage For="() => whiskyDto.Palate"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Smak:</label>
+                <InputTextArea @bind-Value="whiskyDto.Palate" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; resize: vertical;" />
+                <ValidationMessage For="() => whiskyDto.Palate" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
 
-            <div>
-                <label>Eftersmak:</label>
-                <InputTextArea @bind-Value="whiskyDto.Finish" rows="3"/>
-                <ValidationMessage For="() => whiskyDto.Finish"/>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Eftersmak:</label>
+                <InputTextArea @bind-Value="whiskyDto.Finish" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; resize: vertical;" />
+                <ValidationMessage For="() => whiskyDto.Finish" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem;" />
             </div>
         </fieldset>
 
-        <div>
-            <button type="submit" disabled="@isProcessing">
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" disabled="@isProcessing" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; opacity: @(isProcessing ? "0.6" : "1");" onmouseover="this.style.background='#5D4037'; this.style.borderColor='#5D4037';" onmouseout="this.style.background='#8B4513'; this.style.borderColor='#8B4513';">
                 @(isProcessing ? "Uppdaterar..." : "Uppdatera whisky")
             </button>
-            <button type="button" @onclick="GoBack">Avbryt</button>
+            <button type="button" @onclick="GoBack" style="padding: 0.75rem 1.5rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Avbryt</button>
         </div>
     </EditForm>
 }
 else if (isLoading)
 {
-    <p>Laddar whisky...</p>
+    <div style="display: flex; justify-content: center; align-items: center; padding: 3rem; color: #5D4037; font-size: 1.125rem;">
+        <div style="display: inline-block; width: 2rem; height: 2rem; border: 3px solid #B09B7C; border-radius: 50%; border-top-color: #8B4513; animation: spin 1s linear infinite; margin-right: 0.75rem;"></div>
+        Laddar whisky...
+    </div>
 }
 else
 {
-    <h1>Whisky hittades inte</h1>
-    <p>Whiskyn du försöker redigera finns inte.</p>
-    <button @onclick="GoBack">Tillbaka</button>
+    <div style="text-align: center; padding: 3rem;">
+        <h1 style="font-size: 2rem; color: #8B4513; margin-bottom: 1rem;">Whisky hittades inte</h1>
+        <p style="color: #5D4037; margin-bottom: 2rem;">Whiskyn du försöker redigera finns inte.</p>
+        <button @onclick="GoBack" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#5D4037';" onmouseout="this.style.background='#8B4513';">Tillbaka</button>
+    </div>
 }
 
 @code {
     [Parameter] public Guid WhiskyId { get; set; }
 
     private UpdateWhiskyRequestDto? whiskyDto;
+    private List<CountryDto> countries = new();
+    private List<RegionDto> regions = new();
+    private List<WhiskyTypeDto> whiskyTypes = new();
+    private Guid? selectedCountryId;
     private bool isLoading = true;
     private bool isProcessing = false;
     private string statusMessage = string.Empty;
@@ -176,7 +189,60 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        await LoadMetadata();
         await LoadWhisky();
+    }
+
+    private async Task LoadMetadata()
+    {
+        try
+        {
+            countries = await WhiskyMetadataService.GetAllCountriesAsync();
+            regions = await WhiskyMetadataService.GetAllRegionsAsync();
+            whiskyTypes = await WhiskyMetadataService.GetAllWhiskyTypesAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid laddning av metadata: {ex.Message}";
+        }
+    }
+
+    private void OnCountryChanged()
+    {
+        // Clear region and whisky type selection when country changes
+        if (whiskyDto != null)
+        {
+            whiskyDto.RegionId = null;
+            whiskyDto.WhiskyTypeId = null;
+        }
+        StateHasChanged();
+    }
+
+    private IEnumerable<RegionDto> GetFilteredRegions()
+    {
+        if (!selectedCountryId.HasValue)
+            return Enumerable.Empty<RegionDto>();
+        
+        return regions.Where(r => r.CountryId == selectedCountryId.Value).OrderBy(r => r.Name);
+    }
+
+    private IEnumerable<WhiskyTypeDto> GetFilteredWhiskyTypes()
+    {
+        if (!selectedCountryId.HasValue)
+            return Enumerable.Empty<WhiskyTypeDto>();
+        
+        // Return whisky types that either:
+        // 1. Have no origin country specified (universal types)
+        // 2. Have origin country matching the selected country
+        return whiskyTypes.Where(wt => 
+            wt.OriginCountryId == null || 
+            wt.OriginCountryId == selectedCountryId.Value
+        ).OrderBy(wt => wt.Name);
     }
 
     private async Task LoadWhisky()
@@ -195,9 +261,8 @@ else
                     Distillery = whisky.Distillery,
                     Age = whisky.Age,
                     Abv = whisky.Abv,
-                    Region = whisky.Region,
-                    Type = whisky.Type,
-                    Country = whisky.Country,
+                    RegionId = whisky.RegionId,
+                    WhiskyTypeId = whisky.WhiskyTypeId,
                     Color = whisky.Color,
                     Nose = whisky.Nose,
                     Palate = whisky.Palate,
@@ -207,6 +272,33 @@ else
                 };
 
                 currentImagePath = whisky.ImagePath;
+                
+                // Set the selected country based on the whisky's region
+                if (whisky.RegionId.HasValue)
+                {
+                    var whiskyRegion = regions.FirstOrDefault(r => r.Id == whisky.RegionId.Value);
+                    if (whiskyRegion != null)
+                    {
+                        selectedCountryId = whiskyRegion.CountryId;
+                    }
+                }
+                else if (whisky.WhiskyTypeId.HasValue)
+                {
+                    // If no region but has whisky type, check if type has origin country
+                    var whiskyType = whiskyTypes.FirstOrDefault(wt => wt.Id == whisky.WhiskyTypeId.Value);
+                    if (whiskyType?.OriginCountryId != null)
+                    {
+                        selectedCountryId = whiskyType.OriginCountryId;
+                    }
+                    else
+                    {
+                        selectedCountryId = null;
+                    }
+                }
+                else
+                {
+                    selectedCountryId = null;
+                }
             }
         }
         catch (Exception ex)
@@ -266,3 +358,11 @@ else
     }
 
 }
+</div>
+
+<style>
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>

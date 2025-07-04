@@ -5,65 +5,67 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager NavigationManager
 
-<p><strong>Gyllene Droppen Admin</strong></p>
+<AuthorizeView>
+    <Authorized>
+        <div class="nav-container authenticated">
+            <div class="nav-brand">
+                <NavLink href="" Match="NavLinkMatch.All">
+                    <span class="brand-logo">GD</span>
+                    <span class="brand-text">Gyllene Droppen</span>
+                </NavLink>
+            </div>
 
-<input type="checkbox" title="Navigation menu"/>
-
-<div onclick="document.querySelector('input[title=\'Navigation menu\']').click()">
-    <nav>
-        <p>
-            <NavLink href="" Match="NavLinkMatch.All">Start</NavLink>
-        </p>
-
-        <p>
-            <NavLink href="whiskies">Whiskies</NavLink>
-        </p>
-
-        <AuthorizeView>
-            <Authorized>
-                <p>
-                    <NavLink href="provningar">Provningar</NavLink>
-                </p>
-                <p>
-                    <NavLink href="konto/hantera">Mitt konto</NavLink>
-                </p>
+            <input type="checkbox" title="Navigation menu" class="nav-toggle" id="nav-toggle"/>
+            <label for="nav-toggle" class="nav-toggle-label">
+                <span class="hamburger"></span>
+            </label>
+            
+            <nav class="nav-menu">
+                <NavLink href="" Match="NavLinkMatch.All" class="nav-link">Hem</NavLink>
+                <NavLink href="provningar" class="nav-link">Provningar</NavLink>
+                <NavLink href="konto/hantera" class="nav-link">Mitt konto</NavLink>
 
                 <AuthorizeView Policy="AdminOnly">
                     <Authorized Context="adminContext">
-                        <p><strong>ADMINISTRATION</strong></p>
-                        <p>
-                            <NavLink href="admin">Dashboard</NavLink>
-                        </p>
-                        <p>
-                            <NavLink href="admin/anvandare">Hantera Medlemmar</NavLink>
-                        </p>
-                        <p>
-                            <NavLink href="admin/whiskies">Hantera Whiskies</NavLink>
-                        </p>
-                        <p>
-                            <NavLink href="provningar/skapa">Skapa Provning</NavLink>
-                        </p>
+                        <NavLink href="whiskies" class="nav-link">Whiskies</NavLink>
+                        <div class="nav-dropdown">
+                            <span class="nav-link dropdown-toggle">Administration</span>
+                            <div class="dropdown-menu">
+                                <NavLink href="admin" class="dropdown-item">Dashboard</NavLink>
+                                <NavLink href="admin/anvandare" class="dropdown-item">Hantera Medlemmar</NavLink>
+                                <NavLink href="admin/whiskies" class="dropdown-item">Hantera Whiskies</NavLink>
+                                <NavLink href="admin/adresser" class="dropdown-item">Hantera Adresser</NavLink>
+                                <NavLink href="admin/medlemskapsperioder" class="dropdown-item">Medlemskapstyper</NavLink>
+                                <NavLink href="admin/medlemskap" class="dropdown-item">Användarmedlemskap</NavLink>
+                                <NavLink href="provningar/skapa" class="dropdown-item">Skapa Provning</NavLink>
+                            </div>
+                        </div>
                     </Authorized>
                 </AuthorizeView>
 
-                <form action="/konto/logga-ut" method="post">
+                <form action="/konto/logga-ut" method="post" class="nav-logout">
                     <AntiforgeryToken/>
                     <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
-                    <button type="submit">Logga ut</button>
+                    <button type="submit" class="btn-logout">Logga ut</button>
                 </form>
-            </Authorized>
-
-            <NotAuthorized>
-                <p>
-                    <NavLink href="konto/registrera">Registrera</NavLink>
-                </p>
-                <p>
-                    <NavLink href="konto/logga-in">Logga in</NavLink>
-                </p>
-            </NotAuthorized>
-        </AuthorizeView>
-    </nav>
-</div>
+            </nav>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="nav-container unauthenticated">
+            <div class="nav-brand">
+                <NavLink href="" Match="NavLinkMatch.All">
+                    <span class="brand-logo">GD</span>
+                    <span class="brand-text">Gyllene Droppen</span>
+                </NavLink>
+            </div>
+            
+            <nav class="nav-menu">
+                <!-- No navigation links for unauthorized users -->
+            </nav>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private string? currentUrl;

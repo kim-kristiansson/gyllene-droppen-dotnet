@@ -1,0 +1,36 @@
+@* Reusable page layout component for all whisky-themed pages *@
+
+<div class="whisky-page-container">
+    <div class="whisky-page-content">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <div class="page-header">
+                <h1 class="page-title">@Title</h1>
+                @if (!string.IsNullOrEmpty(BackButtonText))
+                {
+                    <button @onclick="OnBackClick" class="btn-back">@BackButtonText</button>
+                }
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(StatusMessage))
+        {
+            <div class="status-message @(IsError ? "error" : "success")">
+                <span><strong>@(IsError ? "Fel" : "Info"):</strong> @StatusMessage</span>
+                <button @onclick="() => OnStatusDismiss.InvokeAsync()" class="status-close">✕</button>
+            </div>
+        }
+
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? BackButtonText { get; set; }
+    [Parameter] public string? StatusMessage { get; set; }
+    [Parameter] public bool IsError { get; set; }
+    [Parameter] public EventCallback OnBackClick { get; set; }
+    [Parameter] public EventCallback OnStatusDismiss { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

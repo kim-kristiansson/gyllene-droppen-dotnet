@@ -1,0 +1,240 @@
+@page "/admin/lander"
+@inject NavigationManager Navigation
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("/admin/lander-regioner", replace: true);
+    }
+}
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.WhiskyMetadata
+@using Microsoft.AspNetCore.Authorization
+@inject IWhiskyMetadataService WhiskyMetadataService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Policy = "AdminOnly")]
+@rendermode InteractiveServer
+
+<PageTitle>Hantera Länder</PageTitle>
+
+<div class="page-wrapper">
+<div class="page-content">
+    <div class="page-header-section">
+        <h1 class="page-title">🌍 Hantera Länder</h1>
+        <div class="header-actions">
+            <span class="item-count">Totalt: @countries.Count länder</span>
+            <button @onclick="ShowCreateForm" class="btn btn-primary">
+                ➕ Lägg till nytt land
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="status-message @(statusMessage.StartsWith("Fel:") ? "error" : "success")">
+            <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" class="status-close">✕</button>
+        </div>
+    }
+
+    @if (showCreateForm)
+    {
+        <div class="form-container">
+            <h3>@(editingCountry != null ? "Redigera Land" : "Lägg till Nytt Land")</h3>
+            <EditForm Model="countryDto" OnValidSubmit="SubmitCountryAsync" class="form">
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="validation-message"/>
+
+                <div class="form-field">
+                    <label class="form-label">Namn: <span class="required">*</span></label>
+                    <InputText @bind-Value="countryDto.Name" class="form-input" placeholder="T.ex. Skottland" />
+                    <ValidationMessage For="() => countryDto.Name" class="validation-message" />
+                </div>
+
+
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner"></span>
+                            <span>@(editingCountry != null ? "Uppdaterar..." : "Skapar...")</span>
+                        }
+                        else
+                        {
+                            <span>@(editingCountry != null ? "💾 Uppdatera" : "➕ Skapa")</span>
+                        }
+                    </button>
+                    <button type="button" @onclick="CancelForm" class="btn btn-secondary">
+                        Avbryt
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            Laddar länder...
+        </div>
+    }
+    else if (countries.Any())
+    {
+        <div class="items-grid">
+            @foreach (var country in countries.OrderBy(c => c.Name))
+            {
+                <div class="item-card">
+                    <div class="item-header">
+                        <h3 class="item-name">@country.Name</h3>
+                    </div>
+
+                    <div class="item-meta">
+                        <small>Skapat: @country.CreatedDate.ToString("yyyy-MM-dd")</small>
+                        @if (country.UpdatedDate.HasValue)
+                        {
+                            <small>Uppdaterat: @country.UpdatedDate.Value.ToString("yyyy-MM-dd")</small>
+                        }
+                    </div>
+
+                    <div class="item-actions">
+                        <button @onclick="() => EditCountry(country)" class="btn btn-outline-primary btn-sm">
+                            ✏️ Redigera
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🌍</div>
+            <h3>Inga länder hittades</h3>
+            <p>Börja med att lägga till ditt första land för whiskyproduktion.</p>
+            <button @onclick="ShowCreateForm" class="btn btn-primary">
+                ➕ Lägg till första landet
+            </button>
+        </div>
+    }
+</div>
+</div>
+
+@code {
+    private List<CountryDto> countries = new();
+    private CreateCountryRequestDto countryDto = new();
+    private CountryDto? editingCountry = null;
+    private string statusMessage = string.Empty;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private bool showCreateForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCountries();
+    }
+
+    private async Task LoadCountries()
+    {
+        try
+        {
+            isLoading = true;
+            countries = await WhiskyMetadataService.GetAllCountriesAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: Kunde inte ladda länder. {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        editingCountry = null;
+        countryDto = new CreateCountryRequestDto();
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void EditCountry(CountryDto country)
+    {
+        editingCountry = country;
+        countryDto = new CreateCountryRequestDto
+        {
+            Name = country.Name
+        };
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void CancelForm()
+    {
+        showCreateForm = false;
+        editingCountry = null;
+        countryDto = new();
+        StateHasChanged();
+    }
+
+    private async Task SubmitCountryAsync()
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            statusMessage = string.Empty;
+
+            if (editingCountry != null)
+            {
+                var updateDto = new UpdateCountryRequestDto
+                {
+                    Name = countryDto.Name
+                };
+                
+                var updated = await WhiskyMetadataService.UpdateCountryAsync(editingCountry.Id, updateDto);
+                if (updated != null)
+                {
+                    statusMessage = "Land uppdaterat framgångsrikt!";
+                }
+                else
+                {
+                    statusMessage = "Fel: Kunde inte uppdatera land.";
+                }
+            }
+            else
+            {
+                var created = await WhiskyMetadataService.CreateCountryAsync(countryDto);
+                if (created != null)
+                {
+                    statusMessage = "Land skapat framgångsrikt!";
+                }
+                else
+                {
+                    statusMessage = "Fel: Kunde inte skapa land.";
+                }
+            }
+
+            if (!statusMessage.StartsWith("Fel:"))
+            {
+                await LoadCountries();
+                CancelForm();
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+}

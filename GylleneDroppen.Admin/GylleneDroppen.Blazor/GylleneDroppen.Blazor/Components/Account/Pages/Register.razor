@@ -1,4 +1,5 @@
 ﻿@page "/konto/registrera"
+@layout PublicLayout
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -14,42 +15,144 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<style>
+    @@font-face {
+        font-family: 'GreatVibes';
+        src: url('/fonts/GreatVibes-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+</style>
 
 <PageTitle>Registrera</PageTitle>
 
-<h1>Registrera</h1>
+<!-- Header -->
+<div style="text-align: center; margin-bottom: 2rem;">
+    <p style="font-size: 0.875rem; color: #6B5D54; margin: 0; font-family: Georgia, serif;">
+        Bli medlem i vårt whiskysällskap
+    </p>
+</div>
 
-<StatusMessage Message="@Message"/>
+<!-- Trial Notice -->
+<div style="background: #E8E1D6; border: 1px solid #B09B7C; border-radius: 0.25rem; padding: 1rem; margin-bottom: 1.5rem; text-align: center;">
+    <p style="color: #6B5D54; margin: 0; font-family: Georgia, serif; font-size: 0.875rem;">
+        Prova en provning innan medlemskap krävs
+    </p>
+</div>
 
-<EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
-    <DataAnnotationsValidator/>
-    <h2>Skapa ett nytt konto.</h2>
-    <hr/>
-    <ValidationSummary role="alert"/>
-
-    <div>
-        <InputText @bind-Value="Input.Email" id="Input.Email" autocomplete="username" aria-required="true"
-                   placeholder="namn@example.com"/>
-        <label for="Input.Email">E-postadress</label>
-        <ValidationMessage For="() => Input.Email"/>
+<!-- Requirements Notice -->
+<div style="background: #E8E1D6; border: 1px solid #B09B7C; border-radius: 0.25rem; padding: 1rem; margin-bottom: 1.5rem;">
+    <h3 style="color: #2B1810; margin: 0 0 0.75rem 0; font-size: 1rem; font-weight: 600; font-family: Georgia, serif;">Medlemskapskrav</h3>
+    <div style="color: #5C4A3A; font-size: 0.8125rem; font-family: Georgia, serif; line-height: 1.5;">
+        <p style="margin: 0 0 0.5rem 0;">
+            <strong>Ålderskrav:</strong> Du måste vara minst <strong>20 år gammal</strong> för att registrera dig och delta i whiskyprovningar.
+        </p>
+        <p style="margin: 0 0 0.5rem 0;">
+            <strong>Medlemskap:</strong> Gyllene Droppen är en <strong>herrförening</strong> och medlemskap är förbehållet <strong>män</strong>.
+        </p>
+        <p style="margin: 0; font-style: italic;">
+            Genom att registrera dig bekräftar du att du uppfyller dessa krav.
+        </p>
     </div>
+</div>
 
-    <div>
-        <InputText type="password" @bind-Value="Input.Password" id="Input.Password" autocomplete="new-password"
-                   aria-required="true" placeholder="lösenord"/>
-        <label for="Input.Password">Lösenord</label>
-        <ValidationMessage For="() => Input.Password"/>
+<!-- Registration Form -->
+<div>
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div style="padding: 1rem; margin-bottom: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; border-radius: 0.375rem; color: #EF4444; font-family: Georgia, serif;">
+                @Message
+            </div>
+        }
+
+    <h2 style="color: #2B1810; margin: 0 0 1.5rem 0; font-size: 1.5rem; font-weight: 600; font-family: Georgia, serif; text-align: center;">Skapa ditt konto</h2>
+    
+    <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+        <DataAnnotationsValidator/>
+        
+        @if (identityErrors != null)
+        {
+            <div style="padding: 1rem; margin-bottom: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; border-radius: 0.375rem; color: #EF4444; font-family: Georgia, serif;">
+                @foreach (var error in identityErrors)
+                {
+                    <div>@error.Description</div>
+                }
+            </div>
+        }
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="Input.Email" style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">E-postadress</label>
+            <InputText @bind-Value="Input.Email" id="Input.Email" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 1rem; background: #F0EDE4; color: #2B1810; font-family: Georgia, serif;" autocomplete="username" aria-required="true" placeholder="din@email.com"/>
+            <ValidationMessage For="() => Input.Email" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;"/>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <label for="Input.FirstName" style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Förnamn</label>
+                <InputText @bind-Value="Input.FirstName" id="Input.FirstName" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 1rem; background: #F0EDE4; color: #2B1810; font-family: Georgia, serif;" aria-required="true" placeholder="Ditt förnamn"/>
+                <ValidationMessage For="() => Input.FirstName" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;"/>
+            </div>
+
+            <div>
+                <label for="Input.LastName" style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Efternamn</label>
+                <InputText @bind-Value="Input.LastName" id="Input.LastName" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 1rem; background: #F0EDE4; color: #2B1810; font-family: Georgia, serif;" aria-required="true" placeholder="Ditt efternamn"/>
+                <ValidationMessage For="() => Input.LastName" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;"/>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="Input.Password" style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Lösenord</label>
+            <InputText type="password" @bind-Value="Input.Password" id="Input.Password" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 1rem; background: #F0EDE4; color: #2B1810; font-family: Georgia, serif;" autocomplete="new-password" aria-required="true" placeholder="Välj ett säkert lösenord"/>
+            <ValidationMessage For="() => Input.Password" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;"/>
+            
+            <div style="background: #E8E1D6; border: 1px solid #B09B7C; border-radius: 0.25rem; padding: 1rem; margin-top: 0.75rem;">
+                <h4 style="color: #2B1810; margin: 0 0 0.75rem 0; font-size: 0.875rem; font-weight: 600; font-family: Georgia, serif;">Lösenordskrav:</h4>
+                <ul style="color: #5C4A3A; font-size: 0.8125rem; margin: 0; padding-left: 1.25rem; font-family: Georgia, serif;">
+                    <li>Minst 6 tecken långt</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="Input.ConfirmPassword" style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Bekräfta lösenord</label>
+            <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 1rem; background: #F0EDE4; color: #2B1810; font-family: Georgia, serif;"
+                       autocomplete="new-password" aria-required="true" placeholder="Upprepa ditt lösenord"/>
+            <ValidationMessage For="() => Input.ConfirmPassword" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;"/>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <div style="background: #E8E1D6; border: 1px solid #B09B7C; border-radius: 0.25rem; padding: 1.5rem;">
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <InputCheckbox @bind-Value="Input.AcceptStatutes" id="Input.AcceptStatutes" 
+                                   style="width: 1.125rem; height: 1.125rem; margin-top: 0.125rem; flex-shrink: 0;" />
+                    <div style="flex: 1;">
+                        <label for="Input.AcceptStatutes" style="font-weight: 600; color: #2B1810; font-size: 1rem; cursor: pointer; display: block; margin-bottom: 0.5rem; font-family: Georgia, serif;">
+                            Jag accepterar Gyllene Droppens stadgar <span style="color: #EF4444;">*</span>
+                        </label>
+                        <p style="margin: 0; font-size: 0.875rem; color: #5C4A3A; line-height: 1.4; font-family: Georgia, serif;">
+                            Som medlem i Gyllene Droppen förbinder du dig att följa föreningens stadgar och regler. 
+                            Du kan läsa de fullständiga stadgarna på vår hemsida eller begära en kopia via e-post.
+                        </p>
+                    </div>
+                </div>
+                <ValidationMessage For="() => Input.AcceptStatutes" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.5rem; display: block; font-family: Georgia, serif;" />
+            </div>
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 0.875rem 1.5rem; background: #8B4513; color: white; border: none; border-radius: 0.375rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s ease; font-family: Georgia, serif; margin-top: 1rem;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+            Registrera konto
+        </button>
+    </EditForm>
+
+    <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #B09B7C;">
+        <p style="margin: 0; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">
+            Har du redan ett konto? 
+            <a href="@NavigationManager.GetUriWithQueryParameters("/konto/logga-in", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl })" style="color: #8B4513; text-decoration: none; font-weight: 600;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">Logga in här</a>
+        </p>
     </div>
-
-    <div>
-        <InputText type="password" @bind-Value="Input.ConfirmPassword" id="Input.ConfirmPassword"
-                   autocomplete="new-password" aria-required="true" placeholder="lösenord"/>
-        <label for="Input.ConfirmPassword">Bekräfta lösenord</label>
-        <ValidationMessage For="() => Input.ConfirmPassword"/>
-    </div>
-
-    <button type="submit">Registrera</button>
-</EditForm>
+</div>
 
 @code {
     private IEnumerable<IdentityError>? identityErrors;
@@ -59,6 +162,17 @@
     [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
     private string? Message => identityErrors is null ? null : $"Fel: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is already authenticated
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            // Redirect to home or return URL if already logged in
+            NavigationManager.NavigateTo(ReturnUrl ?? "/");
+        }
+    }
 
     public async Task RegisterUser(EditContext editContext)
     {
@@ -127,6 +241,16 @@
         [Display(Name = "E-postadress")]
         public string Email { get; set; } = "";
 
+        [Required(ErrorMessage = "Förnamn är obligatoriskt.")]
+        [StringLength(50, ErrorMessage = "Förnamn får inte vara längre än 50 tecken.")]
+        [Display(Name = "Förnamn")]
+        public string FirstName { get; set; } = "";
+
+        [Required(ErrorMessage = "Efternamn är obligatoriskt.")]
+        [StringLength(50, ErrorMessage = "Efternamn får inte vara längre än 50 tecken.")]
+        [Display(Name = "Efternamn")]
+        public string LastName { get; set; } = "";
+
         [Required(ErrorMessage = "Lösenord är obligatoriskt.")]
         [StringLength(100, ErrorMessage = "{0} måste vara minst {2} och högst {1} tecken långt.", MinimumLength = 6)]
         [DataType(DataType.Password)]
@@ -137,6 +261,11 @@
         [Display(Name = "Bekräfta lösenord")]
         [Compare("Password", ErrorMessage = "Lösenorden stämmer inte överens.")]
         public string ConfirmPassword { get; set; } = "";
+
+        [Required(ErrorMessage = "Du måste acceptera stadgarna för att kunna registrera dig.")]
+        [Range(typeof(bool), "true", "true", ErrorMessage = "Du måste acceptera stadgarna för att kunna registrera dig.")]
+        [Display(Name = "Acceptera stadgar")]
+        public bool AcceptStatutes { get; set; } = false;
     }
 
 }

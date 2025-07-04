@@ -1,0 +1,26 @@
+@namespace GylleneDroppen.Blazor.Components.Shared
+
+<div class="golden-card-wrapper" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; background-color: #F5F5DC;">
+    <div class="golden-card" style="background-color: #F5F5DC; border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); padding: 4rem 2.5rem 2rem; width: 100%; max-width: 450px; position: relative;">
+        <div class="golden-card-inner" style="position: relative; padding: 3rem 1.5rem 1.5rem; background-color: #F5F5DC; border: 4px double #3E2723; border-radius: 12px; text-align: center;">
+            <span class="golden-card-logo" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background-color: #F5F5DC; color: #D4AF37; font-family: 'Great Vibes', cursive; font-weight: bold; font-size: 2.5rem; padding: 0 1.5rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">GD</span>
+            <div class="golden-card-content" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <h1 class="golden-card-title" style="text-align: center; color: #3E2723; font-size: 2.25rem; font-family: Georgia, 'Times New Roman', serif; font-weight: normal; margin: 0 0 1rem 0;">Gyllene Droppen</h1>
+                @ChildContent
+                <hr class="golden-card-divider" style="margin: 0.75rem 0; border: none; border-top: 1px solid #3E2723;" />
+                <p class="golden-card-follow" style="text-align: center; color: #3E2723; margin: 0; font-size: 1rem;">Följ eller kontakta oss</p>
+                <SocialLinks />
+                <footer class="golden-card-footer" style="margin-top: 1rem;">
+                    <p style="font-size: 0.75rem; text-align: center; color: #3E2723; margin: 0;">
+                        © @DateTime.Now.Year Gyllene Droppen
+                    </p>
+                </footer>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

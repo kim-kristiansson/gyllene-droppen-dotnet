@@ -1,0 +1,356 @@
+@page "/admin/whiskytyper"
+@using GylleneDroppen.Application.Interfaces.Services
+@using GylleneDroppen.Application.Dtos.WhiskyMetadata
+@using Microsoft.AspNetCore.Authorization
+@inject IWhiskyMetadataService WhiskyMetadataService
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Policy = "AdminOnly")]
+@rendermode InteractiveServer
+
+<PageTitle>Hantera Whiskytyper</PageTitle>
+
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+    <h1 style="font-size: 2.25rem; color: #2B1810; margin: 0; font-weight: 600;">🥃 Hantera Whiskytyper</h1>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <span style="color: #5D4037; font-weight: 600;">Totalt: @whiskyTypes.Count typer</span>
+        <button @onclick="ShowCreateForm" class="btn btn-primary" style="background: #8B4513; border: 1px solid #8B4513; color: white; padding: 0.75rem 1.5rem; border-radius: 0.375rem; font-weight: 600; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#6B2C0F';" onmouseout="this.style.background='#8B4513';">
+            ➕ Lägg till ny typ
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div style="padding: 1rem 1.5rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444;" : "background: rgba(74, 124, 78, 0.15); border: 1px solid #4A7C4E; color: #4A7C4E;")">
+        <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+        <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0; opacity: 0.8; transition: opacity 0.2s ease;">✕</button>
+    </div>
+}
+
+    @if (showCreateForm)
+    {
+        <div class="form-container">
+            <h3>@(editingType != null ? "Redigera Whiskytyp" : "Lägg till Ny Whiskytyp")</h3>
+            <EditForm Model="typeDto" OnValidSubmit="SubmitTypeAsync" class="form">
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="validation-message"/>
+
+                <div class="form-field">
+                    <label class="form-label">Namn: <span class="required">*</span></label>
+                    <InputText @bind-Value="typeDto.Name" class="form-input" placeholder="T.ex. Single Malt" />
+                    <ValidationMessage For="() => typeDto.Name" class="validation-message" />
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Beskrivning:</label>
+                    <InputTextArea @bind-Value="typeDto.Description" rows="3" class="form-textarea" 
+                                   placeholder="Beskriv whiskytypen och dess egenskaper..." />
+                    <ValidationMessage For="() => typeDto.Description" class="validation-message" />
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Ursprungsland:</label>
+                    <InputSelect @bind-Value="selectedOriginCountryIdString" @bind-Value:after="OnOriginCountryChanged" class="form-input">
+                        <option value="" disabled>Välj ursprungsland (valfritt)</option>
+                        <option value="">Inget specifikt land (universell typ)</option>
+                        @foreach (var country in countries.OrderBy(c => c.Name))
+                        {
+                            <option value="@country.Id">@country.Name</option>
+                        }
+                    </InputSelect>
+                    <div class="form-help">Lämna tomt för universella whiskytyper som kan göras överallt</div>
+                </div>
+
+                <div class="form-field">
+                    <label class="form-label">Ursprungsregion:</label>
+                    <InputSelect @bind-Value="selectedOriginRegionIdString" class="form-input" disabled="@(selectedOriginCountryId == Guid.Empty)">
+                        <option value="" disabled>@(selectedOriginCountryId == Guid.Empty ? "Välj land först" : "Välj ursprungsregion (valfritt)")</option>
+                        <option value="">Ingen specifik region</option>
+                        @foreach (var region in GetFilteredOriginRegions())
+                        {
+                            <option value="@region.Id">@region.Name</option>
+                        }
+                    </InputSelect>
+                    <div class="form-help">Valfritt: Specificera region om whiskytypen är från en viss region</div>
+                </div>
+
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner"></span>
+                            <span>@(editingType != null ? "Uppdaterar..." : "Skapar...")</span>
+                        }
+                        else
+                        {
+                            <span>@(editingType != null ? "💾 Uppdatera" : "➕ Skapa")</span>
+                        }
+                    </button>
+                    <button type="button" @onclick="CancelForm" class="btn btn-secondary">
+                        Avbryt
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            Laddar whiskytyper...
+        </div>
+    }
+    else if (whiskyTypes.Any())
+    {
+        <div class="items-grid">
+            @foreach (var type in whiskyTypes.OrderBy(t => t.Name))
+            {
+                <div class="item-card">
+                    <div class="item-header">
+                        <h3 class="item-name">@type.Name</h3>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(type.Description))
+                    {
+                        <div class="item-description">@type.Description</div>
+                    }
+
+                    @if (type.OriginCountryName != null || type.OriginRegionName != null)
+                    {
+                        <div class="item-origin">
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Ursprung:</strong>
+                                @if (type.OriginCountryName != null)
+                                {
+                                    <span style="background: #8B4513; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">🌍 @type.OriginCountryName</span>
+                                }
+                                @if (type.OriginRegionName != null)
+                                {
+                                    <span style="background: #DFD9CE; color: #2B1810; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; border: 1px solid #B09B7C;">📍 @type.OriginRegionName</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="item-origin">
+                            <div style="margin-bottom: 0.5rem;">
+                                <span style="background: #6B5D54; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">🌐 Universell typ</span>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="item-meta">
+                        <small>Skapat: @type.CreatedDate.ToString("yyyy-MM-dd")</small>
+                        @if (type.UpdatedDate.HasValue)
+                        {
+                            <small>Uppdaterat: @type.UpdatedDate.Value.ToString("yyyy-MM-dd")</small>
+                        }
+                    </div>
+
+                    <div class="item-actions">
+                        <button @onclick="() => EditType(type)" class="btn btn-outline-primary btn-sm">
+                            ✏️ Redigera
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🥃</div>
+            <h3>Inga whiskytyper hittades</h3>
+            <p>Börja med att lägga till din första whiskytyp.</p>
+            <button @onclick="ShowCreateForm" class="btn btn-primary">
+                ➕ Lägg till första typen
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<WhiskyTypeDto> whiskyTypes = new();
+    private List<CountryDto> countries = new();
+    private List<RegionDto> regions = new();
+    private CreateWhiskyTypeRequestDto typeDto = new();
+    private WhiskyTypeDto? editingType = null;
+    private Guid selectedOriginCountryId = Guid.Empty;
+    private Guid selectedOriginRegionId = Guid.Empty;
+    private string? selectedOriginCountryIdString = "";
+    private string? selectedOriginRegionIdString = "";
+    private string statusMessage = string.Empty;
+    private bool isLoading = true;
+    private bool isProcessing = false;
+    private bool showCreateForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        await LoadMetadata();
+        await LoadWhiskyTypes();
+    }
+
+    private async Task LoadMetadata()
+    {
+        try
+        {
+            countries = await WhiskyMetadataService.GetAllCountriesAsync();
+            regions = await WhiskyMetadataService.GetAllRegionsAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid laddning av metadata: {ex.Message}";
+        }
+    }
+
+    private async Task LoadWhiskyTypes()
+    {
+        try
+        {
+            isLoading = true;
+            whiskyTypes = await WhiskyMetadataService.GetAllWhiskyTypesAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: Kunde inte ladda whiskytyper. {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowCreateForm()
+    {
+        editingType = null;
+        typeDto = new CreateWhiskyTypeRequestDto();
+        selectedOriginCountryId = Guid.Empty;
+        selectedOriginRegionId = Guid.Empty;
+        selectedOriginCountryIdString = "";
+        selectedOriginRegionIdString = "";
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void EditType(WhiskyTypeDto type)
+    {
+        editingType = type;
+        typeDto = new CreateWhiskyTypeRequestDto
+        {
+            Name = type.Name,
+            Description = type.Description
+        };
+        selectedOriginCountryId = type.OriginCountryId ?? Guid.Empty;
+        selectedOriginRegionId = type.OriginRegionId ?? Guid.Empty;
+        selectedOriginCountryIdString = type.OriginCountryId?.ToString() ?? "";
+        selectedOriginRegionIdString = type.OriginRegionId?.ToString() ?? "";
+        showCreateForm = true;
+        StateHasChanged();
+    }
+
+    private void CancelForm()
+    {
+        showCreateForm = false;
+        editingType = null;
+        typeDto = new();
+        selectedOriginCountryId = Guid.Empty;
+        selectedOriginRegionId = Guid.Empty;
+        selectedOriginCountryIdString = "";
+        selectedOriginRegionIdString = "";
+        StateHasChanged();
+    }
+
+    private void OnOriginCountryChanged()
+    {
+        selectedOriginCountryId = string.IsNullOrEmpty(selectedOriginCountryIdString) ? Guid.Empty : Guid.Parse(selectedOriginCountryIdString);
+        selectedOriginRegionId = Guid.Empty;
+        selectedOriginRegionIdString = "";
+        StateHasChanged();
+    }
+
+    private IEnumerable<RegionDto> GetFilteredOriginRegions()
+    {
+        if (selectedOriginCountryId == Guid.Empty)
+            return Enumerable.Empty<RegionDto>();
+        
+        return regions.Where(r => r.CountryId == selectedOriginCountryId).OrderBy(r => r.Name);
+    }
+
+    private async Task SubmitTypeAsync()
+    {
+        if (isProcessing) return;
+
+        try
+        {
+            isProcessing = true;
+            statusMessage = string.Empty;
+
+            // Convert string selections to Guid values
+            selectedOriginCountryId = string.IsNullOrEmpty(selectedOriginCountryIdString) ? Guid.Empty : Guid.Parse(selectedOriginCountryIdString);
+            selectedOriginRegionId = string.IsNullOrEmpty(selectedOriginRegionIdString) ? Guid.Empty : Guid.Parse(selectedOriginRegionIdString);
+
+            if (editingType != null)
+            {
+                var updateDto = new UpdateWhiskyTypeRequestDto
+                {
+                    Name = typeDto.Name,
+                    Description = typeDto.Description,
+                    OriginCountryId = selectedOriginCountryId == Guid.Empty ? null : selectedOriginCountryId,
+                    OriginRegionId = selectedOriginRegionId == Guid.Empty ? null : selectedOriginRegionId
+                };
+                
+                var updated = await WhiskyMetadataService.UpdateWhiskyTypeAsync(editingType.Id, updateDto);
+                if (updated != null)
+                {
+                    statusMessage = "Whiskytyp uppdaterad framgångsrikt!";
+                }
+                else
+                {
+                    statusMessage = "Fel: Kunde inte uppdatera whiskytyp.";
+                }
+            }
+            else
+            {
+                typeDto.OriginCountryId = selectedOriginCountryId == Guid.Empty ? null : selectedOriginCountryId;
+                typeDto.OriginRegionId = selectedOriginRegionId == Guid.Empty ? null : selectedOriginRegionId;
+                
+                var created = await WhiskyMetadataService.CreateWhiskyTypeAsync(typeDto);
+                if (created != null)
+                {
+                    statusMessage = "Whiskytyp skapad framgångsrikt!";
+                }
+                else
+                {
+                    statusMessage = "Fel: Kunde inte skapa whiskytyp.";
+                }
+            }
+
+            if (!statusMessage.StartsWith("Fel:"))
+            {
+                await LoadWhiskyTypes();
+                CancelForm();
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+}

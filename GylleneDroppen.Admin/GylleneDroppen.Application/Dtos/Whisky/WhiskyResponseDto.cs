@@ -7,8 +7,11 @@ public class WhiskyResponseDto
     public string Distillery { get; set; } = string.Empty;
     public int? Age { get; set; }
     public decimal Abv { get; set; }
+    public Guid? RegionId { get; set; }
     public string Region { get; set; } = string.Empty;
+    public Guid? WhiskyTypeId { get; set; }
     public string Type { get; set; } = string.Empty;
+    // Country comes through Region
     public string Country { get; set; } = string.Empty;
     public string? Color { get; set; }
     public string? Nose { get; set; }

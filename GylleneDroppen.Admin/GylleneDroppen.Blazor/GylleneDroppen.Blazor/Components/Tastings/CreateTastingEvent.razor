@@ -2,82 +2,404 @@
 @using GylleneDroppen.Application.Interfaces.Services
 @using GylleneDroppen.Application.Dtos.TastingEvent
 @using GylleneDroppen.Application.Dtos.Whisky
+@using GylleneDroppen.Application.Dtos.Address
+@using GylleneDroppen.Application.Dtos.WhiskyMetadata
 @using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
 @inject ITastingEventService TastingEventService
 @inject IWhiskyService WhiskyService
+@inject IWhiskyMetadataService WhiskyMetadataService
+@inject IAddressService AddressService
 @inject NavigationManager NavigationManager
 
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<button @onclick="GoBack">Tillbaka</button>
-
-@if (!string.IsNullOrEmpty(statusMessage))
-{
-    <text>
-        @(statusMessage.StartsWith("Fel:")
-            ? $"Fel: {statusMessage}"
-            : $"Info: {statusMessage}")
-    </text>
-    <button @onclick="() => statusMessage = string.Empty">Stäng</button>
-}
-
-<EditForm Model="eventDto" OnValidSubmit="SubmitCreateEventAsync">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    Titel:
-    <InputText @bind-value="eventDto.Title" />
-    <ValidationMessage For="() => eventDto.Title" />
-
-    Beskrivning:
-    <InputTextArea @bind-value="eventDto.Description" rows="3" />
-    <ValidationMessage For="() => eventDto.Description" />
-
-    Datum och tid:
-    <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="eventDto.EventDate" />
-    <ValidationMessage For="() => eventDto.EventDate" />
-
-    Plats:
-    <InputText @bind-value="eventDto.Location" />
-    <ValidationMessage For="() => eventDto.Location" />
-
-    Max antal deltagare:
-    <InputNumber @bind-value="eventDto.MaxParticipants" />
-    <ValidationMessage For="() => eventDto.MaxParticipants" />
-
-    Publikt event:
-    <InputCheckbox @bind-value="eventDto.IsPublic" />
-
-    <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown" />
-    <button type="button" @onclick="SearchWhiskies">Sök</button>
-
-    @if (availableWhiskies.Any())
-    {
-        <text>Tillgängliga whiskies:</text>
-        @foreach (var whisky in availableWhiskies)
-        {
-            <text>@($"{whisky.Name} - {whisky.Distillery} ({whisky.Country})")</text>
-            <button type="button" @onclick="() => AddWhisky(whisky)">Lägg till</button>
+<style>
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Mobile responsive */
+    @@media (max-width: 768px) {
+        .create-header {
+            flex-direction: column !important;
+            gap: 1rem !important;
+            text-align: center !important;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .whisky-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .whisky-search {
+            flex-direction: column !important;
+        }
+        
+        .filter-ranges {
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+        
+        .filter-ranges > div {
+            justify-content: flex-start !important;
+        }
+        
+        .form-actions {
+            flex-direction: column-reverse !important;
+        }
+        
+        .form-actions button {
+            width: 100% !important;
         }
     }
-
-    @if (selectedWhiskies.Any())
-    {
-        <text>Valda whiskies (@selectedWhiskies.Count):</text>
-        @foreach (var whisky in selectedWhiskies)
-        {
-            <text>@($"{whisky.Name} - {whisky.Distillery}")</text>
-            <button type="button" @onclick="() => RemoveWhisky(whisky)">Ta bort</button>
+    
+    @@media (max-width: 480px) {
+        .whisky-item {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 0.5rem !important;
+        }
+        
+        .whisky-action-btn {
+            align-self: center !important;
+            width: auto !important;
         }
     }
+</style>
 
-    <button type="submit" disabled="@isProcessing">
-        @(isProcessing ? "Skapar..." : "Skapa event")
-    </button>
+<PageTitle>Skapa Provning</PageTitle>
 
-    <button type="button" @onclick="GoBack">Avbryt</button>
-</EditForm>
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+<div style="max-width: 900px; margin: 0 auto; padding: 0 1rem;">
+    <div class="create-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 2.25rem; color: #2B1810; margin: 0; font-weight: 600; font-family: Georgia, serif;">📅 Skapa Provning</h1>
+        <button @onclick="GoBack" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">← Tillbaka till översikt</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div style="padding: 1rem 1.5rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444;" : "background: rgba(74, 124, 78, 0.15); border: 1px solid #4A7C4E; color: #4A7C4E;")">
+            <span style="font-family: Georgia, serif;"><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0.25rem; opacity: 0.8; transition: opacity 0.2s ease; font-family: Georgia, serif;" onmouseover="this.style.opacity='1';" onmouseout="this.style.opacity='0.8';">✕</button>
+        </div>
+    }
+
+    <EditForm Model="eventDto" OnValidSubmit="SubmitCreateEventAsync">
+        <DataAnnotationsValidator/>
+        <ValidationSummary style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; border-radius: 0.375rem; padding: 1rem; margin-bottom: 1.5rem; color: #EF4444; font-size: 0.875rem; font-family: Georgia, serif;"/>
+
+        <fieldset style="margin-bottom: 2rem; padding: 1rem; background: #DAD3C7; border-radius: 0.5rem; border: 1px solid #B09B7C; position: relative;">
+            <legend style="font-family: Georgia, serif; font-size: 1.125rem; font-weight: 600; color: #2B1810; padding: 0 0.75rem; background: #8B4513; color: white; border-radius: 0.25rem; border: 1px solid #B09B7C;">ℹ️ Grundinformation</legend>
+            
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Titel: <span style="color: #EF4444;">*</span></label>
+                <InputText @bind-value="eventDto.Title" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;" placeholder="T.ex. Highland Single Malts Evening" />
+                <ValidationMessage For="() => eventDto.Title" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Beskrivning:</label>
+                <InputTextArea @bind-value="eventDto.Description" rows="4" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease; min-height: 80px; resize: vertical;" 
+                               placeholder="Beskriv provningen, vad deltagarna kan förvänta sig..." />
+                <ValidationMessage For="() => eventDto.Description" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+            </div>
+
+            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Starttid: <span style="color: #EF4444;">*</span></label>
+                    <input type="datetime-local" @bind="eventDto.EventDate" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;" />
+                    <ValidationMessage For="() => eventDto.EventDate" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+                    <div style="background: rgba(139, 69, 19, 0.1); border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: #8B4513; margin-top: 0.5rem; font-family: Georgia, serif;">
+                        💡 Välj datum och tid för när provningen ska börja.
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Sluttid:</label>
+                    <input type="datetime-local" @bind="eventDto.EndTime" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;" />
+                    <ValidationMessage For="() => eventDto.EndTime" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+                    <div style="background: rgba(139, 69, 19, 0.1); border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: #8B4513; margin-top: 0.5rem; font-family: Georgia, serif;">
+                        💡 Valfritt - när provningen förväntas avsluta.
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="font-weight: 600; color: #2B1810; font-family: Georgia, serif; font-size: 0.875rem;">Adress:</label>
+                    <button type="button" @onclick="ToggleCreateAddress" style="padding: 0.375rem 0.75rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.25rem; font-size: 0.75rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+                        @(showCreateAddress ? "❌ Avbryt" : "➕ Skapa ny adress")
+                    </button>
+                </div>
+                
+                @if (!showCreateAddress)
+                {
+                    <InputSelect @bind-Value="eventDto.AddressId" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;">
+                        <option value="">-- Välj adress eller skriv egen plats nedan --</option>
+                        @foreach (var address in availableAddresses)
+                        {
+                            <option value="@address.Id">@address.Name - @address.FullAddress</option>
+                        }
+                    </InputSelect>
+                    <div style="background: rgba(139, 69, 19, 0.1); border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: #8B4513; margin-top: 0.5rem; font-family: Georgia, serif;">
+                        💡 Välj en sparad adress eller fyll i egen plats nedan.
+                    </div>
+                }
+                else
+                {
+                    <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1rem; margin-top: 0.5rem;">
+                        <h4 style="margin: 0 0 1rem 0; color: #2B1810; font-family: Georgia, serif; font-size: 1rem;">Skapa ny adress</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.8125rem;">Namn <span style="color: #EF4444;">*</span></label>
+                            <input type="text" @bind="newAddress.Name" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" placeholder="T.ex. SH Art Hall" />
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.8125rem;">Gatuadress <span style="color: #EF4444;">*</span></label>
+                                <input type="text" @bind="newAddress.StreetAddress" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" placeholder="T.ex. Storgatan 1" />
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.8125rem;">Postnummer</label>
+                                <input type="text" @bind="newAddress.PostalCode" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" placeholder="T.ex. 331 30" />
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.8125rem;">Stad <span style="color: #EF4444;">*</span></label>
+                            <input type="text" @bind="newAddress.City" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;" placeholder="T.ex. Värnamo" />
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.8125rem;">Beskrivning</label>
+                            <textarea @bind="newAddress.Description" rows="2" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; resize: vertical;" placeholder="Eventuell beskrivning..."></textarea>
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                            <button type="button" @onclick="ToggleCreateAddress" style="padding: 0.5rem 1rem; background: #DFD9CE; border: 1px solid #B09B7C; color: #2B1810; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Avbryt</button>
+                            <button type="button" @onclick="CreateAndSelectAddress" disabled="@isCreatingAddress" style="padding: 0.5rem 1rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.25rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; @(isCreatingAddress ? "opacity: 0.6; cursor: not-allowed;" : "")" onmouseover="if (!@isCreatingAddress) { this.style.background='#6B3410'; }" onmouseout="if (!@isCreatingAddress) { this.style.background='#8B4513'; }">
+                                @if (isCreatingAddress)
+                                {
+                                    <span style="display: inline-block; width: 0.75rem; height: 0.75rem; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-right: 0.5rem;"></span>
+                                }
+                                Skapa och välj
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Max antal deltagare:</label>
+                <InputNumber @bind-value="eventDto.MaxParticipants" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;" placeholder="T.ex. 20" />
+                <ValidationMessage For="() => eventDto.MaxParticipants" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
+                <div style="background: rgba(139, 69, 19, 0.1); border: 1px solid rgba(139, 69, 19, 0.2); border-radius: 0.375rem; padding: 0.75rem 1rem; font-size: 0.8125rem; color: #8B4513; margin-top: 0.5rem; font-family: Georgia, serif;">
+                    💡 Lämna tomt för obegränsat antal deltagare.
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 1.25rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem;">
+                    <InputCheckbox @bind-value="eventDto.IsPublic" style="width: 1.125rem; height: 1.125rem; cursor: pointer;" />
+                    <label style="font-size: 0.875rem; color: #2B1810; font-weight: 500; cursor: pointer; font-family: Georgia, serif;">Publikt event (synligt för alla medlemmar)</label>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset style="margin-bottom: 2rem; padding: 1rem; background: #DAD3C7; border-radius: 0.5rem; border: 1px solid #B09B7C; position: relative;">
+            <legend style="font-family: Georgia, serif; font-size: 1.125rem; font-weight: 600; color: white; padding: 0 0.75rem; background: linear-gradient(135deg, #D2691E 0%, #CD853F 100%); border: 1px solid #B09B7C; border-radius: 0.25rem;">🥃 Välj Whiskies</legend>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #B09B7C; cursor: pointer;" @onclick="ToggleFilters">
+                <h3 style="font-family: Georgia, serif; font-size: 1.125rem; color: #8B4513; margin: 0; font-weight: 600;">🔍 Sök och filtrera</h3>
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: #8B4513;">
+                    <span style="font-size: 0.875rem;">@(showFilters ? "Dölj" : "Visa") filter</span>
+                    <span style="font-size: 1.25rem; transition: transform 0.2s ease; transform: @(showFilters ? "rotate(180deg)" : "rotate(0deg)");">▼</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; align-items: center;">
+                <input type="text" @bind="searchDto.SearchTerm" @oninput="OnSearchChanged"
+                       placeholder="Sök på namn, destilleri eller region..."
+                       style="flex: 1; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                <button type="button" @onclick="ClearSearch" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Rensa</button>
+            </div>
+            
+            @if (showFilters)
+            {
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 500; color: #2B1810; font-size: 0.875rem; font-family: Georgia, serif;">Land:</label>
+                        <select @bind="searchDto.Country" @bind:after="OnFilterChanged" style="width: 100%; padding: 0.5rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.875rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                            <option value="">Alla länder</option>
+                            @foreach (var country in countries.OrderBy(c => c.Name))
+                            {
+                                <option value="@country.Name">@country.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 500; color: #2B1810; font-size: 0.875rem; font-family: Georgia, serif;">Region:</label>
+                        <select @bind="searchDto.Region" @bind:after="OnFilterChanged" style="width: 100%; padding: 0.5rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.875rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                            <option value="">Alla regioner</option>
+                            @foreach (var region in regions.OrderBy(r => r.Name))
+                            {
+                                <option value="@region.Name">@region.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-weight: 500; color: #2B1810; font-size: 0.875rem; font-family: Georgia, serif;">Typ:</label>
+                        <select @bind="searchDto.Type" @bind:after="OnFilterChanged" style="width: 100%; padding: 0.5rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.875rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                            <option value="">Alla typer</option>
+                            @foreach (var type in whiskyTypes.OrderBy(t => t.Name))
+                            {
+                                <option value="@type.Name">@type.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+            <div class="filter-ranges" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <label style="font-weight: 500; color: #2B1810; font-size: 0.8125rem; font-family: Georgia, serif; white-space: nowrap; min-width: 50px;">Ålder:</label>
+                        <input type="number" @bind="searchDto.MinAge" @bind:after="OnFilterChanged" min="0" max="100" placeholder="Min" style="width: 60px; padding: 0.375rem 0.25rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.75rem; background: #DFD9CE; color: #2B1810;">
+                        <span style="color: #6B5D54; font-size: 0.75rem;">-</span>
+                        <input type="number" @bind="searchDto.MaxAge" @bind:after="OnFilterChanged" min="0" max="100" placeholder="Max" style="width: 60px; padding: 0.375rem 0.25rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.75rem; background: #DFD9CE; color: #2B1810;">
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <label style="font-weight: 500; color: #2B1810; font-size: 0.8125rem; font-family: Georgia, serif; white-space: nowrap; min-width: 50px;">ABV:</label>
+                        <input type="number" @bind="searchDto.MinAbv" @bind:after="OnFilterChanged" min="0" max="100" step="0.1" placeholder="Min" style="width: 60px; padding: 0.375rem 0.25rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.75rem; background: #DFD9CE; color: #2B1810;">
+                        <span style="color: #6B5D54; font-size: 0.75rem;">-</span>
+                        <input type="number" @bind="searchDto.MaxAbv" @bind:after="OnFilterChanged" min="0" max="100" step="0.1" placeholder="Max" style="width: 60px; padding: 0.375rem 0.25rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.75rem; background: #DFD9CE; color: #2B1810;">
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <label style="font-weight: 500; color: #2B1810; font-size: 0.8125rem; font-family: Georgia, serif; white-space: nowrap; min-width: 50px;">Pris:</label>
+                        <input type="number" @bind="searchDto.MinPrice" @bind:after="OnFilterChanged" min="0" step="0.01" placeholder="Min" style="width: 70px; padding: 0.375rem 0.25rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.75rem; background: #DFD9CE; color: #2B1810;">
+                        <span style="color: #6B5D54; font-size: 0.75rem;">-</span>
+                        <input type="number" @bind="searchDto.MaxPrice" @bind:after="OnFilterChanged" min="0" step="0.01" placeholder="Max" style="width: 70px; padding: 0.375rem 0.25rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.75rem; background: #DFD9CE; color: #2B1810;">
+                    </div>
+                </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.75rem; background: #DAD3C7; border-radius: 0.375rem;">
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem; min-width: 140px;">
+                        <label style="font-weight: 500; color: #2B1810; font-size: 0.8125rem; font-family: Georgia, serif;">Sortera efter:</label>
+                        <select @bind="searchDto.SortBy" @bind:after="OnFilterChanged" style="width: 100%; padding: 0.375rem 0.5rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 0.8125rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                            <option value="Name">Namn</option>
+                            <option value="Age">Ålder</option>
+                            <option value="Abv">ABV</option>
+                            <option value="Price">Pris</option>
+                            <option value="CreatedDate">Datum tillagt</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: end; gap: 0.5rem; padding-bottom: 0.125rem;">
+                        <input type="checkbox" @bind="searchDto.SortDescending" @bind:after="OnFilterChanged" id="sortDesc" style="width: 1rem; height: 1rem;">
+                        <label for="sortDesc" style="font-weight: 500; color: #2B1810; font-size: 0.8125rem; font-family: Georgia, serif;">Fallande</label>
+                    </div>
+                </div>
+            }
+            
+            @if (searchResult != null)
+            {
+                <div style="text-align: center; margin-top: 1rem; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">
+                    Visar @searchResult.Whiskies.Count av @searchResult.TotalCount whiskies
+                </div>
+            }
+
+            <div class="whisky-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <h3 style="font-weight: 600; color: #2B1810; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #B09B7C; font-family: Georgia, serif;">Tillgängliga Whiskies</h3>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE;">
+                        @if (availableWhiskies.Any())
+                        {
+                            @foreach (var whisky in availableWhiskies)
+                            {
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid #B09B7C; background: #DFD9CE; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(139, 69, 19, 0.05)';" onmouseout="this.style.background='#DFD9CE';">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: #2B1810; font-size: 0.875rem; margin-bottom: 0.25rem;">@whisky.Name</div>
+                                        <div style="color: #6B5D54; font-size: 0.75rem;">@whisky.Distillery (@whisky.Country)</div>
+                                    </div>
+                                    <button type="button" @onclick="() => AddWhisky(whisky)" style="padding: 0.5rem 0.875rem; border: 1px solid #B09B7C; background: #F5F0E8; color: #2B1810; border-radius: 0.25rem; font-size: 0.8125rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#8B4513'; this.style.color='white'; this.style.borderColor='#8B4513';" onmouseout="this.style.background='#F5F0E8'; this.style.color='#2B1810'; this.style.borderColor='#B09B7C';">
+                                        Lägg till
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div style="text-align: center; padding: 2rem; color: #6B5D54; font-style: italic;">
+                                @if (string.IsNullOrWhiteSpace(searchDto.SearchTerm))
+                                {
+                                    <p>Sök efter whiskies att lägga till i provningen.</p>
+                                }
+                                else
+                                {
+                                    <p>Inga whiskies hittades för "@searchDto.SearchTerm".</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="font-weight: 600; color: #2B1810; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #B09B7C; font-family: Georgia, serif; display: flex; justify-content: space-between; align-items: center;">
+                        Valda Whiskies
+                        @if (selectedWhiskies.Any())
+                        {
+                            <span style="background: #8B4513; color: white; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem;">@selectedWhiskies.Count</span>
+                        }
+                    </h3>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DFD9CE;">
+                        @if (selectedWhiskies.Any())
+                        {
+                            @foreach (var whisky in selectedWhiskies)
+                            {
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid #B09B7C; background: #DFD9CE; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(139, 69, 19, 0.05)';" onmouseout="this.style.background='#DFD9CE';">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: #2B1810; font-size: 0.875rem; margin-bottom: 0.25rem;">@whisky.Name</div>
+                                        <div style="color: #6B5D54; font-size: 0.75rem;">@whisky.Distillery</div>
+                                    </div>
+                                    <button type="button" @onclick="() => RemoveWhisky(whisky)" style="padding: 0.5rem 0.875rem; border: 1px solid #EF4444; background: #F5F0E8; color: #EF4444; border-radius: 0.25rem; font-size: 0.8125rem; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#EF4444'; this.style.color='white';" onmouseout="this.style.background='#F5F0E8'; this.style.color='#EF4444';">
+                                        Ta bort
+                                    </button>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div style="text-align: center; padding: 2rem; color: #6B5D54; font-style: italic;">
+                                <p>Inga whiskies valda än. Lägg till whiskies från sökresultaten.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #B09B7C;">
+            <button type="button" @onclick="GoBack" style="padding: 0.875rem 1.5rem; background: #DFD9CE; border: 1px solid #B09B7C; color: #2B1810; border-radius: 0.375rem; font-weight: 600; cursor: pointer; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Avbryt</button>
+            <button type="submit" disabled="@isProcessing" style="padding: 0.875rem 2rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; font-weight: 600; cursor: pointer; font-family: Georgia, serif; transition: all 0.2s ease; position: relative; overflow: hidden; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")" onmouseover="if (!@isProcessing) { this.style.background='#6B3410'; }" onmouseout="if (!@isProcessing) { this.style.background='#8B4513'; }">
+                @if (isProcessing)
+                {
+                    <span style="display: inline-block; width: 1rem; height: 1rem; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-right: 0.5rem;"></span>
+                }
+                @(isProcessing ? "Skapar event..." : "Skapa event")
+            </button>
+        </div>
+    </EditForm>
+</div>
+</div>
 
 @code {
     private CreateTastingEventRequestDto eventDto = new()
@@ -88,26 +410,57 @@
 
     private List<WhiskyResponseDto> availableWhiskies = new();
     private List<WhiskyResponseDto> selectedWhiskies = new();
-    private string whiskySearchTerm = string.Empty;
+    private List<AddressResponseDto> availableAddresses = new();
+    private WhiskySearchDto searchDto = new();
+    private WhiskySearchResultDto? searchResult;
+    private List<CountryDto> countries = new();
+    private List<RegionDto> regions = new();
+    private List<WhiskyTypeDto> whiskyTypes = new();
     private bool isProcessing = false;
     private string statusMessage = string.Empty;
+    
+    // Address creation state
+    private bool showCreateAddress = false;
+    private CreateAddressRequestDto newAddress = new();
+    private bool isCreatingAddress = false;
+    
+    // Filter visibility state
+    private bool showFilters = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            availableAddresses = await AddressService.GetActiveAddressesAsync();
+            await LoadMetadata();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid laddning: {ex.Message}";
+        }
+    }
+    
+    private async Task LoadMetadata()
+    {
+        try
+        {
+            countries = await WhiskyMetadataService.GetAllCountriesAsync();
+            regions = await WhiskyMetadataService.GetAllRegionsAsync();
+            whiskyTypes = await WhiskyMetadataService.GetAllWhiskyTypesAsync();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid laddning av metadata: {ex.Message}";
+        }
+    }
 
     private async Task SearchWhiskies()
     {
-        if (string.IsNullOrWhiteSpace(whiskySearchTerm))
-        {
-            availableWhiskies.Clear();
-            return;
-        }
-
         try
         {
-            var searchResult = await WhiskyService.SearchWhiskiesAsync(new WhiskySearchDto
-            {
-                SearchTerm = whiskySearchTerm,
-                PageSize = 20
-            });
-
+            searchResult = await WhiskyService.SearchWhiskiesAsync(searchDto);
+            
+            // Filter out already selected whiskies
             availableWhiskies = searchResult.Whiskies
                 .Where(w => !selectedWhiskies.Any(s => s.Id == w.Id))
                 .ToList();
@@ -120,12 +473,23 @@
         StateHasChanged();
     }
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private async Task OnSearchChanged(ChangeEventArgs e)
     {
-        if (e.Key == "Enter")
-        {
-            await SearchWhiskies();
-        }
+        searchDto.SearchTerm = e.Value?.ToString() ?? string.Empty;
+        await SearchWhiskies();
+    }
+    
+    private async Task OnFilterChanged()
+    {
+        await SearchWhiskies();
+    }
+    
+    private void ClearSearch()
+    {
+        searchDto = new WhiskySearchDto();
+        searchResult = null;
+        availableWhiskies.Clear();
+        StateHasChanged();
     }
 
     private void AddWhisky(WhiskyResponseDto whisky)
@@ -144,9 +508,8 @@
         selectedWhiskies.Remove(whisky);
         eventDto.WhiskyIds.Remove(whisky.Id);
 
-        if (!string.IsNullOrWhiteSpace(whiskySearchTerm) &&
-            (whisky.Name.Contains(whiskySearchTerm, StringComparison.OrdinalIgnoreCase) ||
-             whisky.Distillery.Contains(whiskySearchTerm, StringComparison.OrdinalIgnoreCase)))
+        // Re-add to available whiskies if it matches current search
+        if (searchResult != null && searchResult.Whiskies.Any(w => w.Id == whisky.Id))
         {
             availableWhiskies.Add(whisky);
         }
@@ -162,7 +525,7 @@
         try
         {
             var createdEvent = await TastingEventService.CreateTastingEventAsync(eventDto);
-            NavigationManager.NavigateTo($"/tastings/{createdEvent.Id}");
+            NavigationManager.NavigateTo($"/provningar/{createdEvent.Id}");
         }
         catch (Exception ex)
         {
@@ -178,5 +541,62 @@
     private void GoBack()
     {
         NavigationManager.NavigateTo("/provningar");
+    }
+    
+    private void ToggleCreateAddress()
+    {
+        showCreateAddress = !showCreateAddress;
+        if (showCreateAddress)
+        {
+            newAddress = new CreateAddressRequestDto();
+        }
+        StateHasChanged();
+    }
+    
+    private async Task CreateAndSelectAddress()
+    {
+        if (string.IsNullOrWhiteSpace(newAddress.Name) || 
+            string.IsNullOrWhiteSpace(newAddress.StreetAddress) || 
+            string.IsNullOrWhiteSpace(newAddress.City))
+        {
+            statusMessage = "Fel: Namn, gatuadress och stad är obligatoriska fält.";
+            return;
+        }
+        
+        try
+        {
+            isCreatingAddress = true;
+            statusMessage = string.Empty;
+            
+            var createdAddress = await AddressService.CreateAddressAsync(newAddress);
+            
+            // Add to available addresses list
+            availableAddresses.Add(createdAddress);
+            availableAddresses = availableAddresses.OrderBy(a => a.Name).ToList();
+            
+            // Select the newly created address
+            eventDto.AddressId = createdAddress.Id;
+            
+            // Reset form and hide it
+            showCreateAddress = false;
+            newAddress = new CreateAddressRequestDto();
+            
+            statusMessage = $"Adressen '{createdAddress.Name}' har skapats och valts för eventet.";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid skapande av adress: {ex.Message}";
+        }
+        finally
+        {
+            isCreatingAddress = false;
+            StateHasChanged();
+        }
+    }
+    
+    private void ToggleFilters()
+    {
+        showFilters = !showFilters;
+        StateHasChanged();
     }
 }

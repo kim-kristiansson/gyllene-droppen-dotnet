@@ -1,0 +1,17 @@
+@inherits LayoutComponentBase
+
+<div class="elegant-layout">
+    <div class="elegant-card">
+        <span class="elegant-logo">GD</span>
+        <div class="elegant-content">
+            <h1 class="elegant-title">Gyllene Droppen</h1>
+            @Body
+            <hr class="elegant-divider" />
+            <p class="elegant-follow">Följ eller kontakta oss</p>
+            <SocialLinks />
+            <footer class="elegant-footer">
+                <p>© @DateTime.Now.Year Gyllene Droppen</p>
+            </footer>
+        </div>
+    </div>
+</div>
