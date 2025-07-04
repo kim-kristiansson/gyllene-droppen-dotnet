@@ -1,3 +1,5 @@
+using GylleneDroppen.Application.Dtos.Address;
+
 namespace GylleneDroppen.Application.Dtos.TastingEvent;
 
 public class TastingEventDto
@@ -6,7 +8,10 @@ public class TastingEventDto
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTime EventDate { get; set; }
+    public DateTime? EndTime { get; set; }
     public string? Location { get; set; }
+    public Guid? AddressId { get; set; }
+    public AddressResponseDto? Address { get; set; }
     public int? MaxParticipants { get; set; }
     public bool IsPublic { get; set; }
     public string OrganizedByUserName { get; set; } = string.Empty;

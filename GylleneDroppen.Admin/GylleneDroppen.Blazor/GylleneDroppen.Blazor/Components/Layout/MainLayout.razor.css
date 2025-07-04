@@ -1,5 +1,6 @@
 .main-layout {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
     background-color: var(--color-background);
     /* Gentle elegant atmosphere */
@@ -7,43 +8,18 @@
         linear-gradient(45deg, transparent 49%, rgba(139, 125, 107, 0.008) 50%, transparent 51%);
 }
 
-.sidebar {
-    width: 320px;
-    min-height: 100vh;
+/* Clean Navbar */
+.navbar-top {
     background: var(--color-surface);
-    box-shadow: 4px 0 16px rgba(43, 24, 16, 0.2);
+    box-shadow: 0 2px 8px rgba(43, 24, 16, 0.1);
     position: sticky;
     top: 0;
-    overflow-y: auto;
-    flex-shrink: 0;
-    border-right: 3px solid var(--color-gold-dark);
-    position: relative;
+    z-index: 100;
+    border-bottom: 1px solid var(--color-border);
+    width: 100%;
 }
 
-.sidebar::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* Elegant parchment texture */
-    background-image: 
-        /* Fine paper grain */
-        linear-gradient(0deg, transparent 49%, rgba(139, 125, 107, 0.01) 50%, transparent 51%),
-        linear-gradient(90deg, transparent 49%, rgba(122, 110, 95, 0.008) 50%, transparent 51%),
-        /* Gentle depth */
-        radial-gradient(ellipse at 60% 40%, rgba(212, 196, 168, 0.015) 0%, transparent 80%);
-    background-size: 
-        3px 100%,
-        100% 4px,
-        300px 200px;
-    background-position: 
-        0% 0%,
-        0% 0%,
-        center center;
-    pointer-events: none;
-}
+
 
 .main-content {
     flex: 1;
@@ -69,13 +45,7 @@
 }
 
 @media (max-width: 991px) {
-    .main-layout {
-        flex-direction: column;
-    }
-    
-    .sidebar {
-        width: 100%;
-        min-height: auto;
+    .navbar-top {
         position: relative;
     }
     

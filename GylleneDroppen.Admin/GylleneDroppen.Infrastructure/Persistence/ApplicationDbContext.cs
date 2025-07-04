@@ -8,6 +8,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public new DbSet<ApplicationUser> Users { get; set; }
     public DbSet<Whisky> Whiskies { get; set; }
+    public DbSet<WhiskyType> WhiskyTypes { get; set; }
+    public DbSet<Country> Countries { get; set; }
+    public DbSet<Region> Regions { get; set; }
     public DbSet<TastingHistory> TastingHistories { get; set; }
     public DbSet<TastingEvent> TastingEvents { get; set; }
     public DbSet<TastingEventParticipant> TastingEventParticipants { get; set; }
@@ -15,6 +18,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MembershipPeriod> MembershipPeriods { get; set; }
     public DbSet<UserMembership> UserMemberships { get; set; }
     public DbSet<UserTrialUsage> UserTrialUsages { get; set; }
+    public DbSet<Department> Departments { get; set; }
+    public DbSet<Address> Addresses { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -26,6 +31,122 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        // WhiskyType configuration
+        builder.Entity<WhiskyType>(entity =>
+        {
+            entity.HasKey(wt => wt.Id);
+
+            entity.Property(wt => wt.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(wt => wt.Description)
+                .HasMaxLength(500);
+
+            entity.Property(wt => wt.CreatedByUserId)
+                .IsRequired();
+
+            // Relationships
+            entity.HasOne(wt => wt.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(wt => wt.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(wt => wt.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(wt => wt.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Origin relationships (optional)
+            entity.HasOne(wt => wt.OriginCountry)
+                .WithMany()
+                .HasForeignKey(wt => wt.OriginCountryId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(wt => wt.OriginRegion)
+                .WithMany()
+                .HasForeignKey(wt => wt.OriginRegionId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Indexes
+            entity.HasIndex(wt => wt.Name)
+                .IsUnique()
+                .HasDatabaseName("IX_WhiskyType_Name");
+        });
+
+        // Country configuration
+        builder.Entity<Country>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+
+            entity.Property(c => c.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+
+            entity.Property(c => c.CreatedByUserId)
+                .IsRequired();
+
+            // Relationships
+            entity.HasOne(c => c.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(c => c.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(c => c.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(c => c.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            entity.HasIndex(c => c.Name)
+                .IsUnique()
+                .HasDatabaseName("IX_Country_Name");
+        });
+
+        // Region configuration
+        builder.Entity<Region>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+
+            entity.Property(r => r.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(r => r.Description)
+                .HasMaxLength(500);
+
+            entity.Property(r => r.CountryId)
+                .IsRequired();
+
+            entity.Property(r => r.CreatedByUserId)
+                .IsRequired();
+
+            // Relationships
+            entity.HasOne(r => r.Country)
+                .WithMany(c => c.Regions)
+                .HasForeignKey(r => r.CountryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(r => r.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(r => r.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(r => r.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            entity.HasIndex(r => new { r.Name, r.CountryId })
+                .IsUnique()
+                .HasDatabaseName("IX_Region_Name_CountryId");
+
+            entity.HasIndex(r => r.CountryId)
+                .HasDatabaseName("IX_Region_CountryId");
+        });
 
         // Whisky configuration
         builder.Entity<Whisky>(entity =>
@@ -46,18 +167,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(w => w.Price)
                 .HasPrecision(10, 2);
 
-            entity.Property(w => w.Region)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(w => w.Type)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(w => w.Country)
-                .IsRequired()
-                .HasMaxLength(100);
-
             entity.Property(w => w.Color)
                 .HasMaxLength(500);
 
@@ -76,7 +185,21 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             entity.Property(w => w.CreatedByUserId)
                 .IsRequired();
 
+            entity.Property(w => w.RegionId);
+
+            entity.Property(w => w.WhiskyTypeId);
+
             // Relationships
+            entity.HasOne(w => w.Region)
+                .WithMany(r => r.Whiskies)
+                .HasForeignKey(w => w.RegionId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(w => w.WhiskyType)
+                .WithMany(wt => wt.Whiskies)
+                .HasForeignKey(w => w.WhiskyTypeId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             entity.HasOne(w => w.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(w => w.CreatedByUserId)
@@ -92,14 +215,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .IsUnique()
                 .HasDatabaseName("IX_Whisky_Name_Distillery");
 
-            entity.HasIndex(w => w.Country)
-                .HasDatabaseName("IX_Whisky_Country");
+            entity.HasIndex(w => w.RegionId)
+                .HasDatabaseName("IX_Whisky_RegionId");
 
-            entity.HasIndex(w => w.Region)
-                .HasDatabaseName("IX_Whisky_Region");
-
-            entity.HasIndex(w => w.Type)
-                .HasDatabaseName("IX_Whisky_Type");
+            entity.HasIndex(w => w.WhiskyTypeId)
+                .HasDatabaseName("IX_Whisky_WhiskyTypeId");
 
             entity.HasIndex(w => w.CreatedDate)
                 .HasDatabaseName("IX_Whisky_CreatedDate");
@@ -165,6 +285,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
                 .WithMany()
                 .HasForeignKey(te => te.OrganizedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(te => te.Address)
+                .WithMany(a => a.TastingEvents)
+                .HasForeignKey(te => te.AddressId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Indexes
             entity.HasIndex(te => te.EventDate)
@@ -392,6 +517,96 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
             entity.HasIndex(utu => utu.HasUsedTrial)
                 .HasDatabaseName("IX_UserTrialUsage_HasUsedTrial");
+        });
+
+        // Department configuration
+        builder.Entity<Department>(entity =>
+        {
+            entity.HasKey(d => d.Id);
+
+            entity.Property(d => d.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+
+            entity.Property(d => d.Description)
+                .HasMaxLength(500);
+
+            entity.Property(d => d.CreatedByUserId)
+                .IsRequired();
+
+            // Relationships
+            entity.HasOne(d => d.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(d => d.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(d => d.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(d => d.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            entity.HasIndex(d => d.Name)
+                .HasDatabaseName("IX_Department_Name");
+
+            entity.HasIndex(d => d.IsActive)
+                .HasDatabaseName("IX_Department_IsActive");
+
+            entity.HasIndex(d => d.CreatedByUserId)
+                .HasDatabaseName("IX_Department_CreatedByUserId");
+
+            entity.HasIndex(d => d.UpdatedByUserId)
+                .HasDatabaseName("IX_Department_UpdatedByUserId");
+        });
+
+        // Address configuration
+        builder.Entity<Address>(entity =>
+        {
+            entity.ToTable("Addresses");
+            entity.HasKey(a => a.Id);
+
+            entity.Property(a => a.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(a => a.StreetAddress)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(a => a.City)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(a => a.PostalCode)
+                .HasMaxLength(20);
+
+            entity.Property(a => a.Description)
+                .HasMaxLength(500);
+
+            entity.Property(a => a.CreatedByUserId)
+                .IsRequired();
+
+            // Relationships
+            entity.HasOne(a => a.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(a => a.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(a => a.UpdatedByUser)
+                .WithMany()
+                .HasForeignKey(a => a.UpdatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes
+            entity.HasIndex(a => a.Name)
+                .HasDatabaseName("IX_Address_Name");
+
+            entity.HasIndex(a => a.IsActive)
+                .HasDatabaseName("IX_Address_IsActive");
+
+            entity.HasIndex(a => a.City)
+                .HasDatabaseName("IX_Address_City");
         });
     }
 }

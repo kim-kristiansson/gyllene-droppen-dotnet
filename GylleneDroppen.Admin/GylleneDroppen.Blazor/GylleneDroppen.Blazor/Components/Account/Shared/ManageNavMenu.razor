@@ -3,26 +3,53 @@
 
 @inject SignInManager<ApplicationUser> SignInManager
 
-<ul>
-    <li>
-        <NavLink href="konto/hantera" Match="NavLinkMatch.All">Profil</NavLink>
-    </li>
-    <li>
-        <NavLink href="konto/hantera/epost">E-post</NavLink>
-    </li>
-    <li>
-        <NavLink href="konto/hantera/byt-losenord">Lösenord</NavLink>
-    </li>
+<div style="display: flex; flex-direction: column; gap: 0.5rem;">
+    <NavLink href="konto/hantera" Match="NavLinkMatch.All" 
+             style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #2B1810; text-decoration: none; border-radius: 0.375rem; font-family: Georgia, serif; font-weight: 500; transition: all 0.2s ease;"
+             onmouseover="this.style.background='#DAD3C7'; this.style.color='#8B4513'"
+             onmouseout="if(!this.classList.contains('active')) { this.style.background='transparent'; this.style.color='#2B1810' }"
+             ActiveClass="active-manage-link">
+        <span>👤</span> Profil
+    </NavLink>
+    <NavLink href="konto/hantera/epost" 
+             style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #2B1810; text-decoration: none; border-radius: 0.375rem; font-family: Georgia, serif; font-weight: 500; transition: all 0.2s ease;"
+             onmouseover="this.style.background='#DAD3C7'; this.style.color='#8B4513'"
+             onmouseout="if(!this.classList.contains('active')) { this.style.background='transparent'; this.style.color='#2B1810' }"
+             ActiveClass="active-manage-link">
+        <span>📧</span> E-post
+    </NavLink>
+    <NavLink href="konto/hantera/byt-losenord" 
+             style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #2B1810; text-decoration: none; border-radius: 0.375rem; font-family: Georgia, serif; font-weight: 500; transition: all 0.2s ease;"
+             onmouseover="this.style.background='#DAD3C7'; this.style.color='#8B4513'"
+             onmouseout="if(!this.classList.contains('active')) { this.style.background='transparent'; this.style.color='#2B1810' }"
+             ActiveClass="active-manage-link">
+        <span>🔐</span> Lösenord
+    </NavLink>
     @if (hasExternalLogins)
     {
-        <li>
-            <NavLink href="konto/hantera/externa-inloggningar">Externa inloggningar</NavLink>
-        </li>
+        <NavLink href="konto/hantera/externa-inloggningar" 
+                 style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #2B1810; text-decoration: none; border-radius: 0.375rem; font-family: Georgia, serif; font-weight: 500; transition: all 0.2s ease;"
+                 onmouseover="this.style.background='#DAD3C7'; this.style.color='#8B4513'"
+                 onmouseout="if(!this.classList.contains('active')) { this.style.background='transparent'; this.style.color='#2B1810' }"
+                 ActiveClass="active-manage-link">
+            <span>🔗</span> Externa inloggningar
+        </NavLink>
     }
-    <li>
-        <NavLink href="konto/hantera/personuppgifter">Personuppgifter</NavLink>
-    </li>
-</ul>
+    <NavLink href="konto/hantera/personuppgifter" 
+             style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: #2B1810; text-decoration: none; border-radius: 0.375rem; font-family: Georgia, serif; font-weight: 500; transition: all 0.2s ease;"
+             onmouseover="this.style.background='#DAD3C7'; this.style.color='#8B4513'"
+             onmouseout="if(!this.classList.contains('active')) { this.style.background='transparent'; this.style.color='#2B1810' }"
+             ActiveClass="active-manage-link">
+        <span>📄</span> Personuppgifter
+    </NavLink>
+</div>
+
+<style>
+    .active-manage-link {
+        background: #8B4513 !important;
+        color: white !important;
+    }
+</style>
 
 @code {
     private bool hasExternalLogins;

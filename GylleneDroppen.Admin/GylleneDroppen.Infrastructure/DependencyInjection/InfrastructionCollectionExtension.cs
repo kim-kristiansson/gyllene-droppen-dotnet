@@ -26,6 +26,9 @@ public static class InfrastructionCollectionExtension
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IWhiskyRepository, WhiskyRepository>();
+        services.AddScoped<IWhiskyTypeRepository, WhiskyTypeRepository>();
+        services.AddScoped<ICountryRepository, CountryRepository>();
+        services.AddScoped<IRegionRepository, RegionRepository>();
         services.AddScoped<ITastingHistoryRepository, TastingHistoryRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITastingEventRepository, TastingEventRepository>();
@@ -34,6 +37,8 @@ public static class InfrastructionCollectionExtension
         services.AddScoped<IMembershipPeriodRepository, MembershipPeriodRepository>();
         services.AddScoped<IUserMembershipRepository, UserMembershipRepository>();
         services.AddScoped<IUserTrialUsageRepository, UserTrialUsageRepository>();
+        services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+        services.AddScoped<IAddressRepository, AddressRepository>();
 
         return services;
     }
@@ -47,9 +52,12 @@ public static class InfrastructionCollectionExtension
 
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IWhiskyService, WhiskyService>();
+        services.AddScoped<IWhiskyMetadataService, WhiskyMetadataService>();
         services.AddScoped<ITastingHistoryService, TastingHistoryService>();
         services.AddScoped<ITastingEventService, TastingEventService>();
         services.AddScoped<IMembershipService, MembershipService>();
+        services.AddScoped<IDepartmentService, DepartmentService>();
+        services.AddScoped<IAddressService, AddressService>();
 
         return services;
     }

@@ -1,19 +1,13 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="main-layout">
-    <div class="sidebar">
+    <header class="navbar-top">
         <NavMenu/>
-    </div>
+    </header>
 
     <main class="main-content">
         <article class="content-wrapper">
             @Body
         </article>
     </main>
-</div>
-
-<div id="blazor-error-ui" data-nosnippet>
-    Ett oväntat fel har inträffat.
-    <a href=".">Ladda om</a>
-    <span>🗙</span>
 </div>

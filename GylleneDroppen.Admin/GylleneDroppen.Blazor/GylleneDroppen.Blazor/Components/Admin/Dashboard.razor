@@ -13,210 +13,305 @@
 
 @attribute [Authorize(Policy = "AdminOnly")]
 
+<style>
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Mobile responsive fixes */
+    @@media (max-width: 768px) {
+        .admin-dashboard-container {
+            padding: 0.5rem !important;
+        }
+        
+        .dashboard-grid {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+        
+        .action-card {
+            flex-direction: column !important;
+            text-align: center !important;
+            gap: 0.75rem !important;
+        }
+        
+        .dashboard-controls {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            text-align: center !important;
+        }
+        
+        .system-info-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+    
+    @@media (max-width: 480px) {
+        .dashboard-header h1 {
+            font-size: 2rem !important;
+        }
+        
+        .card-padding {
+            padding: 1rem !important;
+        }
+        
+        .button-text {
+            font-size: 0.875rem !important;
+        }
+    }
+</style>
+
 <PageTitle>Admin Dashboard</PageTitle>
 
-<div class="dashboard-container">
-    <div class="dashboard-header">
-        <h1>🚀 Admin Dashboard</h1>
-    </div>
-
-    <div class="dashboard-welcome">
-        <h2>Välkommen tillbaka!</h2>
-        <p>Här är din översikt över Gyllene Droppen systemet.</p>
-    </div>
-
-    <div class="system-info">
-        <h2>⚙️ System Information</h2>
-        <div class="system-info-grid">
-            <div class="system-info-item">
-                <div class="system-info-label">Server tid</div>
-                <div class="system-info-value">@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</div>
-            </div>
-            <div class="system-info-item">
-                <div class="system-info-label">Inloggad som</div>
-                <div class="system-info-value">@currentUserEmail</div>
-            </div>
-            <div class="system-info-item">
-                <div class="system-info-label">Användar-ID</div>
-                <div class="system-info-value">
-                    <span class="user-id">@currentUserId</span>
-                </div>
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh; overflow-x: hidden;">
+    <div class="admin-dashboard-container" style="max-width: 1400px; margin: 0 auto; padding: 0 1rem;">
+        
+        <!-- Dashboard Header -->
+        <div style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+            <h1 style="font-size: 2.5rem; color: #2B1810; margin: 0 0 1rem 0; font-weight: 600; font-family: Georgia, serif;">🏛️ Admin Dashboard</h1>
+            <div style="background: linear-gradient(135deg, #DFD9CE 0%, #DAD3C7 100%); border-radius: 0.375rem; padding: 1.5rem; border-left: 4px solid #8B4513;">
+                <h2 style="font-size: 1.5rem; color: #8B4513; margin: 0 0 0.75rem 0; font-weight: 600; font-family: Georgia, serif;">Välkommen tillbaka!</h2>
+                <p style="margin: 0; color: #5C4A3A; font-size: 1.125rem; font-family: Georgia, serif;">Här är din översikt över Gyllene Droppen systemet.</p>
             </div>
         </div>
-    </div>
 
-    <div class="stats-grid">
-        <div class="stats-card">
-            <div class="stats-card-header">
-                <div class="stats-card-icon">👥</div>
-                <h3 class="stats-card-title">Användarstatistik</h3>
-            </div>
-            <div class="stats-list">
-                <div class="stat-item">
-                    <span class="stat-label">Totalt antal användare</span>
-                    <span class="stat-value highlight">@totalUsers</span>
+        <!-- System Information -->
+        <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative;">
+            <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+            
+            <h2 style="font-size: 1.75rem; color: #8B4513; margin: 0 0 1.5rem 0; font-weight: 600; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;">ℹ️ System Information</h2>
+            
+            <div class="system-info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1.25rem; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#8B4513'; this.style.boxShadow='0 2px 8px rgba(139, 69, 19, 0.15)';" onmouseout="this.style.borderColor='#B09B7C'; this.style.boxShadow='none';">
+                    <div style="color: #5C4A3A; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; font-family: Georgia, serif;">🕐 Server tid</div>
+                    <div style="color: #2B1810; font-size: 1.125rem; font-weight: 600; font-family: Georgia, serif;">@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Bekräftade e-postadresser</span>
-                    <span class="stat-value">@confirmedEmails</span>
+                <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1.25rem; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#8B4513'; this.style.boxShadow='0 2px 8px rgba(139, 69, 19, 0.15)';" onmouseout="this.style.borderColor='#B09B7C'; this.style.boxShadow='none';">
+                    <div style="color: #5C4A3A; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; font-family: Georgia, serif;">👤 Inloggad som</div>
+                    <div style="color: #2B1810; font-size: 1.125rem; font-weight: 600; font-family: Georgia, serif;">@currentUserEmail</div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Obekräftade e-postadresser</span>
-                    <span class="stat-value">@(totalUsers - confirmedEmails)</span>
+                <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1.25rem; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#8B4513'; this.style.boxShadow='0 2px 8px rgba(139, 69, 19, 0.15)';" onmouseout="this.style.borderColor='#B09B7C'; this.style.boxShadow='none';">
+                    <div style="color: #5C4A3A; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; font-family: Georgia, serif;">🆔 Användar-ID</div>
+                    <div style="color: #2B1810; font-size: 0.875rem; font-weight: 600; font-family: monospace; background: #DFD9CE; padding: 0.5rem; border-radius: 0.25rem; border: 1px solid #B09B7C;">@currentUserId</div>
                 </div>
             </div>
         </div>
 
-        <div class="stats-card">
-            <div class="stats-card-header">
-                <div class="stats-card-icon">🥃</div>
-                <h3 class="stats-card-title">Whisky-statistik</h3>
+        <!-- Statistics Cards -->
+        <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <!-- User Statistics -->
+            <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">👥</div>
+                    <h3 style="font-size: 1.5rem; color: #8B4513; margin: 0; font-weight: 600; font-family: Georgia, serif;">Användarstatistik</h3>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Totalt antal användare</span>
+                        <span style="color: #8B4513; font-weight: 700; font-size: 1.25rem; background: #DAD3C7; padding: 0.25rem 0.75rem; border-radius: 9999px; font-family: Georgia, serif;">@totalUsers</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Bekräftade e-postadresser</span>
+                        <span style="color: #2B1810; font-weight: 600; font-size: 1.125rem; font-family: Georgia, serif;">@confirmedEmails</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Obekräftade e-postadresser</span>
+                        <span style="color: #2B1810; font-weight: 600; font-size: 1.125rem; font-family: Georgia, serif;">@(totalUsers - confirmedEmails)</span>
+                    </div>
+                </div>
             </div>
-            <div class="stats-list">
-                <div class="stat-item">
-                    <span class="stat-label">Totalt antal whiskies</span>
-                    <span class="stat-value highlight">@totalWhiskies</span>
+
+            <!-- Whisky Statistics -->
+            <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">🥃</div>
+                    <h3 style="font-size: 1.5rem; color: #8B4513; margin: 0; font-weight: 600; font-family: Georgia, serif;">Whisky-statistik</h3>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Antal provningar</span>
-                    <span class="stat-value">@totalTastings</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Mest populära land</span>
-                    <span class="stat-value">@mostPopularCountry</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Mest populära region</span>
-                    <span class="stat-value">@mostPopularRegion</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Genomsnittlig ålder</span>
-                    <span class="stat-value">@averageAge.ToString("F1") år</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Genomsnittlig ABV</span>
-                    <span class="stat-value">@averageAbv.ToString("F1")%</span>
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Totalt antal whiskies</span>
+                        <span style="color: #8B4513; font-weight: 700; font-size: 1.25rem; background: #DAD3C7; padding: 0.25rem 0.75rem; border-radius: 9999px; font-family: Georgia, serif;">@totalWhiskies</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Antal provningar</span>
+                        <span style="color: #2B1810; font-weight: 600; font-size: 1.125rem; font-family: Georgia, serif;">@totalTastings</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Mest populära land</span>
+                        <span style="color: #2B1810; font-weight: 600; font-size: 1.125rem; font-family: Georgia, serif;">@mostPopularCountry</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Mest populära region</span>
+                        <span style="color: #2B1810; font-weight: 600; font-size: 1.125rem; font-family: Georgia, serif;">@mostPopularRegion</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Genomsnittlig ålder</span>
+                        <span style="color: #2B1810; font-weight: 600; font-size: 1.125rem; font-family: Georgia, serif;">@averageAge.ToString("F1") år</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0;">
+                        <span style="color: #5C4A3A; font-weight: 500; font-family: Georgia, serif;">Genomsnittlig ABV</span>
+                        <span style="color: #2B1810; font-weight: 600; font-size: 1.125rem; font-family: Georgia, serif;">@averageAbv.ToString("F1")%</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="activity-section">
-        <div class="activity-header">
-            <h2 class="activity-title">📊 Senaste aktivitet</h2>
-        </div>
+        <!-- Activity Section -->
+        <div style="margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+                <h2 style="font-size: 1.75rem; color: #8B4513; margin: 0; font-weight: 600; font-family: Georgia, serif;">📈 Senaste aktivitet</h2>
+            </div>
 
-        <div class="activity-grid">
-            <div class="activity-card">
-                <h3 class="activity-card-title">🍷 Senaste provningar</h3>
-                <div class="activity-list">
+            <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <!-- Recent Tastings -->
+                <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative;">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                    
+                    <h3 style="font-size: 1.25rem; color: #8B4513; margin: 0 0 1.5rem 0; font-weight: 600; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;">🍾 Senaste provningar</h3>
+                    
                     @if (recentTastings.Any())
                     {
-                        @foreach (var tasting in recentTastings.Take(5))
-                        {
-                            <div class="activity-item">
-                                <div class="activity-item-title">@tasting.EventTitle - @tasting.WhiskyName</div>
-                                <div class="activity-item-details">@tasting.TastingDate.ToString("yyyy-MM-dd") av @tasting.OrganizedByUserName</div>
-                            </div>
-                        }
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            @foreach (var tasting in recentTastings.Take(5))
+                            {
+                                <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1rem; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#8B4513'; this.style.boxShadow='0 2px 8px rgba(139, 69, 19, 0.15)';" onmouseout="this.style.borderColor='#B09B7C'; this.style.boxShadow='none';">
+                                    <div style="color: #2B1810; font-weight: 600; margin-bottom: 0.5rem; font-family: Georgia, serif;">@tasting.EventTitle - @tasting.WhiskyName</div>
+                                    <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">@tasting.TastingDate.ToString("yyyy-MM-dd") av @tasting.OrganizedByUserName</div>
+                                </div>
+                            }
+                        </div>
                     }
                     else
                     {
-                        <div class="empty-activity">
-                            <div class="empty-activity-icon">🍷</div>
-                            <p>Inga provningar genomförda än.</p>
+                        <div style="text-align: center; padding: 2rem; color: #5C4A3A; background: #DAD3C7; border: 2px dashed #B09B7C; border-radius: 0.375rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">🍾</div>
+                            <p style="margin: 0; font-style: italic; font-family: Georgia, serif;">Inga provningar genomförda än.</p>
                         </div>
                     }
                 </div>
-            </div>
 
-            <div class="activity-card">
-                <h3 class="activity-card-title">🥃 Senast tillagda whiskies</h3>
-                <div class="activity-list">
+                <!-- Recent Whiskies -->
+                <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative;">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                    
+                    <h3 style="font-size: 1.25rem; color: #8B4513; margin: 0 0 1.5rem 0; font-weight: 600; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;">🥃 Senast tillagda whiskies</h3>
+                    
                     @if (featuredWhiskies.Any())
                     {
-                        @foreach (var whisky in featuredWhiskies.Take(5))
-                        {
-                            <div class="activity-item">
-                                <div class="activity-item-title">@whisky.Name - @whisky.Distillery</div>
-                                <div class="activity-item-details">@whisky.CreatedDate.ToString("yyyy-MM-dd") av @whisky.CreatedByUserName</div>
-                            </div>
-                        }
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            @foreach (var whisky in featuredWhiskies.Take(5))
+                            {
+                                <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1rem; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#8B4513'; this.style.boxShadow='0 2px 8px rgba(139, 69, 19, 0.15)';" onmouseout="this.style.borderColor='#B09B7C'; this.style.boxShadow='none';">
+                                    <div style="color: #2B1810; font-weight: 600; margin-bottom: 0.5rem; font-family: Georgia, serif;">@whisky.Name - @whisky.Distillery</div>
+                                    <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">@whisky.CreatedDate.ToString("yyyy-MM-dd") av @whisky.CreatedByUserName</div>
+                                </div>
+                            }
+                        </div>
                     }
                     else
                     {
-                        <div class="empty-activity">
-                            <div class="empty-activity-icon">🥃</div>
-                            <p>Inga whiskies tillagda än.</p>
+                        <div style="text-align: center; padding: 2rem; color: #5C4A3A; background: #DAD3C7; border: 2px dashed #B09B7C; border-radius: 0.375rem;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">🥃</div>
+                            <p style="margin: 0; font-style: italic; font-family: Georgia, serif;">Inga whiskies tillagda än.</p>
                         </div>
                     }
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="admin-actions">
-        <div class="admin-actions-header">
-            <h2 class="admin-actions-title">⚡ Admin Actions</h2>
+        <!-- Admin Actions -->
+        <div style="margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+                <h2 style="font-size: 1.75rem; color: #8B4513; margin: 0; font-weight: 600; font-family: Georgia, serif;">⚙️ Admin Actions</h2>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+                <a href="/admin/anvandare" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">👥</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Hantera användare</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Hantera medlemmar och styrelse</div>
+                    </div>
+                </a>
+
+                <a href="/admin/whiskies" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">🥃</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Hantera whiskies</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Redigera och organisera whisky-samlingen</div>
+                    </div>
+                </a>
+
+                <a href="/admin/whiskies/skapa" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">➕</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Lägg till ny whisky</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Utöka samlingen med nya whiskies</div>
+                    </div>
+                </a>
+
+                <a href="/whiskies" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">📋</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Visa alla whiskies</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Bläddra i hela whisky-samlingen</div>
+                    </div>
+                </a>
+
+                <a href="/provningar" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">📅</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Hantera provningar</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Organisera och planera whiskyprovningar</div>
+                    </div>
+                </a>
+
+                <a href="/admin/medlemskap" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">💳</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Hantera medlemskap</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Medlemsskap och provperioder</div>
+                    </div>
+                </a>
+
+                <a href="/admin/lander-regioner" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">🌍</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Hantera länder och regioner</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Länder och deras whiskyregioner</div>
+                    </div>
+                </a>
+
+                <a href="/admin/whiskytyper" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">🥃</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Hantera whiskytyper</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Olika typer av whisky</div>
+                    </div>
+                </a>
+
+                <a href="/admin/avdelningar" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; transition: all 0.3s ease; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                    <div style="width: 3rem; height: 3rem; background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">🏢</div>
+                    <div>
+                        <div style="color: #2B1810; font-weight: 600; font-size: 1.125rem; margin-bottom: 0.25rem; font-family: Georgia, serif;">Hantera ansvarsområden</div>
+                        <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">Administratörs ansvarsområden</div>
+                    </div>
+                </a>
+            </div>
         </div>
 
-        <div class="actions-grid">
-            <a href="/admin/anvandare" class="action-card">
-                <div class="action-icon">👥</div>
-                <div class="action-content">
-                    <div class="action-title">Hantera användare</div>
-                    <div class="action-description">Hantera medlemmar och styrelse</div>
-                </div>
-            </a>
-
-            <a href="/admin/whiskies" class="action-card">
-                <div class="action-icon">🥃</div>
-                <div class="action-content">
-                    <div class="action-title">Hantera whiskies</div>
-                    <div class="action-description">Redigera och organisera whisky-samlingen</div>
-                </div>
-            </a>
-
-            <a href="/admin/whiskies/create" class="action-card">
-                <div class="action-icon">➕</div>
-                <div class="action-content">
-                    <div class="action-title">Lägg till ny whisky</div>
-                    <div class="action-description">Utöka samlingen med nya whiskies</div>
-                </div>
-            </a>
-
-            <a href="/whiskies" class="action-card">
-                <div class="action-icon">🔍</div>
-                <div class="action-content">
-                    <div class="action-title">Visa alla whiskies</div>
-                    <div class="action-description">Bläddra i hela whisky-samlingen</div>
-                </div>
-            </a>
-
-            <a href="/provningar" class="action-card">
-                <div class="action-icon">📅</div>
-                <div class="action-content">
-                    <div class="action-title">Hantera provningar</div>
-                    <div class="action-description">Organisera och planera whiskyprovningar</div>
-                </div>
-            </a>
-
-            <a href="/admin/medlemskap" class="action-card">
-                <div class="action-icon">💎</div>
-                <div class="action-content">
-                    <div class="action-title">Hantera medlemskap</div>
-                    <div class="action-description">Medlemsskap och provperioder</div>
-                </div>
-            </a>
-        </div>
-    </div>
-
-    <div class="dashboard-controls">
-        <div>
-            <button type="button" @onclick="RefreshStats" class="refresh-btn" disabled="@isLoading">
+        <!-- Dashboard Controls -->
+        <div class="dashboard-controls" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); min-width: 0; overflow: hidden;">
+            <button type="button" @onclick="RefreshStats" disabled="@isLoading" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: @(isLoading ? "#B09B7C" : "#8B4513"); color: white; border: 1px solid @(isLoading ? "#B09B7C" : "#8B4513"); border-radius: 0.375rem; cursor: @(isLoading ? "not-allowed" : "pointer"); font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; opacity: @(isLoading ? "0.6" : "1");" onmouseover="if (!@isLoading) { this.style.background='#6B3410'; this.style.borderColor='#6B3410'; }" onmouseout="if (!@isLoading) { this.style.background='#8B4513'; this.style.borderColor='#8B4513'; }">
                 @if (isLoading)
                 {
-                    <div class="loading-spinner"></div>
+                    <div style="display: inline-block; width: 1rem; height: 1rem; border: 2px solid transparent; border-top: 2px solid currentColor; border-radius: 50%; animation: spin 1s linear infinite;"></div>
                     <span>Uppdaterar...</span>
                 }
                 else
@@ -225,23 +320,38 @@
                     <span>Uppdatera statistik</span>
                 }
             </button>
+
+            @if (lastUpdated.HasValue)
+            {
+                <div style="color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🕰️</span>
+                    <span>Senast uppdaterad: @lastUpdated.Value.ToString("HH:mm:ss")</span>
+                </div>
+            }
         </div>
 
-        @if (lastUpdated.HasValue)
-        {
-            <div class="last-updated">
-                Senast uppdaterad: @lastUpdated.Value.ToString("HH:mm:ss")
+        <!-- Quick Links -->
+        <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative;">
+            <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+            
+            <h2 style="font-size: 1.5rem; color: #8B4513; margin: 0 0 1.5rem 0; font-weight: 600; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;">🔗 Snabblänkar</h2>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <a href="/admin/anvandare" style="color: #2B1810; text-decoration: none; padding: 0.75rem 1rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; transition: all 0.2s ease; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='#8B4513'; this.style.color='white'; this.style.borderColor='#8B4513';" onmouseout="this.style.background='#DAD3C7'; this.style.color='#2B1810'; this.style.borderColor='#B09B7C';">
+                    <span>👑</span>
+                    <span>Befordra/degradera administratörer</span>
+                </a>
+                <a href="/konto/hantera" style="color: #2B1810; text-decoration: none; padding: 0.75rem 1rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; transition: all 0.2s ease; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='#8B4513'; this.style.color='white'; this.style.borderColor='#8B4513';" onmouseout="this.style.background='#DAD3C7'; this.style.color='#2B1810'; this.style.borderColor='#B09B7C';">
+                    <span>⚙️</span>
+                    <span>Hantera ditt konto</span>
+                </a>
+                <a href="/" style="color: #2B1810; text-decoration: none; padding: 0.75rem 1rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; transition: all 0.2s ease; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='#8B4513'; this.style.color='white'; this.style.borderColor='#8B4513';" onmouseout="this.style.background='#DAD3C7'; this.style.color='#2B1810'; this.style.borderColor='#B09B7C';">
+                    <span>🏠</span>
+                    <span>Tillbaka till startsidan</span>
+                </a>
             </div>
-        }
-    </div>
-
-    <div class="quick-links">
-        <h2 class="quick-links-title">🔗 Snabblänkar</h2>
-        <ul class="quick-links-list">
-            <li><a href="/admin/anvandare">Befordra/degradera administratörer</a></li>
-            <li><a href="/konto/hantera">Hantera ditt konto</a></li>
-            <li><a href="/">Tillbaka till startsidan</a></li>
-        </ul>
+        </div>
+        
     </div>
 </div>
 

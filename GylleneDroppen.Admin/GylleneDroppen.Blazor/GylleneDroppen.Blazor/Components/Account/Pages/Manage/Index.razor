@@ -11,26 +11,63 @@
 
 <PageTitle>Profil</PageTitle>
 
-<h3>Profil</h3>
-<StatusMessage/>
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+        <div style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+            <h1 style="font-size: 2.5rem; color: #2B1810; margin: 0; font-weight: 600;">Hantera ditt konto</h1>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2rem;">
+            <style>
+                @("@media (max-width: 768px) {")
+                    div[style*="grid-template-columns: 280px 1fr"] {
+                        grid-template-columns: 1fr !important;
+                    }
+                }
+            </style>
+            <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; height: fit-content; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                <h3 style="color: #2B1810; margin: 0 0 1rem 0; font-size: 1.25rem; font-weight: 600; font-family: Georgia, serif;">Kontoinställningar</h3>
+                <ManageNavMenu/>
+            </div>
+            
+            <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                <h2 style="color: #2B1810; margin: 0 0 1.5rem 0; font-size: 1.75rem; font-weight: 600; font-family: Georgia, serif;">Profil</h2>
+                <StatusMessage/>
+                
+                <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
+                    <DataAnnotationsValidator/>
+                    <ValidationSummary style="color: #EF4444; background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; border-radius: 0.375rem; padding: 1rem; margin-bottom: 1rem; font-family: Georgia, serif;" role="alert"/>
 
-<EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-    <DataAnnotationsValidator/>
-    <ValidationSummary role="alert"/>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="username" style="display: block; color: #2B1810; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; font-family: Georgia, serif;">Användarnamn</label>
+                        <input type="text" value="@username" id="username" 
+                               style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #E8E1D6; color: #5C4A3A; font-family: Georgia, serif; cursor: not-allowed;" 
+                               disabled/>
+                    </div>
 
-    <div>
-        <input type="text" value="@username" id="username" placeholder="Välj ditt användarnamn." disabled/>
-        <label for="username">Användarnamn</label>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label for="Input.PhoneNumber" style="display: block; color: #2B1810; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; font-family: Georgia, serif;">Telefonnummer</label>
+                        <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" 
+                                   style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #F5F0E8; color: #2B1810; font-family: Georgia, serif; transition: all 0.2s ease;"
+                                   placeholder="Ange ditt telefonnummer"
+                                   onfocus="this.style.borderColor='#8B4513'; this.style.background='#FAF8F5'"
+                                   onblur="this.style.borderColor='#B09B7C'; this.style.background='#F5F0E8'"/>
+                        <ValidationMessage For="() => Input.PhoneNumber" style="color: #EF4444; font-size: 0.875rem; margin-top: 0.25rem; font-family: Georgia, serif;"/>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" 
+                                style="padding: 0.75rem 2rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; font-size: 1rem; transition: all 0.2s ease;"
+                                onmouseover="this.style.background='#6B3410'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)'"
+                                onmouseout="this.style.background='#8B4513'; this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            Spara
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
     </div>
-
-    <div>
-        <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" placeholder="Ange ditt telefonnummer"/>
-        <label for="Input.PhoneNumber">Telefonnummer</label>
-        <ValidationMessage For="() => Input.PhoneNumber"/>
-    </div>
-
-    <button type="submit">Spara</button>
-</EditForm>
+</div>
 
 @code {
     private ApplicationUser user = default!;

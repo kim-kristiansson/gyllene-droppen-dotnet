@@ -16,8 +16,12 @@ public class UpdateTastingEventRequestDto
     [Required(ErrorMessage = "Eventdatum är obligatoriskt.")]
     public DateTime EventDate { get; set; }
 
+    public DateTime? EndTime { get; set; }
+
     [MaxLength(200, ErrorMessage = "Platsen får vara högst 200 tecken.")]
     public string? Location { get; set; }
+
+    public Guid? AddressId { get; set; }
 
     [Range(1, 100, ErrorMessage = "Max antal deltagare måste vara mellan 1 och 100.")]
     public int? MaxParticipants { get; set; }

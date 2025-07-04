@@ -29,7 +29,16 @@ public class AuthService(
         if (!result.Succeeded)
             throw new InvalidOperationException(string.Join(", ", result.Errors.Select(e => e.Description)));
 
-        await membershipService.CreateTrialForUserAsync(user.Id, user.Email);
+        try
+        {
+            await membershipService.CreateTrialForUserAsync(user.Id, user.Email);
+        }
+        catch (Exception ex)
+        {
+            // If trial creation fails, remove the user to maintain consistency
+            await userManager.DeleteAsync(user);
+            throw new InvalidOperationException($"Registrering misslyckades: {ex.Message}", ex);
+        }
 
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));

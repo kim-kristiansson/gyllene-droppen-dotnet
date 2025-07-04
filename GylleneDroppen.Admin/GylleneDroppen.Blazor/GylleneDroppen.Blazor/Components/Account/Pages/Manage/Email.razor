@@ -14,39 +14,73 @@
 
 <PageTitle>Hantera e-post</PageTitle>
 
-<h3>Hantera e-post</h3>
-
-<StatusMessage Message="@message"/>
-<form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
-    <AntiforgeryToken/>
-</form>
-<EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
-    <DataAnnotationsValidator/>
-    <ValidationSummary role="alert"/>
-    @if (isEmailConfirmed)
-    {
-        <div>
-            <input type="text" value="@email" id="email" placeholder="Ange din e-post" disabled/>
-            <span>✓</span>
-            <label for="email">E-post</label>
+<div class="page-wrapper">
+    <div class="page-content">
+        <div class="page-header-section">
+            <h1 class="page-title">Hantera ditt konto</h1>
         </div>
-    }
-    else
-    {
-        <div>
-            <input type="text" value="@email" id="email" placeholder="Ange din e-post" disabled/>
-            <label for="email">E-post</label>
-            <button type="submit" form="send-verification-form">Skicka verifieringsmejl</button>
+        
+        <div class="grid-2">
+            <div class="nav-section">
+                <h3>Kontoinställningar</h3>
+                <ManageNavMenu/>
+            </div>
+            
+            <div class="content-section">
+                <h2>E-post</h2>
+                <StatusMessage Message="@message"/>
+                
+                <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
+                    <AntiforgeryToken/>
+                </form>
+                
+                <div class="form-container">
+                    <div class="current-email">
+                        <h3>Nuvarande e-post</h3>
+                        <div class="email-status">
+                            <div class="email-display">
+                                <input type="text" value="@email" class="form-input" disabled/>
+                                @if (isEmailConfirmed)
+                                {
+                                    <span class="status-badge verified">✓ Verifierad</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge unverified">! Ej verifierad</span>
+                                }
+                            </div>
+                            @if (!isEmailConfirmed)
+                            {
+                                <button type="submit" form="send-verification-form" class="btn btn-secondary btn-sm">
+                                    Skicka verifieringsmejl
+                                </button>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="change-email">
+                        <h3>Ändra e-post</h3>
+                        <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
+                            <DataAnnotationsValidator/>
+                            <ValidationSummary class="validation-summary" role="alert"/>
+                            
+                            <div class="form-field">
+                                <label for="Input.NewEmail">Ny e-postadress</label>
+                                <InputText @bind-Value="Input.NewEmail" id="Input.NewEmail" class="form-input" 
+                                          autocomplete="email" aria-required="true" placeholder="Ange en ny e-post"/>
+                                <ValidationMessage For="() => Input.NewEmail" class="validation-message"/>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Byt e-post</button>
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
         </div>
-    }
-    <div>
-        <InputText @bind-Value="Input.NewEmail" id="Input.NewEmail" autocomplete="email" aria-required="true"
-                   placeholder="Ange en ny e-post"/>
-        <label for="Input.NewEmail">Ny e-post</label>
-        <ValidationMessage For="() => Input.NewEmail"/>
     </div>
-    <button type="submit">Byt e-post</button>
-</EditForm>
+</div>
 
 @code {
     private string? message;

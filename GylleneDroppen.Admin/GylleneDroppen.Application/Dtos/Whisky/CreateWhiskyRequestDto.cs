@@ -19,17 +19,11 @@ public class CreateWhiskyRequestDto
     [Range(0, 100, ErrorMessage = "Alkoholhalt måste vara mellan 0 och 100%.")]
     public decimal Abv { get; set; }
 
-    [Required(ErrorMessage = "Region är obligatorisk.")]
-    [MaxLength(100, ErrorMessage = "Regionen får vara högst 100 tecken.")]
-    public string Region { get; set; } = string.Empty;
+    public Guid? RegionId { get; set; }
 
-    [Required(ErrorMessage = "Typ är obligatorisk.")]
-    [MaxLength(100, ErrorMessage = "Typen får vara högst 100 tecken.")]
-    public string Type { get; set; } = string.Empty;
+    public Guid? WhiskyTypeId { get; set; }
 
-    [Required(ErrorMessage = "Land är obligatoriskt.")]
-    [MaxLength(100, ErrorMessage = "Landet får vara högst 100 tecken.")]
-    public string Country { get; set; } = string.Empty;
+    // Country is derived through Region - no direct selection needed
 
     [MaxLength(500, ErrorMessage = "Färgbeskrivningen får vara högst 500 tecken.")]
     public string? Color { get; set; }

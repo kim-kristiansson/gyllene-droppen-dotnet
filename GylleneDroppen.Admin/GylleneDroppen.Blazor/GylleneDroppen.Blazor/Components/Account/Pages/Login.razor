@@ -10,72 +10,81 @@
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<style>
+    @@font-face {
+        font-family: 'GreatVibes';
+        src: url('/fonts/GreatVibes-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+</style>
 
 <PageTitle>Logga in</PageTitle>
 
-<div class="login-header">
-    <h1>Välkommen tillbaka</h1>
-    <p class="login-subtitle">Logga in för att fortsätta till Gyllene Droppen</p>
+<!-- Header -->
+<div style="text-align: center; margin-bottom: 2rem;">
+    <p style="font-size: 0.875rem; color: #6B5D54; margin: 0; font-family: Georgia, serif;">
+        Logga in för att fortsätta till Gyllene Droppen
+    </p>
 </div>
 
-<section class="login-form">
+<!-- Login Form -->
+<div>
     @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="status-message error">
+        <div style="padding: 1rem; margin-bottom: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; border-radius: 0.375rem; color: #EF4444; font-family: Georgia, serif;">
             @errorMessage
         </div>
     }
+
+    <h2 style="color: #2B1810; margin: 0 0 1.5rem 0; font-size: 1.5rem; font-weight: 600; font-family: Georgia, serif; text-align: center;">Logga in med ditt konto</h2>
     
     <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
         <DataAnnotationsValidator/>
         
-        <div class="form-section">
-            <h2>Logga in med ditt konto</h2>
-            <hr class="form-divider"/>
-            
-            <ValidationSummary role="alert" class="validation-summary"/>
+        <ValidationSummary role="alert" style="padding: 1rem; margin-bottom: 1.5rem; background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; border-radius: 0.375rem; color: #EF4444; font-family: Georgia, serif;"/>
 
-            <div class="form-group">
-                <label for="Input.Email" class="form-label">E-postadress</label>
-                <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true"
-                           placeholder="din@email.com"/>
-                <ValidationMessage For="() => Input.Email" class="validation-message"/>
-            </div>
+        <div style="margin-bottom: 1.5rem;">
+            <label for="Input.Email" style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">E-postadress</label>
+            <InputText @bind-Value="Input.Email" id="Input.Email" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 1rem; background: #F0EDE4; color: #2B1810; font-family: Georgia, serif;" autocomplete="username" aria-required="true" placeholder="din@email.com"/>
+            <ValidationMessage For="() => Input.Email" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;"/>
+        </div>
 
-            <div class="form-group">
-                <label for="Input.Password" class="form-label">Lösenord</label>
-                <InputText type="password" @bind-Value="Input.Password" id="Input.Password" class="form-control" autocomplete="current-password"
-                           aria-required="true" placeholder="Ange ditt lösenord"/>
-                <ValidationMessage For="() => Input.Password" class="validation-message"/>
-            </div>
+        <div style="margin-bottom: 1.5rem;">
+            <label for="Input.Password" style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif; font-size: 0.875rem;">Lösenord</label>
+            <InputText type="password" @bind-Value="Input.Password" id="Input.Password" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.25rem; font-size: 1rem; background: #F0EDE4; color: #2B1810; font-family: Georgia, serif;" autocomplete="current-password" aria-required="true" placeholder="Ange ditt lösenord"/>
+            <ValidationMessage For="() => Input.Password" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;"/>
+        </div>
 
-            <div class="form-check">
-                <label>
-                    <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input"/>
+        <div style="margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <InputCheckbox @bind-Value="Input.RememberMe" id="Input.RememberMe" style="width: 1.125rem; height: 1.125rem;"/>
+                <label for="Input.RememberMe" style="font-weight: 600; color: #2B1810; font-size: 0.875rem; cursor: pointer; font-family: Georgia, serif;">
                     Kom ihåg mig på denna enhet
                 </label>
             </div>
-
-            <button type="submit" class="btn btn-primary btn-login">
-                Logga in
-            </button>
         </div>
 
+        <button type="submit" style="width: 100%; padding: 0.875rem 1.5rem; background: #8B4513; color: white; border: none; border-radius: 0.375rem; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s ease; font-family: Georgia, serif; margin-top: 1rem;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+            Logga in
+        </button>
     </EditForm>
     
-    <div class="auth-links">
-        <p>
-            <a href="/konto/glomt-losenord">Glömt ditt lösenord?</a>
+    <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #B09B7C;">
+        <p style="margin: 0 0 0.75rem 0; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">
+            <a href="/konto/glomt-losenord" style="color: #8B4513; text-decoration: none; font-weight: 600;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">Glömt ditt lösenord?</a>
         </p>
-        <p>
+        <p style="margin: 0 0 0.75rem 0; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">
             Har du inget konto? 
-            <a href="@NavigationManager.GetUriWithQueryParameters("/konto/registrera", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl })">Registrera dig här</a>
+            <a href="@NavigationManager.GetUriWithQueryParameters("/konto/registrera", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl })" style="color: #8B4513; text-decoration: none; font-weight: 600;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">Registrera dig här</a>
         </p>
-        <p>
-            <a href="/konto/skicka-epostbekraftelse">Behöver du återställa e-postbekräftelse?</a>
+        <p style="margin: 0; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">
+            <a href="/konto/skicka-epostbekraftelse" style="color: #8B4513; text-decoration: none; font-weight: 600;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">Behöver du återställa e-postbekräftelse?</a>
         </p>
     </div>
-</section>
+</div>
 
 @code {
     private string? errorMessage;
@@ -90,6 +99,15 @@
     {
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
+            // Check if user is already authenticated
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                // Redirect to home or return URL if already logged in
+                NavigationManager.NavigateTo(ReturnUrl ?? "/");
+                return;
+            }
+            
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         }
     }

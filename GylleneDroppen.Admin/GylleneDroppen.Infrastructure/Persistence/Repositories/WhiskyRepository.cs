@@ -13,6 +13,10 @@ public class WhiskyRepository(ApplicationDbContext context)
         var query = DbSet.Include(w => w.CreatedByUser)
             .Include(w => w.UpdatedByUser)
             .Include(w => w.TastingHistories)
+            .Include(w => w.Region!)
+                .ThenInclude(r => r.Country!)
+            .Include(w => w.WhiskyType!)
+                .ThenInclude(wt => wt.OriginCountry!)
             .AsQueryable();
 
         // Apply filters
@@ -21,22 +25,24 @@ public class WhiskyRepository(ApplicationDbContext context)
             var searchTerm = searchDto.SearchTerm.ToLower();
             query = query.Where(w => w.Name.ToLower().Contains(searchTerm) ||
                                      w.Distillery.ToLower().Contains(searchTerm) ||
-                                     w.Region.ToLower().Contains(searchTerm));
+                                     (w.Region != null && w.Region.Name.ToLower().Contains(searchTerm)));
         }
 
         if (!string.IsNullOrEmpty(searchDto.Country))
         {
-            query = query.Where(w => w.Country == searchDto.Country);
+            query = query.Where(w => 
+                (w.Region != null && w.Region.Country != null && w.Region.Country.Name == searchDto.Country) ||
+                (w.WhiskyType != null && w.WhiskyType.OriginCountry != null && w.WhiskyType.OriginCountry.Name == searchDto.Country));
         }
 
         if (!string.IsNullOrEmpty(searchDto.Region))
         {
-            query = query.Where(w => w.Region == searchDto.Region);
+            query = query.Where(w => w.Region != null && w.Region.Name == searchDto.Region);
         }
 
         if (!string.IsNullOrEmpty(searchDto.Type))
         {
-            query = query.Where(w => w.Type == searchDto.Type);
+            query = query.Where(w => w.WhiskyType != null && w.WhiskyType.Name == searchDto.Type);
         }
 
         if (searchDto.MinAge.HasValue)
@@ -103,9 +109,11 @@ public class WhiskyRepository(ApplicationDbContext context)
             Distillery = w.Distillery,
             Age = w.Age,
             Abv = w.Abv,
-            Region = w.Region,
-            Type = w.Type,
-            Country = w.Country,
+            RegionId = w.RegionId,
+            Region = w.Region?.Name ?? "Okänd",
+            WhiskyTypeId = w.WhiskyTypeId,
+            Type = w.WhiskyType?.Name ?? "Okänd",
+            Country = w.Region?.Country?.Name ?? w.WhiskyType?.OriginCountry?.Name ?? "Okänd",
             Color = w.Color,
             Nose = w.Nose,
             Palate = w.Palate,
@@ -115,7 +123,7 @@ public class WhiskyRepository(ApplicationDbContext context)
             ImagePath = w.ImagePath,
             CreatedDate = w.CreatedDate,
             UpdatedDate = w.UpdatedDate,
-            CreatedByUserName = w.CreatedByUser?.Email ?? "Unknown",
+            CreatedByUserName = w.CreatedByUser?.Email ?? "Okänd",
             UpdatedByUserName = w.UpdatedByUser?.Email,
             TastingCount = w.TastingHistories.Count
         }).ToList();
@@ -134,6 +142,10 @@ public class WhiskyRepository(ApplicationDbContext context)
         return await DbSet
             .Include(w => w.CreatedByUser)
             .Include(w => w.UpdatedByUser)
+            .Include(w => w.Region!)
+                .ThenInclude(r => r.Country!)
+            .Include(w => w.WhiskyType!)
+                .ThenInclude(wt => wt.OriginCountry!)
             .Include(w => w.TastingHistories)
             .ThenInclude(th => th.OrganizedByUser)
             .FirstOrDefaultAsync(w => w.Id == id);

@@ -6,7 +6,7 @@ namespace GylleneDroppen.Infrastructure.Persistence.Repositories;
 
 public class Repository<T> : IRepository<T> where T : class
 {
-    private readonly ApplicationDbContext _context;
+    protected readonly ApplicationDbContext _context;
     protected readonly DbSet<T> DbSet;
 
     protected Repository(ApplicationDbContext context)
@@ -34,13 +34,42 @@ public class Repository<T> : IRepository<T> where T : class
     {
         return await DbSet.ToListAsync();
     }
+    
+    public async Task<List<T>> GetAllAsync<TProperty>(Expression<Func<T, TProperty>> includeExpression, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
+    {
+        IQueryable<T> query = DbSet.Include(includeExpression);
+        
+        if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
+        
+        return await query.ToListAsync();
+    }
 
     public async Task<T?> GetByIdAsync(Guid id)
     {
         return await DbSet.FindAsync(id);
     }
+    
+    public async Task<T?> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includeExpressions)
+    {
+        var query = DbSet.AsQueryable();
+        
+        foreach (var includeExpression in includeExpressions)
+        {
+            query = query.Include(includeExpression);
+        }
+        
+        return await query.FirstOrDefaultAsync(e => EF.Property<Guid>(e, "Id") == id);
+    }
 
     public void Remove(T entity)
+    {
+        DbSet.Remove(entity);
+    }
+    
+    public void Delete(T entity)
     {
         DbSet.Remove(entity);
     }

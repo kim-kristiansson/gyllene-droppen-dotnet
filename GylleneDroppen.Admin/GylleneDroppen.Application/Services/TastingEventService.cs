@@ -1,3 +1,4 @@
+using GylleneDroppen.Application.Dtos.Address;
 using GylleneDroppen.Application.Dtos.TastingEvent;
 using GylleneDroppen.Application.Interfaces.Repositories;
 using GylleneDroppen.Application.Interfaces.Services;
@@ -57,7 +58,9 @@ public class TastingEventService(
             Title = dto.Title,
             Description = dto.Description,
             EventDate = dto.EventDate.Kind == DateTimeKind.Utc ? dto.EventDate : dto.EventDate.ToUniversalTime(),
+            EndTime = dto.EndTime?.Kind == DateTimeKind.Utc ? dto.EndTime : dto.EndTime?.ToUniversalTime(),
             Location = dto.Location,
+            AddressId = dto.AddressId,
             MaxParticipants = dto.MaxParticipants,
             IsPublic = dto.IsPublic,
             OrganizedByUserId = currentUserId,
@@ -116,7 +119,9 @@ public class TastingEventService(
         tastingEvent.Title = dto.Title;
         tastingEvent.Description = dto.Description;
         tastingEvent.EventDate = dto.EventDate.Kind == DateTimeKind.Utc ? dto.EventDate : dto.EventDate.ToUniversalTime();
+        tastingEvent.EndTime = dto.EndTime?.Kind == DateTimeKind.Utc ? dto.EndTime : dto.EndTime?.ToUniversalTime();
         tastingEvent.Location = dto.Location;
+        tastingEvent.AddressId = dto.AddressId;
         tastingEvent.MaxParticipants = dto.MaxParticipants;
         tastingEvent.IsPublic = dto.IsPublic;
         tastingEvent.UpdatedDate = DateTime.UtcNow;
@@ -164,10 +169,26 @@ public class TastingEventService(
             Title = tastingEvent.Title,
             Description = tastingEvent.Description,
             EventDate = tastingEvent.EventDate,
+            EndTime = tastingEvent.EndTime,
             Location = tastingEvent.Location,
+            AddressId = tastingEvent.AddressId,
+            Address = tastingEvent.Address != null ? new AddressResponseDto
+            {
+                Id = tastingEvent.Address.Id,
+                Name = tastingEvent.Address.Name,
+                StreetAddress = tastingEvent.Address.StreetAddress,
+                City = tastingEvent.Address.City,
+                PostalCode = tastingEvent.Address.PostalCode,
+                Description = tastingEvent.Address.Description,
+                IsActive = tastingEvent.Address.IsActive,
+                CreatedDate = tastingEvent.Address.CreatedDate,
+                UpdatedDate = tastingEvent.Address.UpdatedDate,
+                CreatedByUserName = tastingEvent.Address.CreatedByUser?.Email ?? "Okänd",
+                UpdatedByUserName = tastingEvent.Address.UpdatedByUser?.Email
+            } : null,
             MaxParticipants = tastingEvent.MaxParticipants,
             IsPublic = tastingEvent.IsPublic,
-            OrganizedByUserName = tastingEvent.OrganizedByUser?.Email ?? "Unknown",
+            OrganizedByUserName = tastingEvent.OrganizedByUser?.Email ?? "Okänd",
             CreatedDate = tastingEvent.CreatedDate,
             WhiskyCount = tastingEvent.TastingEventWhiskies.Count,
             ParticipantCount = tastingEvent.Participants.Count,
@@ -177,8 +198,8 @@ public class TastingEventService(
                 {
                     Id = w.Id,
                     WhiskyId = w.WhiskyId,
-                    WhiskyName = w.Whisky?.Name ?? "Unknown",
-                    Distillery = w.Whisky?.Distillery ?? "Unknown",
+                    WhiskyName = w.Whisky?.Name ?? "Okänd",
+                    Distillery = w.Whisky?.Distillery ?? "Okänd",
                     Order = w.Order,
                     Notes = w.Notes
                 }).ToList(),
@@ -188,7 +209,7 @@ public class TastingEventService(
                     Id = p.Id,
                     UserId = p.UserId,
                     UserName = $"{p.User?.FirstName} {p.User?.LastName}".Trim(),
-                    UserEmail = p.User?.Email ?? "Unknown",
+                    UserEmail = p.User?.Email ?? "Okänd",
                     RegisteredDate = p.RegisteredDate,
                     Attended = p.Attended,
                     Notes = p.Notes

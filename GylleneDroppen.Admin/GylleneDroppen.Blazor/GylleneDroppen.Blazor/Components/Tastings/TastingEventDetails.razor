@@ -1,4 +1,5 @@
 @page "/tastings/{EventId:guid}"
+@page "/provningar/{EventId:guid}"
 @using GylleneDroppen.Application.Interfaces.Services
 @using GylleneDroppen.Application.Dtos.TastingEvent
 @using GylleneDroppen.Application.Dtos.Whisky
@@ -12,158 +13,292 @@
 
 @rendermode InteractiveServer
 
+<style>
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
 @if (tastingEvent != null)
 {
     <PageTitle>@tastingEvent.Title</PageTitle>
 
-    <div>
-        <button @onclick="GoBack">← Tillbaka till listan</button>
+    <div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+            
+            <!-- Header Actions -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 2rem; gap: 1rem;">
+                <button @onclick="GoBack" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">← Tillbaka till listan</button>
 
-        <AuthorizeView>
-            <Authorized>
-                @if (CanEditEvent())
-                {
-                    <button @onclick="GoToEditPage">Redigera</button>
-                }
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <AuthorizeView>
+                        <Authorized>
+                            @if (CanEditEvent())
+                            {
+                                <button @onclick="GoToEditPage" style="padding: 0.75rem 1.25rem; background: #D2691E; color: white; border: 1px solid #D2691E; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B8860B'; this.style.borderColor='#B8860B';" onmouseout="this.style.background='#D2691E'; this.style.borderColor='#D2691E';">✏️ Redigera</button>
+                                <button @onclick="DeleteEvent" disabled="@isProcessing" style="padding: 0.75rem 1.25rem; background: #EF4444; color: white; border: 1px solid #EF4444; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")" onmouseover="if (!@isProcessing) { this.style.background='#DC2626'; this.style.borderColor='#DC2626'; }" onmouseout="if (!@isProcessing) { this.style.background='#EF4444'; this.style.borderColor='#EF4444'; }">🗑️ Ta bort</button>
+                            }
 
-                @if (CanRegisterForEvent())
-                {
-                    <button @onclick="ToggleRegistration" disabled="@isProcessing">
-                        @(isUserRegistered ? "Avregistrera" : "Registrera")
-                    </button>
-                }
-            </Authorized>
-        </AuthorizeView>
-    </div>
-
-    <h1>@tastingEvent.Title</h1>
-
-    <div>
-        <h2>Information</h2>
-        <p><strong>Datum:</strong> @tastingEvent.EventDate.ToString("yyyy-MM-dd HH:mm")</p>
-        @if (!string.IsNullOrEmpty(tastingEvent.Location))
-        {
-            <p><strong>Plats:</strong> @tastingEvent.Location</p>
-        }
-        @if (!string.IsNullOrEmpty(tastingEvent.Description))
-        {
-            <p><strong>Beskrivning:</strong> @tastingEvent.Description</p>
-        }
-        <p><strong>Organiserad av:</strong> @tastingEvent.OrganizedByUserName</p>
-        <p><strong>Publikt event:</strong> @(tastingEvent.IsPublic ? "Ja" : "Nej")</p>
-        @if (tastingEvent.MaxParticipants.HasValue)
-        {
-            <p><strong>Max deltagare:</strong> @tastingEvent.MaxParticipants</p>
-        }
-        <p><strong>Skapat:</strong> @tastingEvent.CreatedDate.ToString("yyyy-MM-dd HH:mm")</p>
-    </div>
-
-    <div>
-        <h2>Whiskies (@tastingEvent.Whiskies.Count)</h2>
-
-        @if (CanEditEvent())
-        {
-            <div>
-                <button @onclick="ShowAddWhiskyForm">Lägg till whisky</button>
+                            @if (CanRegisterForEvent())
+                            {
+                                <button @onclick="ToggleRegistration" disabled="@isProcessing" style="padding: 0.75rem 1.25rem; background: @(isUserRegistered ? "#EF4444" : "#8B4513"); color: white; border: 1px solid @(isUserRegistered ? "#EF4444" : "#8B4513"); border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")" onmouseover="if (!@isProcessing) { this.style.background='@(isUserRegistered ? "#DC2626" : "#6B3410")'; }" onmouseout="if (!@isProcessing) { this.style.background='@(isUserRegistered ? "#EF4444" : "#8B4513")'; }">
+                                    @(isUserRegistered ? "❌ Avregistrera" : "✅ Registrera")
+                                </button>
+                            }
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
             </div>
-        }
 
-        @if (tastingEvent.Whiskies.Any())
-        {
-            @foreach (var whisky in tastingEvent.Whiskies.OrderBy(w => w.Order))
-            {
-                <div>
-                    <h3>@whisky.Order. @whisky.WhiskyName</h3>
-                    <p><strong>Destilleri:</strong> @whisky.Distillery</p>
-                    @if (!string.IsNullOrEmpty(whisky.Notes))
-                    {
-                        <p><strong>Anteckningar:</strong> @whisky.Notes</p>
-                    }
+            <!-- Event Title -->
+            <div style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+                <h1 style="font-size: 2.5rem; color: #2B1810; margin: 0; font-weight: 600; font-family: Georgia, serif;">🥃 @tastingEvent.Title</h1>
+            </div>
 
-                    @if (CanEditEvent())
+            <!-- Event Information -->
+            <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                
+                <h2 style="font-size: 1.75rem; color: #8B4513; margin: 0 0 1.5rem 0; font-weight: 600; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;">ℹ️ Information</h2>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1rem; color: #5C4A3A; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">📅 Datum:</strong> 
+                        <span style="font-family: Georgia, serif;">@tastingEvent.EventDate.ToString("yyyy-MM-dd HH:mm")@(tastingEvent.EndTime.HasValue ? $" - {tastingEvent.EndTime.Value.ToString("HH:mm")}" : "")</span>
+                    </div>
+                    
+                    @if (tastingEvent.Address != null)
                     {
-                        <button @onclick="() => RemoveWhiskyFromEvent(whisky.WhiskyId)">Ta bort</button>
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1rem; color: #5C4A3A; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                            <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">📍 Plats:</strong> 
+                            <div style="font-family: Georgia, serif;">
+                                <div style="font-weight: 600; color: #2B1810;">@tastingEvent.Address.Name</div>
+                                <div style="color: #5C4A3A; font-size: 0.875rem;">@tastingEvent.Address.StreetAddress</div>
+                                <div style="color: #5C4A3A; font-size: 0.875rem;">@($"{tastingEvent.Address.PostalCode} {tastingEvent.Address.City}".Trim())</div>
+                                @if (!string.IsNullOrEmpty(tastingEvent.Address.Description))
+                                {
+                                    <div style="color: #5C4A3A; font-size: 0.8125rem; font-style: italic; margin-top: 0.25rem;">@tastingEvent.Address.Description</div>
+                                }
+                            </div>
+                        </div>
                     }
+                    else if (!string.IsNullOrEmpty(tastingEvent.Location))
+                    {
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1rem; color: #5C4A3A; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                            <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">📍 Plats:</strong> 
+                            <span style="font-family: Georgia, serif;">@tastingEvent.Location</span>
+                        </div>
+                    }
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1rem; color: #5C4A3A; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">👤 Organiserad av:</strong> 
+                        <span style="font-family: Georgia, serif;">@tastingEvent.OrganizedByUserName</span>
+                    </div>
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1rem; color: #5C4A3A; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                        <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">🌐 Typ:</strong> 
+                        <span style="font-family: Georgia, serif;">@(tastingEvent.IsPublic ? "Publikt" : "Privat")</span>
+                    </div>
+                    
+                    @if (tastingEvent.MaxParticipants.HasValue)
+                    {
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1rem; color: #5C4A3A; padding: 0.75rem 0; border-bottom: 1px solid #B09B7C;">
+                            <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">👥 Max deltagare:</strong> 
+                            <span style="font-family: Georgia, serif;">@tastingEvent.MaxParticipants</span>
+                        </div>
+                    }
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 1rem; color: #5C4A3A; padding: 0.75rem 0;">
+                        <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">📝 Skapat:</strong> 
+                        <span style="font-family: Georgia, serif;">@tastingEvent.CreatedDate.ToString("yyyy-MM-dd HH:mm")</span>
+                    </div>
                 </div>
-            }
-        }
-        else
-        {
-            <p>Inga whiskies har lagts till än.</p>
-        }
-    </div>
-
-    <div>
-        <h2>Deltagare (@tastingEvent.Participants.Count)</h2>
-
-        @if (tastingEvent.Participants.Any())
-        {
-            @foreach (var participant in tastingEvent.Participants.OrderBy(p => p.RegisteredDate))
-            {
-                <div>
-                    <span>@participant.UserName (@participant.UserEmail)</span>
-                    <span> - Registrerad: @participant.RegisteredDate.ToString("yyyy-MM-dd")</span>
-
-                    @if (CanEditEvent())
-                    {
-                        <span> - Närvarande: @(participant.Attended ? "Ja" : "Nej")</span>
-                        <button @onclick="() => ToggleAttendance(participant.UserId, !participant.Attended)">
-                            @(participant.Attended ? "Markera som frånvarande" : "Markera som närvarande")
-                        </button>
-                    }
-
-                    @if (!string.IsNullOrEmpty(participant.Notes))
-                    {
-                        <p><strong>Anteckningar:</strong> @participant.Notes</p>
-                    }
-                </div>
-            }
-        }
-        else
-        {
-            <p>Inga deltagare har registrerat sig än.</p>
-        }
-    </div>
-
-    @if (showAddWhiskyForm)
-    {
-        <div>
-            <h3>Lägg till whisky</h3>
-            <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown" placeholder="Sök whisky...">
-            <button type="button" @onclick="SearchWhiskies">Sök</button>
-
-            @if (availableWhiskies.Any())
-            {
-                @foreach (var whisky in availableWhiskies)
+                
+                @if (!string.IsNullOrEmpty(tastingEvent.Description))
                 {
-                    <div>
-                        <span>@whisky.Name - @whisky.Distillery</span>
-                        <button type="button" @onclick="() => AddWhiskyToEvent(whisky.Id)">Lägg till</button>
+                    <div style="margin-top: 1.5rem; padding: 1.25rem; background: #DAD3C7; border-radius: 0.375rem; border-left: 3px solid #8B4513;">
+                        <strong style="color: #2B1810; font-weight: 600; font-family: Georgia, serif; display: block; margin-bottom: 0.5rem;">📄 Beskrivning:</strong>
+                        <p style="margin: 0; color: #5C4A3A; font-size: 1rem; line-height: 1.6; font-family: Georgia, serif;">@tastingEvent.Description</p>
                     </div>
                 }
-            }
+            </div>
 
-            <button type="button" @onclick="CancelAddWhisky">Avbryt</button>
+            <!-- Whiskies Section -->
+            <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 style="font-size: 1.75rem; color: #8B4513; margin: 0; font-weight: 600; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;">
+                        🥃 Whiskies 
+                        <span style="background: #8B4513; color: white; padding: 0.4rem 0.9rem; border-radius: 9999px; font-size: 0.8125rem; font-weight: 700;">@tastingEvent.Whiskies.Count</span>
+                    </h2>
+                    
+                    @if (CanEditEvent())
+                    {
+                        <button @onclick="ShowAddWhiskyForm" style="padding: 0.75rem 1.25rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">➕ Lägg till whisky</button>
+                    }
+                </div>
+
+                @if (tastingEvent.Whiskies.Any())
+                {
+                    @foreach (var whisky in tastingEvent.Whiskies.OrderBy(w => w.Order))
+                    {
+                        <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1.5rem; margin-bottom: 1rem; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#8B4513'; this.style.boxShadow='0 2px 8px rgba(139, 69, 19, 0.15)';" onmouseout="this.style.borderColor='#B09B7C'; this.style.boxShadow='none';">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                                <div style="flex: 1; min-width: 200px;">
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: #2B1810; margin: 0 0 0.75rem 0; font-family: Georgia, serif;">@whisky.Order. @whisky.WhiskyName</h3>
+                                    <p style="margin: 0 0 0.5rem 0; color: #5C4A3A; font-family: Georgia, serif;"><strong style="color: #2B1810;">Destilleri:</strong> @whisky.Distillery</p>
+                                    @if (!string.IsNullOrEmpty(whisky.Notes))
+                                    {
+                                        <div style="margin-top: 0.75rem; padding: 0.75rem; background: #DFD9CE; border-radius: 0.25rem; border-left: 2px solid #8B4513;">
+                                            <p style="margin: 0; color: #5C4A3A; font-style: italic; font-family: Georgia, serif;"><strong style="color: #2B1810;">Anteckningar:</strong> @whisky.Notes</p>
+                                        </div>
+                                    }
+                                </div>
+                                
+                                @if (CanEditEvent())
+                                {
+                                    <button @onclick="() => RemoveWhiskyFromEvent(whisky.WhiskyId)" style="padding: 0.5rem 1rem; background: #EF4444; color: white; border: 1px solid #EF4444; border-radius: 0.25rem; cursor: pointer; font-weight: 500; font-family: Georgia, serif; transition: all 0.2s ease; align-self: flex-start;" onmouseover="this.style.background='#DC2626';" onmouseout="this.style.background='#EF4444';">🗑️ Ta bort</button>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div style="text-align: center; padding: 2rem; color: #5C4A3A; background: #DAD3C7; border: 2px dashed #B09B7C; border-radius: 0.375rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">🥃</div>
+                        <p style="font-size: 1.125rem; margin: 0; font-style: italic; font-family: Georgia, serif;">Inga whiskies har lagts till än.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Participants Section -->
+            <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                
+                <h2 style="font-size: 1.75rem; color: #8B4513; margin: 0 0 1.5rem 0; font-weight: 600; font-family: Georgia, serif; display: flex; align-items: center; gap: 0.5rem;">
+                    👥 Deltagare 
+                    <span style="background: #8B4513; color: white; padding: 0.4rem 0.9rem; border-radius: 9999px; font-size: 0.8125rem; font-weight: 700;">@tastingEvent.Participants.Count</span>
+                </h2>
+
+                @if (tastingEvent.Participants.Any())
+                {
+                    @foreach (var participant in tastingEvent.Participants.OrderBy(p => p.RegisteredDate))
+                    {
+                        <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1.5rem; margin-bottom: 1rem; transition: all 0.2s ease;" onmouseover="this.style.borderColor='#8B4513'; this.style.boxShadow='0 2px 8px rgba(139, 69, 19, 0.15)';" onmouseout="this.style.borderColor='#B09B7C'; this.style.boxShadow='none';">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                                <div style="flex: 1; min-width: 200px;">
+                                    <h4 style="font-size: 1.125rem; font-weight: 600; color: #2B1810; margin: 0 0 0.5rem 0; font-family: Georgia, serif;">@participant.UserName</h4>
+                                    <p style="margin: 0 0 0.25rem 0; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">📧 @participant.UserEmail</p>
+                                    <p style="margin: 0 0 0.5rem 0; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">📅 Registrerad: @participant.RegisteredDate.ToString("yyyy-MM-dd")</p>
+                                    
+                                    @if (CanEditEvent())
+                                    {
+                                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                                            <span style="color: @(participant.Attended ? "#4A7C4E" : "#EF4444"); font-weight: 600; font-family: Georgia, serif; font-size: 0.875rem;">@(participant.Attended ? "✅ Närvarande" : "❌ Frånvarande")</span>
+                                        </div>
+                                    }
+                                    
+                                    @if (!string.IsNullOrEmpty(participant.Notes))
+                                    {
+                                        <div style="margin-top: 0.75rem; padding: 0.75rem; background: #DFD9CE; border-radius: 0.25rem; border-left: 2px solid #8B4513;">
+                                            <p style="margin: 0; color: #5C4A3A; font-style: italic; font-family: Georgia, serif;"><strong style="color: #2B1810;">Anteckningar:</strong> @participant.Notes</p>
+                                        </div>
+                                    }
+                                </div>
+                                
+                                @if (CanEditEvent())
+                                {
+                                    <button @onclick="() => ToggleAttendance(participant.UserId, !participant.Attended)" style="padding: 0.5rem 1rem; background: @(participant.Attended ? "#EF4444" : "#4A7C4E"); color: white; border: 1px solid @(participant.Attended ? "#EF4444" : "#4A7C4E"); border-radius: 0.25rem; cursor: pointer; font-weight: 500; font-family: Georgia, serif; transition: all 0.2s ease; align-self: flex-start; font-size: 0.875rem;" onmouseover="this.style.background='@(participant.Attended ? "#DC2626" : "#3A6B3E")';" onmouseout="this.style.background='@(participant.Attended ? "#EF4444" : "#4A7C4E")';">
+                                        @(participant.Attended ? "Markera frånvarande" : "Markera närvarande")
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div style="text-align: center; padding: 2rem; color: #5C4A3A; background: #DAD3C7; border: 2px dashed #B09B7C; border-radius: 0.375rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">👥</div>
+                        <p style="font-size: 1.125rem; margin: 0; font-style: italic; font-family: Georgia, serif;">Inga deltagare har registrerat sig än.</p>
+                    </div>
+                }
+            </div>
+
+            @if (showAddWhiskyForm)
+            {
+                <!-- Add Whisky Form -->
+                <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: relative;">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                    
+                    <h3 style="font-size: 1.5rem; color: #8B4513; margin: 0 0 1.5rem 0; font-weight: 600; font-family: Georgia, serif;">➕ Lägg till whisky</h3>
+                    
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <input type="text" @bind="whiskySearchTerm" @onkeydown="HandleKeyDown" placeholder="Sök whisky..." style="flex: 1; min-width: 200px; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DAD3C7; font-family: Georgia, serif; transition: all 0.2s ease;" onfocus="this.style.borderColor='#8B4513'; this.style.boxShadow='0 0 0 3px rgba(139, 69, 19, 0.1)';" onblur="this.style.borderColor='#B09B7C'; this.style.boxShadow='none';">
+                        <button type="button" @onclick="SearchWhiskies" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">🔍 Sök</button>
+                    </div>
+
+                    @if (availableWhiskies.Any())
+                    {
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="font-size: 1.125rem; color: #2B1810; margin: 0 0 1rem 0; font-weight: 600; font-family: Georgia, serif;">Sökresultat:</h4>
+                            @foreach (var whisky in availableWhiskies)
+                            {
+                                <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.375rem; padding: 1rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                                    <div style="flex: 1; min-width: 200px;">
+                                        <p style="margin: 0; font-weight: 600; color: #2B1810; font-family: Georgia, serif;">@whisky.Name</p>
+                                        <p style="margin: 0; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">@whisky.Distillery</p>
+                                    </div>
+                                    <button type="button" @onclick="() => AddWhiskyToEvent(whisky.Id)" style="padding: 0.5rem 1rem; background: #4A7C4E; color: white; border: 1px solid #4A7C4E; border-radius: 0.25rem; cursor: pointer; font-weight: 500; font-family: Georgia, serif; transition: all 0.2s ease; font-size: 0.875rem;" onmouseover="this.style.background='#3A6B3E';" onmouseout="this.style.background='#4A7C4E';">✓ Lägg till</button>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" @onclick="CancelAddWhisky" style="padding: 0.75rem 1.5rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 500; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C';">❌ Avbryt</button>
+                    </div>
+                </div>
+            }
         </div>
-    }
+    </div>
 }
 else if (isLoading)
 {
-    <p>Laddar event...</p>
+    <div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+            <div style="text-align: center; padding: 3rem; color: #5C4A3A; font-size: 1.125rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem;">
+                <div style="display: inline-block; width: 2rem; height: 2rem; border: 3px solid #B09B7C; border-radius: 50%; border-top-color: #8B4513; animation: spin 1s ease-in-out infinite; margin-right: 0.75rem;"></div>
+                Laddar event...
+            </div>
+        </div>
+    </div>
 }
 else
 {
-    <PageTitle>Event hittades inte</PageTitle>
-    <h1>Event hittades inte</h1>
-    <p>Eventet du letar efter finns inte.</p>
-    <button @onclick="GoBack">Tillbaka till listan</button>
+    <div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+            <PageTitle>Event hittades inte</PageTitle>
+            
+            <div style="text-align: center; padding: 3rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">❓</div>
+                <h1 style="font-size: 2rem; color: #2B1810; margin: 0 0 1rem 0; font-weight: 600; font-family: Georgia, serif;">Event hittades inte</h1>
+                <p style="font-size: 1.125rem; margin: 0 0 2rem 0; color: #5C4A3A; font-family: Georgia, serif;">Eventet du letar efter finns inte.</p>
+                <button @onclick="GoBack" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">Tillbaka till listan</button>
+            </div>
+        </div>
+    </div>
 }
 
 @if (!string.IsNullOrEmpty(statusMessage))
 {
-    <div>
-        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
-        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+    <div style="position: fixed; top: 1rem; right: 1rem; z-index: 1000; max-width: 400px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; border-radius: 0.5rem; border: 2px solid; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.25); @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.95); border-color: #EF4444; color: white;" : "background: rgba(74, 124, 78, 0.95); border-color: #4A7C4E; color: white;")">
+            <span style="font-family: Georgia, serif;"><strong>@(statusMessage.StartsWith("Fel:") ? "⚠️ Fel" : "✓ Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0.25rem; opacity: 0.8; transition: opacity 0.2s ease; font-family: Georgia, serif;" onmouseover="this.style.opacity='1';" onmouseout="this.style.opacity='0.8';">✕</button>
+        </div>
     </div>
 }
 
@@ -421,12 +556,50 @@ else
 
     private void GoBack()
     {
-        NavigationManager.NavigateTo("/tastings");
+        NavigationManager.NavigateTo("/provningar");
     }
 
     private void GoToEditPage()
     {
-        NavigationManager.NavigateTo($"/tastings/edit/{EventId}");
+        NavigationManager.NavigateTo($"/provningar/redigera/{EventId}");
+    }
+
+    private async Task DeleteEvent()
+    {
+        if (isProcessing || tastingEvent == null) return;
+
+        var confirmed = await JsRuntime.InvokeAsync<bool>("confirm", 
+            $"Är du säker på att du vill ta bort provningen '{tastingEvent.Title}'? Detta kan inte ångras och kommer att ta bort alla deltagare och whiskies från eventet.");
+
+        if (!confirmed) return;
+
+        isProcessing = true;
+        statusMessage = string.Empty;
+
+        try
+        {
+            var success = await TastingEventService.DeleteTastingEventAsync(EventId);
+            if (success)
+            {
+                statusMessage = "Provningen har tagits bort.";
+                // Wait a moment to show the message, then navigate back
+                await Task.Delay(1500);
+                NavigationManager.NavigateTo("/provningar");
+            }
+            else
+            {
+                statusMessage = "Fel: Provningen kunde inte tas bort.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
     }
 
 }

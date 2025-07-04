@@ -4,159 +4,181 @@
 @using GylleneDroppen.Application.Dtos.Membership
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize]
 
 @inject ITastingEventService TastingEventService
 @inject IMembershipService MembershipService
 @inject NavigationManager NavigationManager
 @inject ICurrentUserService CurrentUserService
+@inject IJSRuntime JSRuntime
 
 @rendermode InteractiveServer
 
 <PageTitle>Provningar</PageTitle>
 
-<div class="page-header">
-    <h1>Provningar</h1>
-</div>
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+        <div style="text-align: center; margin-bottom: 3rem; padding: 2rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+            <h1 style="font-size: 2.5rem; color: #2B1810; margin: 0; font-weight: 600;">🥃 Provningar</h1>
+        </div>
 
 <AuthorizeView>
     <Authorized>
-        @if (membershipStatus != null)
+        @if (membershipStatus != null && (membershipStatus.HasActiveMembership || membershipStatus.HasTrialAvailable || membershipStatus.HasUsedTrial))
         {
-            <div class="membership-status @(membershipStatus.HasActiveMembership ? "active" : membershipStatus.HasTrialAvailable ? "trial" : "expired")">
+            <div style="background: #DAD3C7; border-radius: 0.5rem; padding: 1.75rem 2rem; margin-bottom: 2.5rem; border: 2px solid @(membershipStatus.HasActiveMembership ? "#4A7C4E" : membershipStatus.HasTrialAvailable ? "#4682B4" : "#EF4444"); box-shadow: 0 1px 3px rgba(0,0,0,0.15); position: relative;">
+                <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: @(membershipStatus.HasActiveMembership ? "#4A7C4E" : membershipStatus.HasTrialAvailable ? "#4682B4" : "#EF4444");"></div>
                 @if (membershipStatus.HasActiveMembership)
                 {
-                    <p>✨ Ditt medlemskap är aktivt till: <strong>@membershipStatus.MembershipEndDate?.ToString("yyyy-MM-dd")</strong></p>
+                    <p style="margin: 0; font-weight: 500; color: #2B1810; font-size: 1.05rem; font-family: Georgia, serif;">✨ Ditt medlemskap är aktivt till: <strong>@membershipStatus.MembershipEndDate?.ToString("yyyy-MM-dd")</strong></p>
                 }
                 else if (membershipStatus.HasTrialAvailable)
                 {
-                    <p>🎁 Du har en gratis provmedlemskap tillgänglig</p>
+                    <p style="margin: 0; font-weight: 500; color: #2B1810; font-size: 1.05rem; font-family: Georgia, serif;">🎁 Du har en gratis provmedlemskap tillgänglig</p>
                 }
                 else if (membershipStatus.HasUsedTrial)
                 {
-                    <p>⚠️ Du har använt ditt provmedlemskap. Köp medlemskap för att fortsätta delta i event.</p>
+                    <p style="margin: 0; font-weight: 500; color: #2B1810; font-size: 1.05rem; font-family: Georgia, serif;">⚠️ Du har använt ditt provmedlemskap. Köp medlemskap för att fortsätta delta i event.</p>
                 }
             </div>
         }
         
-        <div class="btn-create">
-            <button class="btn btn-primary" @onclick="CreateNewEvent">
-                Skapa nytt event
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <button @onclick="CreateNewEvent" style="padding: 1rem 2rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.5rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; font-size: 1.125rem; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#6B3410'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#8B4513'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                ➕ Skapa nytt event
             </button>
         </div>
     </Authorized>
 </AuthorizeView>
 
-@if (isLoading)
-{
-    <div class="loading">
-        <p>Laddar provningar...</p>
-    </div>
-}
-else
-{
-    <div class="events-section">
-        <h2 class="section-title">
-            Kommande provningar
-            <span class="event-count">@upcomingEvents.Count</span>
-        </h2>
-
-        @if (upcomingEvents.Any())
+        @if (isLoading)
         {
-            @foreach (var e in upcomingEvents)
-            {
-                <div class="event-card">
-                    <h3 class="event-title">@e.Title</h3>
-                    
-                    <div class="event-meta">
-                        <div class="event-meta-item">
-                            <strong>📅 Datum:</strong> @e.EventDate.ToString("yyyy-MM-dd HH:mm")
-                        </div>
-                        
-                        @if (!string.IsNullOrEmpty(e.Location))
-                        {
-                            <div class="event-meta-item">
-                                <strong>📍 Plats:</strong> @e.Location
-                            </div>
-                        }
-                        
-                        <div class="event-meta-item">
-                            <strong>👤 Organiserad av:</strong> @e.OrganizedByUserName
-                        </div>
-                        
-                        <div class="event-meta-item">
-                            <strong>🥃 Whiskies:</strong> @e.WhiskyCount st
-                        </div>
-                        
-                        <div class="event-meta-item">
-                            <strong>👥 Deltagare:</strong> @e.ParticipantCount@(e.MaxParticipants.HasValue ? $"/{e.MaxParticipants}" : "") st
-                        </div>
-                        
-                        <div class="event-meta-item">
-                            <strong>🌐 Typ:</strong> @(e.IsPublic ? "Publik" : "Privat")
-                        </div>
-                    </div>
-
-                    @if (!string.IsNullOrEmpty(e.Description))
-                    {
-                        <div class="event-description">
-                            <strong>Beskrivning:</strong> @e.Description
-                        </div>
-                    }
-
-                    <div class="event-actions">
-                        @EventActions(e)
-                    </div>
-                </div>
-            }
+            <div style="text-align: center; padding: 3rem; color: #5C4A3A; font-size: 1.125rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem;">
+                <div style="display: inline-block; width: 2rem; height: 2rem; border: 3px solid #B09B7C; border-radius: 50%; border-top-color: #8B4513; animation: spin 1s ease-in-out infinite; margin-right: 0.75rem;"></div>
+                Laddar provningar...
+            </div>
         }
         else
         {
-            <div class="empty-state">
-                <p>Inga kommande provningar.</p>
-            </div>
-        }
+            <div style="margin-bottom: 3rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+                    <h2 style="font-size: 1.75rem; color: #8B4513; margin: 0; font-weight: 600; font-family: Georgia, serif;">📅 Kommande provningar</h2>
+                    <span style="background: #8B4513; color: white; padding: 0.4rem 0.9rem; border-radius: 9999px; font-size: 0.8125rem; font-weight: 700; font-family: Georgia, serif;">@upcomingEvents.Count</span>
+                </div>
+
+                @if (upcomingEvents.Any())
+                {
+                    @foreach (var e in upcomingEvents)
+                    {
+                        <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.3s ease; position: relative;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                            <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #8B4513;"></div>
+                            
+                            <h3 style="font-size: 1.5rem; font-weight: 600; color: #2B1810; margin-bottom: 1.5rem; font-family: Georgia, serif;">@e.Title</h3>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+                                <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                                    <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">📅 Datum:</strong> 
+                                    <span style="font-family: Georgia, serif;">@e.EventDate.ToString("yyyy-MM-dd HH:mm")@(e.EndTime.HasValue ? $" - {e.EndTime.Value.ToString("HH:mm")}" : "")</span>
+                                </div>
+                                
+                                @if (!string.IsNullOrEmpty(e.Location))
+                                {
+                                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                                        <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">📍 Plats:</strong> 
+                                        <span style="font-family: Georgia, serif;">@e.Location</span>
+                                    </div>
+                                }
+                                
+                                <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                                    <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">👤 Organiserad av:</strong> 
+                                    <span style="font-family: Georgia, serif;">@e.OrganizedByUserName</span>
+                                </div>
+                                
+                                <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                                    <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">🥃 Whiskies:</strong> 
+                                    <span style="font-family: Georgia, serif;">@e.WhiskyCount st</span>
+                                </div>
+                                
+                                <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                                    <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">👥 Deltagare:</strong> 
+                                    <span style="font-family: Georgia, serif;">@e.ParticipantCount@(e.MaxParticipants.HasValue ? $"/{e.MaxParticipants}" : "") st</span>
+                                </div>
+                                
+                                <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0;">
+                                    <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">🌐 Typ:</strong> 
+                                    <span style="font-family: Georgia, serif;">@(e.IsPublic ? "Publik" : "Privat")</span>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(e.Description))
+                            {
+                                <div style="color: #5C4A3A; font-size: 1rem; line-height: 1.6; margin-bottom: 1.5rem; padding: 1.25rem; background: #DAD3C7; border-radius: 0.375rem; border-left: 3px solid #8B4513; font-family: Georgia, serif;">
+                                    <strong style="color: #2B1810; font-weight: 600;">Beskrivning:</strong> @e.Description
+                                </div>
+                            }
+
+                            <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; padding-top: 1.5rem; border-top: 1px solid #B09B7C;">
+                                @EventActions(e)
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div style="text-align: center; padding: 3rem 2rem; color: #5C4A3A; background: #DAD3C7; border: 2px dashed #B09B7C; border-radius: 0.5rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📅</div>
+                        <p style="font-size: 1.125rem; margin: 0; font-style: italic; font-family: Georgia, serif;">Inga kommande provningar.</p>
+                    </div>
+                }
     </div>
 
-    <div class="events-section">
-        <h2 class="section-title">
-            Tidigare provningar
-            <span class="event-count">@pastEvents.Count</span>
-        </h2>
+    <div style="margin-bottom: 3rem;">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+            <h2 style="font-size: 1.75rem; color: #8B4513; margin: 0; font-weight: 600; font-family: Georgia, serif;">📚 Tidigare provningar</h2>
+            <span style="background: #8B4513; color: white; padding: 0.4rem 0.9rem; border-radius: 9999px; font-size: 0.8125rem; font-weight: 700; font-family: Georgia, serif;">@pastEvents.Count</span>
+        </div>
 
         @if (pastEvents.Any())
         {
             @foreach (var e in pastEvents)
             {
-                <div class="event-card past">
-                    <h3 class="event-title">@e.Title</h3>
+                <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.3s ease; position: relative; opacity: 0.85;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513'; this.style.opacity='1';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C'; this.style.opacity='0.85';">
+                    <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: #B09B7C;"></div>
                     
-                    <div class="event-meta">
-                        <div class="event-meta-item">
-                            <strong>📅 Datum:</strong> @e.EventDate.ToString("yyyy-MM-dd HH:mm")
+                    <h3 style="font-size: 1.5rem; font-weight: 600; color: #2B1810; margin-bottom: 1.5rem; font-family: Georgia, serif;">@e.Title</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                            <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">📅 Datum:</strong> 
+                            <span style="font-family: Georgia, serif;">@e.EventDate.ToString("yyyy-MM-dd HH:mm")@(e.EndTime.HasValue ? $" - {e.EndTime.Value.ToString("HH:mm")}" : "")</span>
                         </div>
                         
                         @if (!string.IsNullOrEmpty(e.Location))
                         {
-                            <div class="event-meta-item">
-                                <strong>📍 Plats:</strong> @e.Location
+                            <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                                <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">📍 Plats:</strong> 
+                                <span style="font-family: Georgia, serif;">@e.Location</span>
                             </div>
                         }
                         
-                        <div class="event-meta-item">
-                            <strong>👤 Organiserad av:</strong> @e.OrganizedByUserName
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                            <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">👤 Organiserad av:</strong> 
+                            <span style="font-family: Georgia, serif;">@e.OrganizedByUserName</span>
                         </div>
                         
-                        <div class="event-meta-item">
-                            <strong>🥃 Whiskies:</strong> @e.WhiskyCount st
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0; border-bottom: 1px solid #B09B7C;">
+                            <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">🥃 Whiskies:</strong> 
+                            <span style="font-family: Georgia, serif;">@e.WhiskyCount st</span>
                         </div>
                         
-                        <div class="event-meta-item">
-                            <strong>👥 Deltagare:</strong> @e.ParticipantCount st
+                        <div style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: #5C4A3A; padding: 0.5rem 0;">
+                            <strong style="color: #2B1810; font-weight: 600; min-width: 120px; font-family: Georgia, serif;">👥 Deltagare:</strong> 
+                            <span style="font-family: Georgia, serif;">@e.ParticipantCount st</span>
                         </div>
                     </div>
 
-                    <div class="event-actions">
-                        <button class="btn btn-outline-primary" @onclick="() => ViewEvent(e.Id)">
+                    <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; padding-top: 1.5rem; border-top: 1px solid #B09B7C;">
+                        <button @onclick="() => ViewEvent(e.Id)" style="padding: 0.75rem 1.5rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#8B4513'; this.style.color='white'; this.style.borderColor='#8B4513';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810'; this.style.borderColor='#B09B7C';">
                             Visa detaljer
                         </button>
                     </div>
@@ -165,20 +187,23 @@ else
         }
         else
         {
-            <div class="empty-state">
-                <p>Inga tidigare provningar.</p>
+            <div style="text-align: center; padding: 3rem 2rem; color: #5C4A3A; background: #DAD3C7; border: 2px dashed #B09B7C; border-radius: 0.5rem;">
+                <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📚</div>
+                <p style="font-size: 1.125rem; margin: 0; font-style: italic; font-family: Georgia, serif;">Inga tidigare provningar.</p>
             </div>
         }
     </div>
 }
 
-@if (!string.IsNullOrEmpty(statusMessage))
-{
-    <div class="alert @(statusMessage.StartsWith("Fel:") ? "alert-danger" : "alert-success")">
-        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
-        <button type="button" class="btn btn-sm btn-secondary" @onclick="() => statusMessage = string.Empty">Stäng</button>
-    </div>
-}
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; padding: 1.25rem 1.5rem; border-radius: 0.5rem; border: 2px solid; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.15); @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border-color: #EF4444; color: #2B1810;" : "background: rgba(74, 124, 78, 0.15); border-color: #4A7C4E; color: #2B1810;")">
+            <span style="font-family: Georgia, serif;"><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0.25rem; opacity: 0.8; transition: opacity 0.2s ease; font-family: Georgia, serif;" onmouseover="this.style.opacity='1';" onmouseout="this.style.opacity='0.8';">✕</button>
+        </div>
+    }
+</div>
+</div>
 
 @code {
     private List<TastingEventDto> upcomingEvents = new();
@@ -255,7 +280,14 @@ else
 
     private bool CanEditEvent(TastingEventDto e)
     {
-        return true;
+        return currentUserId != null && 
+               (e.OrganizedByUserName == CurrentUserService.GetUserEmail() || IsAdmin());
+    }
+    
+    private bool IsAdmin()
+    {
+        // Simplified - should check if user has Admin role
+        return false;
     }
 
     private bool CanRegisterForEvent(TastingEventDto e)
@@ -308,9 +340,45 @@ else
         }
     }
 
-    private void CreateNewEvent() => NavigationManager.NavigateTo("/tastings/create");
-    private void ViewEvent(Guid id) => NavigationManager.NavigateTo($"/tastings/{id}");
-    private void EditEvent(Guid id) => NavigationManager.NavigateTo($"/tastings/edit/{id}");
+    private void CreateNewEvent() => NavigationManager.NavigateTo("/provningar/skapa");
+    private void ViewEvent(Guid id) => NavigationManager.NavigateTo($"/provningar/{id}");
+    private void EditEvent(Guid id) => NavigationManager.NavigateTo($"/provningar/redigera/{id}");
+    
+    private async Task DeleteEvent(Guid eventId, string eventTitle)
+    {
+        if (isProcessing) return;
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
+            $"Är du säker på att du vill ta bort provningen '{eventTitle}'? Detta kan inte ångras och kommer att ta bort alla deltagare och whiskies från eventet.");
+
+        if (!confirmed) return;
+
+        isProcessing = true;
+        statusMessage = string.Empty;
+
+        try
+        {
+            var success = await TastingEventService.DeleteTastingEventAsync(eventId);
+            if (success)
+            {
+                statusMessage = $"Provningen '{eventTitle}' har tagits bort.";
+                await LoadEvents(); // Refresh the list
+            }
+            else
+            {
+                statusMessage = "Fel: Provningen kunde inte tas bort.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
 
     private RenderFragment Text(string content) => builder =>
     {
@@ -330,9 +398,11 @@ else
     {
         // View details button
         builder.OpenElement(0, "button");
-        builder.AddAttribute(1, "class", "btn btn-outline-primary");
-        builder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => ViewEvent(e.Id)));
-        builder.AddContent(3, "Visa detaljer");
+        builder.AddAttribute(1, "style", "padding: 0.75rem 1.5rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;");
+        builder.AddAttribute(2, "onmouseover", "this.style.background='#8B4513'; this.style.color='white'; this.style.borderColor='#8B4513';");
+        builder.AddAttribute(3, "onmouseout", "this.style.background='#DFD9CE'; this.style.color='#2B1810'; this.style.borderColor='#B09B7C';");
+        builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, () => ViewEvent(e.Id)));
+        builder.AddContent(5, "Visa detaljer");
         builder.CloseElement();
         
         builder.OpenComponent<AuthorizeView>(4);
@@ -343,23 +413,44 @@ else
                 if (CanEditEvent(e))
                 {
                     childBuilder.OpenElement(0, "button");
-                    childBuilder.AddAttribute(1, "class", "btn btn-secondary");
-                    childBuilder.AddAttribute(2, "onclick", EventCallback.Factory.Create(this, () => EditEvent(e.Id)));
-                    childBuilder.AddContent(3, "Redigera");
+                    childBuilder.AddAttribute(1, "style", "padding: 0.75rem 1.25rem; background: #D2691E; color: white; border: 1px solid #D2691E; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;");
+                    childBuilder.AddAttribute(2, "onmouseover", "this.style.background='#B8860B'; this.style.borderColor='#B8860B';");
+                    childBuilder.AddAttribute(3, "onmouseout", "this.style.background='#D2691E'; this.style.borderColor='#D2691E';");
+                    childBuilder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, () => EditEvent(e.Id)));
+                    childBuilder.AddContent(5, "✏️ Redigera");
+                    childBuilder.CloseElement();
+                    
+                    childBuilder.OpenElement(6, "button");
+                    childBuilder.AddAttribute(7, "style", "padding: 0.75rem 1.25rem; background: #EF4444; color: white; border: 1px solid #EF4444; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" + (isProcessing ? " opacity: 0.6; cursor: not-allowed;" : ""));
+                    childBuilder.AddAttribute(8, "onmouseover", isProcessing ? "" : "this.style.background='#DC2626'; this.style.borderColor='#DC2626';");
+                    childBuilder.AddAttribute(9, "onmouseout", isProcessing ? "" : "this.style.background='#EF4444'; this.style.borderColor='#EF4444';");
+                    childBuilder.AddAttribute(10, "onclick", EventCallback.Factory.Create(this, async () => await DeleteEvent(e.Id, e.Title)));
+                    childBuilder.AddAttribute(11, "disabled", isProcessing);
+                    childBuilder.AddContent(12, "🗑️ Ta bort");
                     childBuilder.CloseElement();
                 }
 
                 if (CanRegisterForEvent(e))
                 {
                     var isRegistered = isUserRegistered.ContainsKey(e.Id) && isUserRegistered[e.Id];
-                    var buttonClass = isRegistered ? "btn btn-outline-danger" : "btn btn-gold";
                     var buttonText = isRegistered ? "Avregistrera" : "Registrera";
+                    var buttonStyle = isRegistered ? 
+                        "padding: 0.75rem 1.5rem; background: #EF4444; color: white; border: 1px solid #EF4444; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" :
+                        "padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;";
+                    var hoverStyle = isRegistered ?
+                        "this.style.background='#DC2626';" :
+                        "this.style.background='#6B3410';";
+                    var outStyle = isRegistered ?
+                        "this.style.background='#EF4444';" :
+                        "this.style.background='#8B4513';";
                     
                     childBuilder.OpenElement(4, "button");
-                    childBuilder.AddAttribute(5, "class", buttonClass);
-                    childBuilder.AddAttribute(6, "onclick", EventCallback.Factory.Create(this, async () => await RegisterForEvent(e.Id)));
-                    childBuilder.AddAttribute(7, "disabled", isProcessing);
-                    childBuilder.AddContent(8, buttonText);
+                    childBuilder.AddAttribute(5, "style", buttonStyle + (isProcessing ? " opacity: 0.6; cursor: not-allowed;" : ""));
+                    childBuilder.AddAttribute(6, "onmouseover", isProcessing ? "" : hoverStyle);
+                    childBuilder.AddAttribute(7, "onmouseout", isProcessing ? "" : outStyle);
+                    childBuilder.AddAttribute(8, "onclick", EventCallback.Factory.Create(this, async () => await RegisterForEvent(e.Id)));
+                    childBuilder.AddAttribute(9, "disabled", isProcessing);
+                    childBuilder.AddContent(10, buttonText);
                     childBuilder.CloseElement();
                 }
                 else if (membershipStatus != null && !membershipStatus.CanRegisterForEvents)
@@ -367,7 +458,7 @@ else
                     if (membershipStatus.HasUsedTrial)
                     {
                         childBuilder.OpenElement(9, "span");
-                        childBuilder.AddAttribute(10, "class", "membership-required");
+                        childBuilder.AddAttribute(10, "style", "font-size: 0.875rem; color: #EF4444; font-weight: 600; padding: 0.5rem 1rem; background: rgba(239, 68, 68, 0.15); border-radius: 0.375rem; border: 1px solid rgba(239, 68, 68, 0.3); text-transform: uppercase; letter-spacing: 0.5px; font-family: Georgia, serif;");
                         childBuilder.AddContent(11, "Kräver medlemskap");
                         childBuilder.CloseElement();
                     }

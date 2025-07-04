@@ -15,14 +15,22 @@
 <StatusMessage/>
 @if (currentLogins?.Count > 0)
 {
-    <h3>Registrerade inloggningar</h3>
-    <table>
+    <h3 style="font-family: Georgia, serif; font-size: 1.5rem; color: #8B4513; margin: 2rem 0 1rem 0; font-weight: 600;">Registrerade inloggningar</h3>
+    <table style="width: 100%; border-collapse: collapse; background: #DFD9CE; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border: 1px solid #B09B7C; margin: 1rem 0;">
+        <thead style="background: #8B4513;">
+            <tr>
+                <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Leverantör</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Åtgärder</th>
+            </tr>
+        </thead>
         <tbody>
         @foreach (var login in currentLogins)
         {
-            <tr>
-                <td>@login.ProviderDisplayName</td>
-                <td>
+            <tr style="transition: background-color 0.2s ease;">
+                <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE;">
+                    <div style="font-weight: 600; color: #2B1810;">@login.ProviderDisplayName</div>
+                </td>
+                <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE;">
                     @if (showRemoveButton)
                     {
                         <form @formname="@($"remove-login-{login.LoginProvider}")" @onsubmit="OnSubmitAsync"
@@ -31,15 +39,14 @@
                             <div>
                                 <input type="hidden" name="@nameof(LoginProvider)" value="@login.LoginProvider"/>
                                 <input type="hidden" name="@nameof(ProviderKey)" value="@login.ProviderKey"/>
-                                <button type="submit" title="Ta bort @login.ProviderDisplayName från ditt konto">Ta
-                                    bort
+                                <button type="submit" title="Ta bort @login.ProviderDisplayName från ditt konto" style="padding: 0.5rem 0.75rem; border: 1px solid #EF4444; background: transparent; color: #EF4444; border-radius: 0.25rem; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; font-weight: 600; font-family: Georgia, serif;" onmouseover="this.style.background='#EF4444'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#EF4444';">🗑️ Ta bort
                                 </button>
                             </div>
                         </form>
                     }
                     else
                     {
-                        @: &nbsp;
+                        <span style="color: #5D4037; font-style: italic;">Kan inte tas bort</span>
                     }
                 </td>
             </tr>

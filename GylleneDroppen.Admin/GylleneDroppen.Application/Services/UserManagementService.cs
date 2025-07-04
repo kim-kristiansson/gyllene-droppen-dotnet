@@ -1,5 +1,3 @@
-using System.Security.Claims;
-using GylleneDroppen.Application.Contants;
 using GylleneDroppen.Application.Dtos.User;
 using GylleneDroppen.Application.Interfaces.Services;
 using GylleneDroppen.Core.Entities;
@@ -15,8 +13,6 @@ public class UserManagementService(
     ILogger<UserManagementService> logger)
     : IUserManagementService
 {
-    private const string DepartmentClaimType = "department";
-
     public async Task<List<UserResponseDto>> GetAllUsersAsync()
     {
         var users = await userManager.Users.ToListAsync();
@@ -162,9 +158,6 @@ public class UserManagementService(
             var result = await userManager.RemoveFromRoleAsync(userToDemote, "Admin");
             if (result.Succeeded)
             {
-                // Remove department claim when demoting
-                await RemoveAdminDepartmentAsync(userId, currentAdminId);
-
                 // Ensure user has User role
                 if (!await userManager.IsInRoleAsync(userToDemote, "User"))
                 {
@@ -212,138 +205,5 @@ public class UserManagementService(
             FullName = $"{user.FirstName} {user.LastName}",
             Role = "Admin"
         }).OrderBy(u => u.Email).ToList();
-    }
-
-    public async Task<bool> SetAdminDepartmentAsync(string userId, string department, string currentAdminId)
-    {
-        try
-        {
-            // Verify the current user is an admin
-            var currentAdmin = await userManager.FindByIdAsync(currentAdminId);
-            if (currentAdmin == null || !await userManager.IsInRoleAsync(currentAdmin, "Admin"))
-            {
-                logger.LogWarning(
-                    "Unauthorized attempt to set department. Current user {CurrentAdminId} is not an admin",
-                    currentAdminId);
-                return false;
-            }
-
-            // Find the user to update
-            var user = await userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                logger.LogWarning("User {UserId} not found for department assignment", userId);
-                return false;
-            }
-
-            // Verify the user is an admin
-            if (!await userManager.IsInRoleAsync(user, "Admin"))
-            {
-                logger.LogWarning("Cannot assign department to non-admin user {UserId}", userId);
-                return false;
-            }
-
-            // Validate department exists
-            if (Departments.All.All(d => d.Value != department))
-            {
-                logger.LogWarning("Invalid department {Department} for user {UserId}", department, userId);
-                return false;
-            }
-
-            // Remove existing department claim if it exists
-            var existingClaims = await userManager.GetClaimsAsync(user);
-            var existingDepartmentClaim = existingClaims.FirstOrDefault(c => c.Type == DepartmentClaimType);
-
-            if (existingDepartmentClaim != null)
-            {
-                await userManager.RemoveClaimAsync(user, existingDepartmentClaim);
-            }
-
-            // Add new department claim
-            var newClaim = new Claim(DepartmentClaimType, department);
-            var result = await userManager.AddClaimAsync(user, newClaim);
-
-            if (result.Succeeded)
-            {
-                logger.LogInformation("Department {Department} assigned to user {UserId} by {CurrentAdminId}",
-                    department, userId, currentAdminId);
-                return true;
-            }
-
-            logger.LogError("Failed to assign department {Department} to user {UserId}: {Errors}",
-                department, userId, string.Join(", ", result.Errors.Select(e => e.Description)));
-            return false;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error assigning department {Department} to user {UserId}", department, userId);
-            return false;
-        }
-    }
-
-    public async Task<string?> GetAdminDepartmentAsync(string userId)
-    {
-        try
-        {
-            var user = await userManager.FindByIdAsync(userId);
-            if (user == null)
-                return null;
-
-            var claims = await userManager.GetClaimsAsync(user);
-            var departmentClaim = claims.FirstOrDefault(c => c.Type == DepartmentClaimType);
-
-            return departmentClaim?.Value;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error retrieving department for user {UserId}", userId);
-            return null;
-        }
-    }
-
-    public async Task<bool> RemoveAdminDepartmentAsync(string userId, string currentAdminId)
-    {
-        try
-        {
-            // Verify the current user is an admin
-            var currentAdmin = await userManager.FindByIdAsync(currentAdminId);
-            if (currentAdmin == null || !await userManager.IsInRoleAsync(currentAdmin, "Admin"))
-            {
-                logger.LogWarning(
-                    "Unauthorized attempt to remove department. Current user {CurrentAdminId} is not an admin",
-                    currentAdminId);
-                return false;
-            }
-
-            // Find the user to update
-            var user = await userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                logger.LogWarning("User {UserId} not found for department removal", userId);
-                return false;
-            }
-
-            // Remove department claim if it exists
-            var claims = await userManager.GetClaimsAsync(user);
-            var departmentClaim = claims.FirstOrDefault(c => c.Type == DepartmentClaimType);
-
-            if (departmentClaim == null) return true; // No department to remove
-            var result = await userManager.RemoveClaimAsync(user, departmentClaim);
-            if (result.Succeeded)
-            {
-                logger.LogInformation("Department removed from user {UserId} by {CurrentAdminId}",
-                    userId, currentAdminId);
-                return true;
-            }
-
-            logger.LogError("Failed to remove department from user {UserId}: {Errors}",
-                userId, string.Join(", ", result.Errors.Select(e => e.Description)));
-            return false;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error removing department from user {UserId}", userId);
-            return false;
-        }
     }
 }

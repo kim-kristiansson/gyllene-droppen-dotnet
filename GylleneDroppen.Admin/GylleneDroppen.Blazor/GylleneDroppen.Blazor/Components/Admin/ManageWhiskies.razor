@@ -1,10 +1,12 @@
 @page "/admin/whiskies"
 @using GylleneDroppen.Application.Interfaces.Services
 @using GylleneDroppen.Application.Dtos.Whisky
+@using GylleneDroppen.Application.Dtos.WhiskyMetadata
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Web
 
 @inject IWhiskyService WhiskyService
+@inject IWhiskyMetadataService WhiskyMetadataService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JsRuntime
 
@@ -13,108 +15,274 @@
 
 <PageTitle>Hantera Whiskies</PageTitle>
 
-<h1>Hantera Whiskies</h1>
-
-<div>
-    <button @onclick="GoToCreatePage">Lägg till ny whisky</button>
-</div>
-
-@if (!string.IsNullOrEmpty(statusMessage))
-{
-    <div>
-        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
-        <button @onclick="() => statusMessage = string.Empty">Stäng</button>
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
+<div style="max-width: 1400px; margin: 0 auto; padding: 0 1rem;">
+    <div class="mobile-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+        <h1 style="font-size: 2.25rem; color: #2B1810; margin: 0; font-weight: 600;">🥃 Hantera Whiskies</h1>
+        <div class="header-buttons" style="display: flex; gap: 1rem; align-items: center;">
+            <span style="background: #8B4513; color: #F3F0E7; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 700;">Totalt: @(searchResult?.TotalCount ?? 0) whiskies</span>
+            <button @onclick="GoToCreatePage" style="padding: 0.75rem 1.5rem; border: 2px solid #8B4513; background: #DFD9CE; color: #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; text-decoration: none; transition: all 0.2s ease;" onmouseover="this.style.background='#8B4513'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#8B4513';">
+                <span>➕</span> Lägg till ny whisky
+            </button>
+        </div>
     </div>
-}
 
-<div>
-    <input type="text" @bind="searchDto.SearchTerm" @onkeydown="HandleKeyDown" placeholder="Sök whiskies...">
-    <button @onclick="SearchWhiskies">Sök</button>
-    <button @onclick="ClearSearch">Rensa</button>
-</div>
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div style="padding: 1rem 1.5rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444;" : "background: rgba(74, 124, 78, 0.15); border: 1px solid #4A7C4E; color: #4A7C4E;")">
+            <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+            <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0; opacity: 0.8; transition: opacity 0.2s ease;">✕</button>
+        </div>
+    }
 
-@if (isLoading)
-{
-    <p>Laddar whiskies...</p>
-}
-else if (searchResult?.Whiskies.Any() == true)
-{
-    <div>
-        <p>Visar @searchResult.Whiskies.Count av @searchResult.TotalCount whiskies</p>
+    <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+        <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #B09B7C;">
+            <h2 style="font-family: Georgia, serif; font-size: 1.5rem; color: #8B4513; margin: 0; font-weight: 600;">
+                🔍 Sök och filtrera
+            </h2>
+        </div>
 
-        @if (searchResult.TotalPages > 1)
+        <div style="margin-bottom: 1.5rem;">
+            <div class="mobile-search" style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <input type="text" @bind="searchDto.SearchTerm" @onkeydown="HandleKeyDown" 
+                       placeholder="Sök på namn, destilleri eller region..." 
+                       style="flex: 1; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 0.875rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                <div class="search-buttons" style="display: flex; gap: 0.5rem;">
+                    <button @onclick="SearchWhiskies" style="padding: 0.75rem 1.25rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">Sök</button>
+                    <button @onclick="ClearSearch" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Rensa</button>
+                </div>
+            </div>
+
+            <div class="mobile-filters" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; flex-direction: column;">
+                    <label style="display: block; font-weight: 500; color: #2B1810; margin-bottom: 0.5rem; font-size: 0.875rem; font-family: Georgia, serif;">Land:</label>
+                    <select @bind="searchDto.Country" @bind:after="SearchWhiskies" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                        <option value="">Alla länder</option>
+                        @foreach (var country in countries.OrderBy(c => c.Name))
+                        {
+                            <option value="@country.Name">@country.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column;">
+                    <label style="display: block; font-weight: 500; color: #2B1810; margin-bottom: 0.5rem; font-size: 0.875rem; font-family: Georgia, serif;">Region:</label>
+                    <select @bind="searchDto.Region" @bind:after="SearchWhiskies" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                        <option value="">Alla regioner</option>
+                        @foreach (var region in regions.OrderBy(r => r.Name))
+                        {
+                            <option value="@region.Name">@region.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column;">
+                    <label style="display: block; font-weight: 500; color: #2B1810; margin-bottom: 0.5rem; font-size: 0.875rem; font-family: Georgia, serif;">Typ:</label>
+                    <select @bind="searchDto.Type" @bind:after="SearchWhiskies" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                        <option value="">Alla typer</option>
+                        @foreach (var type in whiskyTypes.OrderBy(t => t.Name))
+                        {
+                            <option value="@type.Name">@type.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column;">
+                    <label style="display: block; font-weight: 500; color: #2B1810; margin-bottom: 0.5rem; font-size: 0.875rem; font-family: Georgia, serif;">Sortera efter:</label>
+                    <select @bind="searchDto.SortBy" @bind:after="SearchWhiskies" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #B09B7C; border-radius: 0.375rem; font-size: 1rem; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif;">
+                        <option value="Name">Namn</option>
+                        <option value="Age">Ålder</option>
+                        <option value="Abv">ABV</option>
+                        <option value="Price">Pris</option>
+                        <option value="CreatedDate">Datum tillagt</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; flex-direction: column;">
+                    <label style="display: block; font-weight: 500; color: transparent; margin-bottom: 0.5rem; font-size: 0.875rem; font-family: Georgia, serif;">&nbsp;</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.375rem;">
+                        <input type="checkbox" @bind="searchDto.SortDescending" id="sortDesc" style="width: 1.125rem; height: 1.125rem; border: 1px solid #B09B7C; border-radius: 0.25rem; background: #DFD9CE;">
+                        <label for="sortDesc" style="font-size: 0.875rem; color: #2B1810; font-weight: 500; font-family: Georgia, serif;">Fallande ordning</label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button @onclick="SearchWhiskies" style="padding: 0.75rem 1.25rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">Filtrera</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+        <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #B09B7C;">
+            <h2 style="font-family: Georgia, serif; font-size: 1.5rem; color: #8B4513; margin: 0; font-weight: 600;">
+                🥃 Alla whiskies
+                <span style="background: #8B4513; color: #F3F0E8; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 700; margin-left: 1rem;">@(searchResult?.Whiskies.Count ?? 0)</span>
+            </h2>
+        </div>
+
+        @if (isLoading)
         {
-            <div>
-                @if (searchResult.HasPreviousPage)
-                {
-                    <button @onclick="() => GoToPage(searchDto.Page - 1)">Föregående</button>
-                }
+            <div style="display: flex; justify-content: center; align-items: center; padding: 3rem; color: #5D4037; font-size: 1.125rem;">
+                <div style="display: inline-block; width: 2rem; height: 2rem; border: 3px solid #B09B7C; border-radius: 50%; border-top-color: #8B4513; animation: spin 1s linear infinite; margin-right: 0.75rem;"></div>
+                Laddar whiskies...
+            </div>
+        }
+        else if (searchResult?.Whiskies.Any() == true)
+        {
+            @if (searchResult.TotalPages > 1)
+            {
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 1rem; background: #F5F0E8; border: 1px solid #B09B7C; border-radius: 0.375rem;">
+                    <button @onclick="() => GoToPage(searchDto.Page - 1)" disabled="@(!searchResult.HasPreviousPage)" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; @(!searchResult.HasPreviousPage ? "opacity: 0.5; cursor: not-allowed;" : "transition: all 0.2s ease;")" onmouseover="if (@searchResult.HasPreviousPage) { this.style.background='#B09B7C'; this.style.color='white'; }" onmouseout="if (@searchResult.HasPreviousPage) { this.style.background='#DFD9CE'; this.style.color='#2B1810'; }">
+                        Föregående
+                    </button>
+                    <span style="font-weight: 600; color: #2B1810; font-family: Georgia, serif;">Sida @searchResult.Page av @searchResult.TotalPages</span>
+                    <button @onclick="() => GoToPage(searchDto.Page + 1)" disabled="@(!searchResult.HasNextPage)" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; @(!searchResult.HasNextPage ? "opacity: 0.5; cursor: not-allowed;" : "transition: all 0.2s ease;")" onmouseover="if (@searchResult.HasNextPage) { this.style.background='#B09B7C'; this.style.color='white'; }" onmouseout="if (@searchResult.HasNextPage) { this.style.background='#DFD9CE'; this.style.color='#2B1810'; }">
+                        Nästa
+                    </button>
+                </div>
+            }
 
-                <span>Sida @searchResult.Page av @searchResult.TotalPages</span>
+            <!-- Desktop/Tablet Table View -->
+            <table style="width: 100%; border-collapse: collapse; background: #DFD9CE; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border: 1px solid #B09B7C; margin: 1rem 0;">
+                <thead style="background: #8B4513;">
+                    <tr>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Namn</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Destilleri</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Land</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Region</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Typ</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Ålder</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">ABV</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Pris</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Provningar</th>
+                        <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Åtgärder</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var whisky in searchResult.Whiskies)
+                    {
+                        <tr style="transition: background-color 0.2s ease;" onmouseover="this.style.backgroundColor='#F5F0E8';" onmouseout="this.style.backgroundColor='transparent';">
+                            <td data-label="Namn" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">
+                                <div style="font-weight: 600; color: #2B1810;">@whisky.Name</div>
+                            </td>
+                            <td data-label="Destilleri" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">
+                                <div>@whisky.Distillery</div>
+                            </td>
+                            <td data-label="Land" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">@whisky.Country</td>
+                            <td data-label="Region" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">@whisky.Region</td>
+                            <td data-label="Typ" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">
+                                <span>@whisky.Type</span>
+                            </td>
+                            <td data-label="Ålder" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">
+                                <span>@(whisky.Age?.ToString() ?? "NAS")</span>
+                            </td>
+                            <td data-label="ABV" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">
+                                <span>@whisky.Abv%</span>
+                            </td>
+                            <td data-label="Pris" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">
+                                <span>@(whisky.Price?.ToString("C") ?? "-")</span>
+                            </td>
+                            <td data-label="Provningar" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; color: #2B1810; font-family: Georgia, serif;">
+                                <span>@whisky.TastingCount</span>
+                            </td>
+                            <td data-label="Åtgärder" style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle;">
+                                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                    <button @onclick="() => GoToWhisky(whisky.Id)" style="padding: 0.5rem 0.75rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+                                        👁️ Visa
+                                    </button>
+                                    <button @onclick="() => GoToEditPage(whisky.Id)" style="padding: 0.5rem 0.75rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">
+                                        ✏️ Redigera
+                                    </button>
+                                    <button @onclick="() => OpenDeleteDialog(whisky.Id, whisky.Name)" 
+                                            disabled="@isProcessing" style="padding: 0.5rem 0.75rem; background: #EF4444; color: white; border: 1px solid #EF4444; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.5; cursor: not-allowed;" : "")" onmouseover="if (!@isProcessing) { this.style.background='#DC2626'; }" onmouseout="if (!@isProcessing) { this.style.background='#EF4444'; }">
+                                        🗑️ Ta bort
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
 
-                @if (searchResult.HasNextPage)
+            <!-- Mobile Card View -->
+            <div class="mobile-whisky-list" style="display: none;">
+                @foreach (var whisky in searchResult.Whiskies)
                 {
-                    <button @onclick="() => GoToPage(searchDto.Page + 1)">Nästa</button>
+                    <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.375rem; margin-bottom: 0.75rem; padding: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <div style="flex: 1; min-width: 0;">
+                                <h3 style="font-size: 0.875rem; font-weight: 600; color: #2B1810; margin: 0; font-family: Georgia, serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@whisky.Name</h3>
+                                <p style="font-size: 0.75rem; color: #5C4A3A; margin: 0; font-family: Georgia, serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@whisky.Distillery</p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
+                                @if (whisky.Price.HasValue)
+                                {
+                                    <span style="font-size: 0.75rem; font-weight: 600; color: #8B4513; font-family: Georgia, serif;">@whisky.Price.Value.ToString("C")</span>
+                                }
+                                <button @onclick="() => GoToWhisky(whisky.Id)" style="padding: 0.375rem 0.75rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; white-space: nowrap;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+                                    Visa
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.6875rem; color: #6B5B4B; font-family: Georgia, serif;">
+                            <span>@whisky.Country</span>
+                            <span>@(whisky.Age.HasValue ? $"{whisky.Age} år" : "NAS")</span>
+                            <span>@whisky.Abv%</span>
+                        </div>
+                    </div>
                 }
+            </div>
+
+            @if (searchResult.TotalPages > 1)
+            {
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding: 1rem; background: #F5F0E8; border: 1px solid #B09B7C; border-radius: 0.375rem;">
+                    <button @onclick="() => GoToPage(searchDto.Page - 1)" disabled="@(!searchResult.HasPreviousPage)" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; @(!searchResult.HasPreviousPage ? "opacity: 0.5; cursor: not-allowed;" : "transition: all 0.2s ease;")" onmouseover="if (@searchResult.HasPreviousPage) { this.style.background='#B09B7C'; this.style.color='white'; }" onmouseout="if (@searchResult.HasPreviousPage) { this.style.background='#DFD9CE'; this.style.color='#2B1810'; }">
+                        Föregående
+                    </button>
+                    <span style="font-weight: 600; color: #2B1810; font-family: Georgia, serif;">Sida @searchResult.Page av @searchResult.TotalPages</span>
+                    <button @onclick="() => GoToPage(searchDto.Page + 1)" disabled="@(!searchResult.HasNextPage)" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; @(!searchResult.HasNextPage ? "opacity: 0.5; cursor: not-allowed;" : "transition: all 0.2s ease;")" onmouseover="if (@searchResult.HasNextPage) { this.style.background='#B09B7C'; this.style.color='white'; }" onmouseout="if (@searchResult.HasNextPage) { this.style.background='#DFD9CE'; this.style.color='#2B1810'; }">
+                        Nästa
+                    </button>
+                </div>
+            }
+        }
+        else if (searchResult != null)
+        {
+            <div style="text-align: center; padding: 3rem 2rem; color: #5D4037;">
+                <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">🔍</div>
+                <h3 style="font-family: Georgia, serif; font-size: 1.5rem; margin-bottom: 1rem; color: #2B1810;">Inga whiskies hittades</h3>
+                <p style="font-size: 1rem; margin-bottom: 1.5rem;">Inga whiskies matchade dina sökkriterier. Prova att justera filtren eller söktermen.</p>
+                <button @onclick="ClearSearch" style="padding: 0.75rem 1.25rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">Rensa alla filter</button>
             </div>
         }
     </div>
+</div>
+</div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>Namn</th>
-            <th>Destilleri</th>
-            <th>Land</th>
-            <th>Region</th>
-            <th>Typ</th>
-            <th>Ålder</th>
-            <th>ABV</th>
-            <th>Pris</th>
-            <th>Provningar</th>
-            <th>Skapad</th>
-            <th>Åtgärder</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var whisky in searchResult.Whiskies)
-        {
-            <tr>
-                <td>@whisky.Name</td>
-                <td>@whisky.Distillery</td>
-                <td>@whisky.Country</td>
-                <td>@whisky.Region</td>
-                <td>@whisky.Type</td>
-                <td>@(whisky.Age?.ToString() ?? "NAS")</td>
-                <td>@whisky.Abv%</td>
-                <td>@(whisky.Price?.ToString("C") ?? "-")</td>
-                <td>@whisky.TastingCount</td>
-                <td>@whisky.CreatedDate.ToString("yyyy-MM-dd")</td>
-                <td>
-                    <button @onclick="() => GoToWhisky(whisky.Id)">Visa</button>
-                    <button @onclick="() => GoToEditPage(whisky.Id)">Redigera</button>
-                    <button @onclick="() => OpenDeleteDialog(whisky.Id, whisky.Name)" disabled="@isProcessing">Ta bort
-                    </button>
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
-
-<dialog id="deleteDialog">
-    <form method="dialog">
-        <p>Är du säker på att du vill ta bort whiskyn <strong>@dialogWhiskyName</strong>?</p>
-        <menu>
-            <button @onclick="ConfirmDelete">Ja</button>
-            <button @onclick="CancelDelete">Nej</button>
-        </menu>
-    </form>
+<dialog id="deleteDialog" style="background: transparent; border: none; padding: 0; max-width: 500px; border-radius: 0.5rem; margin: auto;">
+    <div style="background: #DAD3C7; border: 2px solid #8B4513; border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden;">
+        <div style="background: #DFD9CE; padding: 1.25rem; border-bottom: 1px solid #B09B7C;">
+            <h4 style="margin: 0; font-family: Georgia, serif; font-size: 1.25rem; color: #2B1810; font-weight: 600;">Bekräfta borttagning</h4>
+        </div>
+        <div style="padding: 1.5rem 1.25rem; color: #2B1810;">
+            <p>Är du säker på att du vill ta bort whiskyn <strong>@dialogWhiskyName</strong>?</p>
+            <p style="color: #5D4037; font-size: 0.875rem; font-style: italic;">Denna åtgärd kan inte ångras.</p>
+        </div>
+        <div style="background: #DFD9CE; padding: 1rem 1.25rem; border-top: 1px solid #B09B7C; display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button @onclick="CancelDelete" style="padding: 0.75rem 1.25rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Avbryt</button>
+            <button @onclick="ConfirmDelete" style="padding: 0.75rem 1.25rem; background: #EF4444; color: white; border: 1px solid #EF4444; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#DC2626';" onmouseout="this.style.background='#EF4444';">Ta bort</button>
+        </div>
+    </div>
 </dialog>
 
 @code {
     private WhiskySearchDto searchDto = new() { PageSize = 50 };
     private WhiskySearchResultDto? searchResult;
+    private List<CountryDto> countries = new();
+    private List<RegionDto> regions = new();
+    private List<WhiskyTypeDto> whiskyTypes = new();
     private bool isLoading = true;
     private bool isProcessing = false;
     private string statusMessage = string.Empty;
@@ -124,7 +292,29 @@ else if (searchResult?.Whiskies.Any() == true)
 
     protected override async Task OnInitializedAsync()
     {
-        await SearchWhiskies();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            await LoadMetadata();
+            await SearchWhiskies();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel vid laddning av data: {ex.Message}";
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadMetadata()
+    {
+        countries = await WhiskyMetadataService.GetAllCountriesAsync();
+        regions = await WhiskyMetadataService.GetAllRegionsAsync();
+        whiskyTypes = await WhiskyMetadataService.GetAllWhiskyTypesAsync();
     }
 
     private async Task SearchWhiskies()
@@ -217,6 +407,6 @@ else if (searchResult?.Whiskies.Any() == true)
         NavigationManager.NavigateTo($"/whiskies/{id}");
 
     private void GoToCreatePage() =>
-        NavigationManager.NavigateTo("/admin/whiskies/create");
+        NavigationManager.NavigateTo("/admin/whiskies/skapa");
 
 }

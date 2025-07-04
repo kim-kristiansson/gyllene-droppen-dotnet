@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GylleneDroppen.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250624201843_AddMembeshipSystem")]
-    partial class AddMembeshipSystem
+    [Migration("20250704004656_AddTastingAddress")]
+    partial class AddTastingAddress
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,154 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Address", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("PostalCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("StreetAddress")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("City")
+                        .HasDatabaseName("IX_Address_City");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Address_IsActive");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Address_Name");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("Addresses", (string)null);
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Country", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Country_Name");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("Countries");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Department", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId")
+                        .HasDatabaseName("IX_Department_CreatedByUserId");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Department_IsActive");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Department_Name");
+
+                    b.HasIndex("UpdatedByUserId")
+                        .HasDatabaseName("IX_Department_UpdatedByUserId");
+
+                    b.ToTable("Departments");
+                });
 
             modelBuilder.Entity("GylleneDroppen.Core.Entities.MembershipPeriod", b =>
                 {
@@ -72,6 +220,53 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("MembershipPeriods");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Region", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CountryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryId")
+                        .HasDatabaseName("IX_Region_CountryId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("Name", "CountryId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Region_Name_CountryId");
+
+                    b.ToTable("Regions");
                 });
 
             modelBuilder.Entity("GylleneDroppen.Core.Entities.TastingEventParticipant", b =>
@@ -312,6 +507,57 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.ToTable("UserTrialUsages");
                 });
 
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.WhiskyType", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid?>("OriginCountryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("OriginRegionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_WhiskyType_Name");
+
+                    b.HasIndex("OriginCountryId");
+
+                    b.HasIndex("OriginRegionId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("WhiskyTypes");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -523,12 +769,18 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("AddressId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("EventDate")
                         .HasColumnType("timestamp with time zone");
@@ -556,6 +808,8 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
 
                     b.HasIndex("EventDate")
                         .HasDatabaseName("IX_TastingEvent_EventDate");
@@ -588,11 +842,6 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.Property<string>("Color")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("CreatedByUserId")
                         .IsRequired()
@@ -631,15 +880,8 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
-                    b.Property<string>("Region")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<Guid?>("RegionId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("UpdatedByUserId")
                         .HasColumnType("text");
@@ -647,23 +889,23 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("UpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.HasKey("Id");
+                    b.Property<Guid?>("WhiskyTypeId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("Country")
-                        .HasDatabaseName("IX_Whisky_Country");
+                    b.HasKey("Id");
 
                     b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("CreatedDate")
                         .HasDatabaseName("IX_Whisky_CreatedDate");
 
-                    b.HasIndex("Region")
-                        .HasDatabaseName("IX_Whisky_Region");
-
-                    b.HasIndex("Type")
-                        .HasDatabaseName("IX_Whisky_Type");
+                    b.HasIndex("RegionId")
+                        .HasDatabaseName("IX_Whisky_RegionId");
 
                     b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("WhiskyTypeId")
+                        .HasDatabaseName("IX_Whisky_WhiskyTypeId");
 
                     b.HasIndex("Name", "Distillery")
                         .IsUnique()
@@ -687,6 +929,60 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.HasDiscriminator().HasValue("ApplicationUser");
                 });
 
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Address", b =>
+                {
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Country", b =>
+                {
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Department", b =>
+                {
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
             modelBuilder.Entity("GylleneDroppen.Core.Entities.MembershipPeriod", b =>
                 {
                     b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "CreatedByUser")
@@ -699,6 +995,32 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Region", b =>
+                {
+                    b.HasOne("GylleneDroppen.Core.Entities.Country", "Country")
+                        .WithMany("Regions")
+                        .HasForeignKey("CountryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Country");
 
                     b.Navigation("CreatedByUser");
 
@@ -815,6 +1137,38 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.WhiskyType", b =>
+                {
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("GylleneDroppen.Core.Entities.Country", "OriginCountry")
+                        .WithMany()
+                        .HasForeignKey("OriginCountryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GylleneDroppen.Core.Entities.Region", "OriginRegion")
+                        .WithMany()
+                        .HasForeignKey("OriginRegionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("OriginCountry");
+
+                    b.Navigation("OriginRegion");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -868,11 +1222,18 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("TastingEvent", b =>
                 {
+                    b.HasOne("GylleneDroppen.Core.Entities.Address", "Address")
+                        .WithMany("TastingEvents")
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "OrganizedByUser")
                         .WithMany()
                         .HasForeignKey("OrganizedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Address");
 
                     b.Navigation("OrganizedByUser");
                 });
@@ -885,19 +1246,53 @@ namespace GylleneDroppen.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("GylleneDroppen.Core.Entities.Region", "Region")
+                        .WithMany("Whiskies")
+                        .HasForeignKey("RegionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("GylleneDroppen.Core.Entities.ApplicationUser", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("GylleneDroppen.Core.Entities.WhiskyType", "WhiskyType")
+                        .WithMany("Whiskies")
+                        .HasForeignKey("WhiskyTypeId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("CreatedByUser");
 
+                    b.Navigation("Region");
+
                     b.Navigation("UpdatedByUser");
+
+                    b.Navigation("WhiskyType");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Address", b =>
+                {
+                    b.Navigation("TastingEvents");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Country", b =>
+                {
+                    b.Navigation("Regions");
                 });
 
             modelBuilder.Entity("GylleneDroppen.Core.Entities.MembershipPeriod", b =>
                 {
                     b.Navigation("UserMemberships");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.Region", b =>
+                {
+                    b.Navigation("Whiskies");
+                });
+
+            modelBuilder.Entity("GylleneDroppen.Core.Entities.WhiskyType", b =>
+                {
+                    b.Navigation("Whiskies");
                 });
 
             modelBuilder.Entity("TastingEvent", b =>

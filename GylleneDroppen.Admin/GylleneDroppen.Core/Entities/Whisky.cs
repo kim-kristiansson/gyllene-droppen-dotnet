@@ -13,11 +13,14 @@ public class Whisky
 
     [Range(0, 100)] public decimal Abv { get; set; } // Alcohol by Volume percentage
 
-    [Required] [MaxLength(100)] public string Region { get; set; } = string.Empty;
+    // Foreign keys
+    public Guid? RegionId { get; set; }
+    public Region? Region { get; set; }
 
-    [Required] [MaxLength(100)] public string Type { get; set; } = string.Empty; // Single Malt, Blend, etc.
+    public Guid? WhiskyTypeId { get; set; }
+    public WhiskyType? WhiskyType { get; set; }
 
-    [Required] [MaxLength(100)] public string Country { get; set; } = string.Empty;
+    // Country is derived through Region.Country - no direct relationship needed
 
     // TastingEvent notes
     [MaxLength(500)] public string? Color { get; set; }

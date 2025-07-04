@@ -13,109 +13,146 @@
 
 @attribute [Authorize(Policy = "AdminOnly")]
 
+<style>
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Mobile responsive */
+    @@media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .membership-table-wrapper {
+            overflow-x: auto !important;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .tab-navigation {
+            flex-direction: column !important;
+            border-radius: 0.5rem !important;
+        }
+        
+        .tab-navigation button {
+            border-radius: 0 !important;
+            border-bottom: 1px solid #B09B7C !important;
+        }
+        
+        .tab-navigation button:first-child {
+            border-radius: 0.5rem 0.5rem 0 0 !important;
+        }
+        
+        .tab-navigation button:last-child {
+            border-radius: 0 0 0.5rem 0.5rem !important;
+            border-bottom: none !important;
+        }
+    }
+</style>
+
 <PageTitle>Hantera medlemskap</PageTitle>
 
-<div class="page-header">
-    <h1>Hantera medlemskap</h1>
-</div>
+<div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh; overflow-x: hidden;">
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem; min-width: 0; overflow-x: hidden;">
+    <div style="margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
+        <h1 style="font-size: 2.25rem; color: #2B1810; margin: 0; font-weight: 600; font-family: Georgia, serif;">🏛️ Hantera medlemskap</h1>
+    </div>
 
 @if (!string.IsNullOrEmpty(statusMessage))
 {
-    <div class="alert @(statusMessage.StartsWith("Fel:") ? "alert-danger" : "alert-success")">
-        <strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage
-        <button type="button" class="btn btn-sm btn-secondary" @onclick="() => statusMessage = string.Empty">Stäng</button>
+    <div class="alert @(statusMessage.StartsWith("Fel:") ? "alert-danger" : "alert-success")" style="padding: 1rem 1.5rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444;" : "background: rgba(74, 124, 78, 0.15); border: 1px solid #4A7C4E; color: #4A7C4E;")">
+        <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
+        <button type="button" class="btn btn-sm btn-secondary" @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0; opacity: 0.8; transition: opacity 0.2s ease;">✕</button>
     </div>
 }
 
-<div class="row stats-row">
-    <div class="col-md-4">
-        <div class="stats-card">
-            <h5 class="card-title">Aktiva medlemskap</h5>
-            <p class="display-4">@activeMemberships.Count</p>
-        </div>
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+    <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <h5 style="font-size: 0.9375rem; font-weight: 600; color: #8B4513; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.025rem; font-family: Georgia, serif;">Aktiva medlemskap</h5>
+        <p style="font-size: 2.5rem; font-weight: 700; color: #2B1810; margin: 0; font-family: Georgia, serif;">@activeMemberships.Count</p>
     </div>
-    <div class="col-md-4">
-        <div class="stats-card">
-            <h5 class="card-title">Utgående medlemskap (30 dagar)</h5>
-            <p class="display-4">@expiringMemberships.Count</p>
-        </div>
+    <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <h5 style="font-size: 0.9375rem; font-weight: 600; color: #8B4513; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.025rem; font-family: Georgia, serif;">Utgående medlemskap (30 dagar)</h5>
+        <p style="font-size: 2.5rem; font-weight: 700; color: #2B1810; margin: 0; font-family: Georgia, serif;">@expiringMemberships.Count</p>
     </div>
-    <div class="col-md-4">
-        <div class="stats-card">
-            <h5 class="card-title">Provmedlemskap använda</h5>
-            <p class="display-4">@trialUsageCount</p>
-        </div>
+    <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <h5 style="font-size: 0.9375rem; font-weight: 600; color: #8B4513; margin: 0 0 0.75rem 0; text-transform: uppercase; letter-spacing: 0.025rem; font-family: Georgia, serif;">Provmedlemskap använda</h5>
+        <p style="font-size: 2.5rem; font-weight: 700; color: #2B1810; margin: 0; font-family: Georgia, serif;">@trialUsageCount</p>
     </div>
 </div>
 
-<div class="mb-4">
-    <button type="button" class="btn btn-primary" @onclick="ShowCreateForm">
-        Skapa nytt medlemskap
+<div style="margin-bottom: 2rem;">
+    <button type="button" @onclick="ShowCreateForm" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+        ➕ Skapa nytt medlemskap
     </button>
 </div>
 
 @if (showCreateForm)
 {
-    <div class="card mb-4">
-        <div class="card-header">
-            <h3>Skapa nytt medlemskap</h3>
+    <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+        <div style="background: #DAD3C7; padding: 1.25rem; border-bottom: 1px solid #B09B7C; border-radius: 0.5rem 0.5rem 0 0;">
+            <h3 style="font-family: Georgia, serif; font-size: 1.25rem; color: #2B1810; margin: 0; font-weight: 600;">➕ Skapa nytt medlemskap</h3>
         </div>
-        <div class="card-body">
+        <div style="padding: 1.5rem;">
             <EditForm Model="createRequest" OnValidSubmit="HandleValidSubmit">
                 <DataAnnotationsValidator />
-                <ValidationSummary />
+                <ValidationSummary style="background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; border-radius: 0.375rem; padding: 1rem; margin-bottom: 1.5rem; color: #EF4444; font-size: 0.875rem; font-family: Georgia, serif;"/>
 
-                <div class="mb-3">
-                    <label for="user" class="form-label">Välj medlem</label>
-                    <InputSelect id="user" class="form-control" @bind-Value="createRequest.UserId">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Välj medlem</label>
+                    <InputSelect @bind-Value="createRequest.UserId" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DAD3C7; color: #2B1810; font-family: Georgia, serif;">
                         <option value="">-- Välj medlem --</option>
                         @foreach (var user in allUsers.OrderBy(u => u.FullName))
                         {
                             <option value="@user.Id.ToString()">@user.FullName (@user.Email)</option>
                         }
                     </InputSelect>
-                    <ValidationMessage For="@(() => createRequest.UserId)" />
+                    <ValidationMessage For="@(() => createRequest.UserId)" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
                 </div>
 
-                <div class="mb-3">
-                    <label for="period" class="form-label">Välj medlemskapsperiod</label>
-                    <InputSelect id="period" class="form-control" @bind-Value="createRequest.MembershipPeriodId">
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Välj medlemskapsperiod</label>
+                    <InputSelect @bind-Value="createRequest.MembershipPeriodId" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DAD3C7; color: #2B1810; font-family: Georgia, serif;">
                         <option value="">-- Välj period --</option>
                         @foreach (var period in activePeriods)
                         {
                             <option value="@period.Id">@period.Name - @period.DurationInMonths månader (@period.Price.ToString("C"))</option>
                         }
                     </InputSelect>
-                    <ValidationMessage For="@(() => createRequest.MembershipPeriodId)" />
+                    <ValidationMessage For="@(() => createRequest.MembershipPeriodId)" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
                 </div>
 
-                <div class="mb-3">
-                    <label for="startDate" class="form-label">Startdatum</label>
-                    <InputDate id="startDate" class="form-control" @bind-Value="createRequest.StartDate" />
-                    <ValidationMessage For="@(() => createRequest.StartDate)" />
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Startdatum</label>
+                    <InputDate @bind-Value="createRequest.StartDate" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DAD3C7; color: #2B1810; font-family: Georgia, serif;" />
+                    <ValidationMessage For="@(() => createRequest.StartDate)" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
                 </div>
 
-                <div class="mb-3">
-                    <label for="amountPaid" class="form-label">Betalt belopp (SEK)</label>
-                    <InputNumber id="amountPaid" class="form-control" @bind-Value="createRequest.AmountPaid" step="0.01" />
-                    <ValidationMessage For="@(() => createRequest.AmountPaid)" />
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Betalt belopp (SEK)</label>
+                    <InputNumber @bind-Value="createRequest.AmountPaid" step="0.01" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DAD3C7; color: #2B1810; font-family: Georgia, serif;" />
+                    <ValidationMessage For="@(() => createRequest.AmountPaid)" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
                 </div>
 
-                <div class="mb-3">
-                    <label for="notes" class="form-label">Anteckningar</label>
-                    <InputTextArea id="notes" class="form-control" @bind-Value="createRequest.Notes" rows="3" />
-                    <ValidationMessage For="@(() => createRequest.Notes)" />
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; color: #2B1810; margin-bottom: 0.5rem; font-family: Georgia, serif;">Anteckningar</label>
+                    <InputTextArea @bind-Value="createRequest.Notes" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid #B09B7C; border-radius: 0.375rem; background: #DAD3C7; color: #2B1810; font-family: Georgia, serif; resize: vertical;" />
+                    <ValidationMessage For="@(() => createRequest.Notes)" style="color: #EF4444; font-size: 0.8125rem; margin-top: 0.25rem; display: block; font-family: Georgia, serif;" />
                 </div>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary" disabled="@isProcessing">
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 1rem; border-top: 1px solid #B09B7C;">
+                    <button type="submit" disabled="@isProcessing" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; @(isProcessing ? "opacity: 0.6; cursor: not-allowed;" : "")" onmouseover="if (!@isProcessing) { this.style.background='#6B3410'; }" onmouseout="if (!@isProcessing) { this.style.background='#8B4513'; }">
                         @if (isProcessing)
                         {
-                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <span style="display: inline-block; width: 1rem; height: 1rem; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 1s linear infinite; margin-right: 0.5rem;"></span>
                         }
                         Skapa medlemskap
                     </button>
-                    <button type="button" class="btn btn-secondary" @onclick="CancelForm">
+                    <button type="button" @onclick="CancelForm" style="padding: 0.75rem 1.5rem; background: #DFD9CE; border: 1px solid #B09B7C; color: #2B1810; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">
                         Avbryt
                     </button>
                 </div>
@@ -124,79 +161,78 @@
     </div>
 }
 
-<ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-        <a class="nav-link @(activeTab == "active" ? "active" : "")" href="#" @onclick="@(() => activeTab = "active")" @onclick:preventDefault="true">
-            Aktiva medlemskap (@activeMemberships.Count)
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link @(activeTab == "expiring" ? "active" : "")" href="#" @onclick="@(() => activeTab = "expiring")" @onclick:preventDefault="true">
-            Utgående medlemskap (@expiringMemberships.Count)
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link @(activeTab == "all" ? "active" : "")" href="#" @onclick="@(() => activeTab = "all")" @onclick:preventDefault="true">
-            Alla medlemskap
-        </a>
-    </li>
-</ul>
+<div class="tab-navigation" style="display: flex; background: #DAD3C7; border-radius: 0.5rem 0.5rem 0 0; border: 1px solid #B09B7C; border-bottom: none; overflow: hidden; margin-bottom: 0;">
+    <button @onclick="@(() => activeTab = "active")" style="flex: 1; padding: 1rem 1.5rem; border: none; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; @(activeTab == "active" ? "background: #8B4513; color: white;" : "background: transparent; color: #2B1810;")" onmouseover="if ('@activeTab' != 'active') { this.style.background='#DFD9CE'; }" onmouseout="if ('@activeTab' != 'active') { this.style.background='transparent'; }">
+        🟢 Aktiva medlemskap (@activeMemberships.Count)
+    </button>
+    <button @onclick="@(() => activeTab = "expiring")" style="flex: 1; padding: 1rem 1.5rem; border: none; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; @(activeTab == "expiring" ? "background: #8B4513; color: white;" : "background: transparent; color: #2B1810;")" onmouseover="if ('@activeTab' != 'expiring') { this.style.background='#DFD9CE'; }" onmouseout="if ('@activeTab' != 'expiring') { this.style.background='transparent'; }">
+        ⚠️ Utgående medlemskap (@expiringMemberships.Count)
+    </button>
+    <button @onclick="@(() => activeTab = "all")" style="flex: 1; padding: 1rem 1.5rem; border: none; cursor: pointer; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; @(activeTab == "all" ? "background: #8B4513; color: white;" : "background: transparent; color: #2B1810;")" onmouseover="if ('@activeTab' != 'all') { this.style.background='#DFD9CE'; }" onmouseout="if ('@activeTab' != 'all') { this.style.background='transparent'; }">
+        📋 Alla medlemskap
+    </button>
+</div>
 
 @if (isLoading)
 {
-    <p>Laddar...</p>
+    <div style="display: flex; justify-content: center; align-items: center; padding: 3rem; color: #5D4037; font-size: 1.125rem;">
+        <div style="display: inline-block; width: 2rem; height: 2rem; border: 3px solid #B09B7C; border-radius: 50%; border-top-color: #8B4513; animation: spin 1s linear infinite; margin-right: 0.75rem;"></div>
+        Laddar medlemskap...
+    </div>
 }
 else
 {
-    <div class="table-responsive table-container">
-        <table class="table table-striped">
-            <thead>
+    <div class="membership-table-wrapper" style="overflow-x: auto; -webkit-overflow-scrolling: touch; background: #DFD9CE; border-radius: 0 0 0.5rem 0.5rem; border: 1px solid #B09B7C; border-top: none;">
+        <table class="table table-striped" style="width: 100%; border-collapse: collapse; background: #DFD9CE; border-radius: 0.5rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.15); border: 1px solid #B09B7C; margin: 1rem 0;">
+            <thead style="background: #8B4513;">
                 <tr>
-                    <th>Medlem</th>
-                    <th>E-post</th>
-                    <th>Medlemskapstyp</th>
-                    <th>Startdatum</th>
-                    <th>Slutdatum</th>
-                    <th>Dagar kvar</th>
-                    <th>Betalt</th>
-                    <th>Status</th>
-                    <th>Åtgärder</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Medlem</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">E-post</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Medlemskapstyp</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Startdatum</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Slutdatum</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Dagar kvar</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Betalt</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Status</th>
+                    <th style="padding: 1rem; text-align: left; font-weight: 700; font-size: 0.8125rem; text-transform: uppercase; color: white;">Åtgärder</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var membership in GetFilteredMemberships())
                 {
-                    <tr class="@(membership.IsExpired ? "table-danger" : membership.DaysRemaining <= 30 ? "table-warning" : "")">
-                        <td>@membership.UserName</td>
-                        <td>@membership.UserEmail</td>
-                        <td>@membership.MembershipPeriodName</td>
-                        <td>@membership.StartDate.ToString("yyyy-MM-dd")</td>
-                        <td>@membership.EndDate.ToString("yyyy-MM-dd")</td>
-                        <td>
+                    <tr class="@(membership.IsExpired ? "table-danger" : membership.DaysRemaining <= 30 ? "table-warning" : "")" style="transition: background-color 0.2s ease; @(membership.IsExpired ? "background: rgba(239, 68, 68, 0.1);" : membership.DaysRemaining <= 30 ? "background: rgba(245, 158, 11, 0.1);" : "")">
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE;">
+                            <div style="font-weight: 600; color: #2B1810;">@membership.UserName</div>
+                        </td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE; color: #2B1810;">@membership.UserEmail</td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE; color: #2B1810;">@membership.MembershipPeriodName</td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE; color: #2B1810;">@membership.StartDate.ToString("yyyy-MM-dd")</td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE; color: #2B1810;">@membership.EndDate.ToString("yyyy-MM-dd")</td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE;">
                             @if (membership.IsExpired)
                             {
-                                <span class="text-danger">Utgången</span>
+                                <span class="text-danger" style="color: #EF4444; font-weight: 600;">Utgången</span>
                             }
                             else
                             {
-                                <span class="@(membership.DaysRemaining <= 30 ? "text-warning" : "")">
+                                <span class="@(membership.DaysRemaining <= 30 ? "text-warning" : "")" style="@(membership.DaysRemaining <= 30 ? "color: #F59E0B;" : "color: #2B1810;") font-weight: 600;">
                                     @membership.DaysRemaining dagar
                                 </span>
                             }
                         </td>
-                        <td>@membership.AmountPaid.ToString("C")</td>
-                        <td>
-                            <span class="badge @(membership.IsActive && !membership.IsExpired ? "bg-success" : "bg-secondary")">
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE; color: #4A7C4E; font-weight: 600;">@membership.AmountPaid.ToString("C")</td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE;">
+                            <span class="badge @(membership.IsActive && !membership.IsExpired ? "bg-success" : "bg-secondary")" style="@(membership.IsActive && !membership.IsExpired ? "background: #4A7C4E;" : "background: #6B7280;") color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600;">
                                 @(membership.IsActive && !membership.IsExpired ? "Aktivt" : "Inaktivt")
                             </span>
                         </td>
-                        <td>
-                            <div class="btn-group" role="group">
+                        <td style="padding: 1rem; border-bottom: 1px solid #B09B7C; vertical-align: middle; background: #DFD9CE;">
+                            <div class="btn-group" role="group" style="display: flex; gap: 0.5rem;">
                                 @if (!membership.IsExpired)
                                 {
                                     <button type="button" class="btn btn-sm btn-outline-primary" 
                                             @onclick="() => ShowExtendForm(membership)" 
-                                            disabled="@isProcessing">
+                                            disabled="@isProcessing" style="padding: 0.375rem 0.75rem; border: 1px solid #2563EB; background: transparent; color: #2563EB; border-radius: 0.25rem; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; font-weight: 600; font-family: Georgia, serif;" onmouseover="this.style.background='#2563EB'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#2563EB';">
                                         Förläng
                                     </button>
                                 }
@@ -204,7 +240,7 @@ else
                                 {
                                     <button type="button" class="btn btn-sm btn-outline-danger" 
                                             @onclick="() => ConfirmDeactivate(membership)"
-                                            disabled="@isProcessing">
+                                            disabled="@isProcessing" style="padding: 0.375rem 0.75rem; border: 1px solid #EF4444; background: transparent; color: #EF4444; border-radius: 0.25rem; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; font-weight: 600; font-family: Georgia, serif;" onmouseover="this.style.background='#EF4444'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#EF4444';">
                                         Avaktivera
                                     </button>
                                 }
@@ -326,17 +362,12 @@ else
         {
             isLoading = true;
             
-            // Load all data in parallel
-            var tasksToRun = new List<Task>
-            {
-                Task.Run(async () => activeMemberships = await MembershipService.GetAllActiveMembershipsAsync()),
-                Task.Run(async () => expiringMemberships = await MembershipService.GetExpiringMembershipsAsync()),
-                Task.Run(async () => activePeriods = await MembershipService.GetActiveMembershipPeriodsAsync()),
-                Task.Run(async () => allUsers = await UserManagementService.GetAllUsersAsync()),
-                Task.Run(async () => trialUsageCount = await MembershipService.GetTrialUsageCountAsync())
-            };
-
-            await Task.WhenAll(tasksToRun);
+            // Load all data sequentially to avoid DbContext concurrency issues
+            activeMemberships = await MembershipService.GetAllActiveMembershipsAsync();
+            expiringMemberships = await MembershipService.GetExpiringMembershipsAsync();
+            activePeriods = await MembershipService.GetActiveMembershipPeriodsAsync();
+            allUsers = await UserManagementService.GetAllUsersAsync();
+            trialUsageCount = await MembershipService.GetTrialUsageCountAsync();
 
             // Combine all memberships for the "all" tab
             allMemberships = activeMemberships.Union(expiringMemberships).Distinct().ToList();
@@ -527,3 +558,5 @@ else
         }
     }
 }
+</div>
+</div>

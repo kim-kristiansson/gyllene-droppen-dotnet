@@ -1,59 +1,107 @@
-/* Login Page Styles */
+/* Login Page Styles - Dark Whisky Theme */
 .login-header {
     text-align: center;
-    margin-bottom: 2rem;
+    position: relative;
 }
 
 .login-header h1 {
     font-family: var(--font-serif);
-    font-size: 2rem;
-    color: var(--color-text);
-    margin-bottom: 0.5rem;
+    font-size: 2.5rem;
+    color: var(--color-leather);
+    margin-bottom: 1rem;
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .login-subtitle {
     color: var(--color-text-light);
-    font-size: 1rem;
+    font-size: 1.125rem;
     margin-bottom: 0;
+    opacity: 0.9;
+    font-weight: 400;
+    font-style: italic;
 }
 
-/* Form Styling */
+/* Form Styling - Dark Elegance */
 .login-form {
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
     margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-form::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    pointer-events: none;
 }
 
 .form-section {
     margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
 }
 
 .form-section h2 {
     font-family: var(--font-serif);
-    font-size: 1.25rem;
-    color: var(--color-text);
-    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: var(--color-leather);
+    margin-bottom: 2rem;
     text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 .form-divider {
-    margin: 1.5rem 0;
+    margin: 2rem 0;
     border: none;
     height: 1px;
-    background: linear-gradient(to right, transparent, var(--color-beige-dark), transparent);
+    background: var(--color-oak-dark);
+    opacity: 0.5;
 }
 
-/* Enhanced Form Controls */
+/* Enhanced Form Controls - Dark Theme */
 .form-group {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.75rem;
 }
 
 .form-control {
+    width: 100%;
     padding: 0.875rem 1rem;
-    font-size: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-text);
+    background: var(--color-surface-elevated);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    font-family: var(--font-serif);
+    box-shadow: inset 0 1px 2px rgba(43, 24, 16, 0.1);
+    letter-spacing: 0.5px;
+}
+
+.form-control::placeholder {
+    color: var(--color-text-muted);
+    opacity: 0.8;
 }
 
 .form-control:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(210, 105, 30, 0.1);
+    outline: none;
+    border-color: var(--color-oak-dark);
+    box-shadow: 
+        inset 0 1px 3px rgba(43, 24, 16, 0.15),
+        0 0 0 2px rgba(101, 67, 33, 0.3);
+    background: var(--color-surface-light);
+    color: var(--color-text);
 }
 
 /* Remember Me Checkbox */
@@ -62,6 +110,10 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border-light);
 }
 
 .form-check label {
@@ -71,76 +123,134 @@
     font-size: 0.875rem;
     color: var(--color-text);
     cursor: pointer;
+    font-family: var(--font-sans);
 }
 
-/* Submit Button */
+.form-check-input {
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-light);
+}
+
+.form-check-input:checked {
+    background: var(--color-leather);
+    border-color: var(--color-leather);
+}
+
+/* Submit Button - Executive Style */
 .btn-login {
     width: 100%;
-    padding: 0.875rem;
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
+    padding: 0.875rem 2rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    margin-bottom: 1.5rem;
+    background: var(--color-surface-elevated);
+    border: 2px solid var(--color-leather);
+    color: var(--color-leather);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    font-family: var(--font-serif);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-variant: small-caps;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
 }
 
-/* Links Section */
+.btn-login::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    background-size: 12px 12px;
+    pointer-events: none;
+}
+
+.btn-login:hover {
+    background: var(--color-leather);
+    color: var(--color-white);
+    border-color: var(--color-oak-dark);
+    transform: translateY(-2px);
+}
+
+/* Links Section - Dark Elegant */
 .auth-links {
     text-align: center;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-beige-dark);
+    padding: 1.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
 }
 
 .auth-links p {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     color: var(--color-text-light);
     font-size: 0.875rem;
+    font-weight: 400;
 }
 
 .auth-links a {
-    color: var(--color-primary);
+    color: var(--color-leather);
     text-decoration: none;
     font-weight: 500;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid transparent;
 }
 
 .auth-links a:hover {
-    color: var(--color-whisky-copper);
-    text-decoration: underline;
+    color: var(--color-primary);
+    text-decoration: none;
+    border-bottom-color: var(--color-primary);
 }
 
-/* Status Messages */
+/* Status Messages - Dark Theme */
 .status-message {
     margin-bottom: 1.5rem;
-    padding: 0.875rem 1rem;
+    padding: 1rem 1.25rem;
     border-radius: var(--radius-md);
     font-size: 0.875rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
 }
 
 .status-message.error {
-    background-color: rgba(220, 20, 60, 0.1);
+    background: rgba(220, 20, 60, 0.15);
     color: var(--color-error);
-    border: 1px solid rgba(220, 20, 60, 0.2);
+    border: 1px solid rgba(220, 20, 60, 0.3);
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.1);
 }
 
 .status-message.success {
-    background-color: rgba(34, 139, 34, 0.1);
+    background: rgba(34, 139, 34, 0.15);
     color: var(--color-success);
-    border: 1px solid rgba(34, 139, 34, 0.2);
+    border: 1px solid rgba(34, 139, 34, 0.3);
+    box-shadow: 0 2px 8px rgba(34, 139, 34, 0.1);
 }
 
-/* Validation Styling */
+/* Validation Styling - Dark Theme */
 .validation-message {
     color: var(--color-error);
     font-size: 0.8125rem;
-    margin-top: 0.25rem;
+    margin-top: 0.5rem;
     display: block;
+    font-style: italic;
 }
 
 .validation-summary {
-    background-color: rgba(220, 20, 60, 0.1);
-    border: 1px solid rgba(220, 20, 60, 0.2);
+    background: rgba(220, 20, 60, 0.15);
+    border: 1px solid rgba(220, 20, 60, 0.3);
     border-radius: var(--radius-md);
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(220, 20, 60, 0.1);
 }
 
 .validation-summary ul {
@@ -148,6 +258,7 @@
     padding-left: 1.25rem;
     color: var(--color-error);
     font-size: 0.875rem;
+    line-height: 1.6;
 }
 
 /* External Login Section */
@@ -190,9 +301,41 @@
     color: var(--color-text);
 }
 
+/* Form Label Styling */
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
 /* Responsive */
+@media (max-width: 768px) {
+    .login-form {
+        padding: 2rem;
+    }
+    
+    .login-header h1 {
+        font-size: 2rem;
+    }
+}
+
 @media (max-width: 640px) {
     .form-control {
         font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .login-form {
+        padding: 1.5rem;
+        margin: 0 -0.5rem;
+        border-radius: 0;
+    }
+    
+    .login-header h1 {
+        font-size: 1.75rem;
     }
 }

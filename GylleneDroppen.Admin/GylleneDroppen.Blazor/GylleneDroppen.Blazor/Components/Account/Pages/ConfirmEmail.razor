@@ -1,4 +1,5 @@
 ﻿@page "/konto/bekrafta-epost"
+@layout MainLayout
 
 @using System.Text
 @using GylleneDroppen.Core.Entities
@@ -8,10 +9,91 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
 
+<style>
+    @@font-face {
+        font-family: 'GreatVibes';
+        src: url('/fonts/GreatVibes-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+</style>
+
 <PageTitle>Bekräfta e-post</PageTitle>
 
-<h1>Bekräfta e-post</h1>
-<StatusMessage Message="@statusMessage"/>
+<!-- Header -->
+<div style="text-align: center; margin-bottom: 2rem;">
+    <p style="font-size: 0.875rem; color: #6B5D54; margin: 0; font-family: Georgia, serif;">
+        E-postbekräftelse
+    </p>
+</div>
+
+<!-- Status Message -->
+<div>
+    <h2 style="color: #2B1810; margin: 0 0 1.5rem 0; font-size: 1.5rem; font-weight: 600; font-family: Georgia, serif; text-align: center;">Bekräfta e-post</h2>
+    
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        @if (statusMessage.Contains("Tack för"))
+        {
+            <!-- Success Message -->
+            <div style="background: #E8E1D6; border: 1px solid #8FBC8F; border-radius: 0.25rem; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+                <h3 style="color: #2B1810; margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; font-family: Georgia, serif;">E-post bekräftad!</h3>
+                <p style="color: #5C4A3A; margin: 0 0 1rem 0; font-family: Georgia, serif; font-size: 0.875rem; line-height: 1.5;">
+                    @statusMessage
+                </p>
+                <p style="color: #5C4A3A; margin: 0; font-family: Georgia, serif; font-size: 0.875rem;">
+                    Du kan nu logga in och börja använda Gyllene Droppen.
+                </p>
+            </div>
+            
+            <!-- Login Button -->
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a href="/konto/logga-in" style="display: inline-block; padding: 0.875rem 2rem; background: #8B4513; color: white; text-decoration: none; border-radius: 0.375rem; font-size: 1rem; font-weight: 600; font-family: Georgia, serif; transition: background 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+                    Logga in nu
+                </a>
+            </div>
+        }
+        else
+        {
+            <!-- Error Message -->
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #EF4444; border-radius: 0.25rem; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                <h3 style="color: #EF4444; margin: 0 0 1rem 0; font-size: 1.125rem; font-weight: 600; font-family: Georgia, serif;">Bekräftelse misslyckades</h3>
+                <p style="color: #EF4444; margin: 0; font-family: Georgia, serif; font-size: 0.875rem; line-height: 1.5;">
+                    @statusMessage
+                </p>
+            </div>
+            
+            <!-- Help Section -->
+            <div style="background: #E8E1D6; border: 1px solid #B09B7C; border-radius: 0.25rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h4 style="color: #2B1810; margin: 0 0 0.75rem 0; font-size: 1rem; font-weight: 600; font-family: Georgia, serif;">Vad kan jag göra?</h4>
+                <ul style="color: #5C4A3A; font-size: 0.8125rem; font-family: Georgia, serif; line-height: 1.5; margin: 0; padding-left: 1.25rem;">
+                    <li style="margin-bottom: 0.5rem;">Kontrollera att länken är korrekt och fullständig</li>
+                    <li style="margin-bottom: 0.5rem;">Begär en ny bekräftelselänk från inloggningssidan</li>
+                    <li style="margin: 0;">Kontakta oss om problemet kvarstår</li>
+                </ul>
+            </div>
+        }
+    }
+    else
+    {
+        <!-- Loading State -->
+        <div style="background: #E8E1D6; border: 1px solid #B09B7C; border-radius: 0.25rem; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+            <p style="color: #5C4A3A; margin: 0; font-family: Georgia, serif; font-size: 0.875rem;">
+                Bekräftar din e-postadress...
+            </p>
+        </div>
+    }
+
+    <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #B09B7C;">
+        <p style="margin: 0; color: #5C4A3A; font-size: 0.875rem; font-family: Georgia, serif;">
+            Behöver du hjälp? 
+            <a href="mailto:kontakt@gyllenedroppen.se" style="color: #8B4513; text-decoration: none; font-weight: 600;" onmouseover="this.style.textDecoration='underline';" onmouseout="this.style.textDecoration='none';">Kontakta oss</a>
+        </p>
+    </div>
+</div>
 
 @code {
     private string? statusMessage;

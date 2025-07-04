@@ -939,3 +939,120 @@ a:hover {
     background-color: var(--color-primary);
     color: var(--color-black);
 }
+
+/* Tablet-responsive table styling */
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* Tablet table improvements */
+    table {
+        font-size: 0.8rem;
+    }
+    
+    table th,
+    table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.75rem;
+    }
+    
+    /* Hide less important columns on tablets */
+    table th:nth-child(4), /* Region */
+    table td:nth-child(4),
+    table th:nth-child(5), /* Type */
+    table td:nth-child(5),
+    table th:nth-child(9), /* Tastings count */
+    table td:nth-child(9) {
+        display: none;
+    }
+    
+    /* Make action buttons smaller */
+    table td:last-child button {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.65rem;
+        margin: 0.125rem;
+    }
+    
+    /* Stack buttons vertically on narrow tablets */
+    table td:last-child div {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    /* Tablet header improvements */
+    .mobile-header h1 {
+        font-size: 1.875rem !important;
+    }
+    
+    .mobile-header .header-buttons {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+    }
+    
+    .mobile-header .header-buttons span {
+        order: 2;
+    }
+    
+    .mobile-header .header-buttons button {
+        order: 1;
+        white-space: nowrap;
+    }
+    
+    /* Tablet filter improvements */
+    .mobile-filters {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+    }
+}
+
+/* Mobile-responsive table styling */
+@media (max-width: 768px) {
+    /* Hide table on mobile and show custom mobile layout */
+    table {
+        display: none !important;
+    }
+    
+    .mobile-whisky-list {
+        display: block !important;
+    }
+    
+    /* Mobile header improvements */
+    .mobile-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1rem !important;
+    }
+    
+    .mobile-header h1 {
+        font-size: 1.75rem !important;
+        text-align: center;
+    }
+    
+    .mobile-header .header-buttons {
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+    }
+    
+    /* Mobile filter improvements */
+    .mobile-filters {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+    
+    .mobile-search {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .mobile-search input {
+        width: 100% !important;
+    }
+    
+    .mobile-search .search-buttons {
+        display: flex !important;
+        gap: 0.5rem !important;
+    }
+    
+    .mobile-search .search-buttons button {
+        flex: 1 !important;
+    }
+}
+}

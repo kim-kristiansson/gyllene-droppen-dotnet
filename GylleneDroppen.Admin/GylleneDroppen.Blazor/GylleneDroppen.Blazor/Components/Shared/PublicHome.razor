@@ -1,19 +1,53 @@
 @layout PublicLayout
 
-<div class="text-center">
-    <p class="quote-text">
-        <em>"Whisky är inte snällt, det är ärligt."</em>
-    </p>
-    
-    <div class="button-group">
-        <a href="/konto/logga-in" class="btn btn-primary">Logga in</a>
-        <a href="/konto/registrera" class="btn btn-secondary">Registrera dig</a>
+<style>
+    @@font-face {
+        font-family: 'GreatVibes';
+        src: url('/fonts/GreatVibes-Regular.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+</style>
+
+<div style="min-height: calc(100vh - 200px); display: flex; align-items: center; justify-content: center; padding: 3rem 0;">
+    <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+        <!-- Logo -->
+        <div style="font-family: 'GreatVibes', cursive; font-size: 6rem; background: linear-gradient(135deg, #D4AF37 0%, #FFD700 50%, #B8860B 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin: 0 0 1rem 0; text-shadow: 0 2px 4px rgba(212, 175, 55, 0.3);">
+            GD
+        </div>
+        
+        <!-- Title -->
+        <h1 style="font-size: 2.75rem; color: #2B1810; margin: 0 0 2rem 0; font-weight: 400; font-family: Georgia, serif; letter-spacing: 0.05em;">
+            GYLLENE DROPPEN
+        </h1>
+        
+        <!-- Construction Notice -->
+        <p style="font-size: 1.25rem; color: #6B5D54; margin: 0 0 3rem 0; font-style: italic; font-family: Georgia, serif; font-weight: 300;">
+            Webbplatsen är under uppbyggnad
+        </p>
+        
+        <!-- Subtle divider -->
+        <div style="width: 60px; height: 1px; background: #B09B7C; margin: 0 auto 3rem auto;"></div>
+        
+        <!-- Description -->
+        <p style="font-size: 1rem; color: #5C4A3A; line-height: 1.8; margin: 0 0 3rem 0; font-family: Georgia, serif;">
+            Exklusivt whiskysällskap i Värnamo sedan 2025.<br>
+            För gentlemän med passion för livets goda.
+        </p>
+        
+        <!-- Buttons -->
+        <div style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+            <a href="/konto/logga-in" style="padding: 0.875rem 2rem; background: transparent; color: #2B1810; text-decoration: none; border: 1px solid #2B1810; font-size: 0.875rem; letter-spacing: 0.1em; transition: all 0.3s ease; font-family: Georgia, serif; text-transform: uppercase;" onmouseover="this.style.background='#2B1810'; this.style.color='#DFD9CE';" onmouseout="this.style.background='transparent'; this.style.color='#2B1810';">
+                Logga in
+            </a>
+            <a href="/konto/registrera" style="padding: 0.875rem 2rem; background: #2B1810; color: #DFD9CE; text-decoration: none; border: 1px solid #2B1810; font-size: 0.875rem; letter-spacing: 0.1em; transition: all 0.3s ease; font-family: Georgia, serif; text-transform: uppercase;" onmouseover="this.style.background='#1A0F08';" onmouseout="this.style.background='#2B1810';">
+                Bli medlem
+            </a>
+        </div>
+        
+        <!-- Bottom info -->
+        <p style="font-size: 0.875rem; color: #8B7355; margin-top: 4rem; font-family: Georgia, serif;">
+            Prova en provning innan medlemskap krävs
+        </p>
     </div>
-    
-    <hr class="golden-card-divider" />
-    
-    <p class="description-text">
-        Välkommen till Gyllene Droppen - din portal för exklusiva whiskyprovningar.<br>
-        Bli medlem för att få tillgång till våra evenemang och upptäck nya smaker tillsammans med likasinnade.
-    </p>
 </div>

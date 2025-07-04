@@ -1,0 +1,30 @@
+@* Reusable form component with whisky theme styling *@
+
+<EditForm Model="@Model" OnValidSubmit="@OnValidSubmit" class="whisky-form">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="validation-summary" />
+
+    @ChildContent
+    
+    <div class="form-actions">
+        @if (ShowCancelButton)
+        {
+            <button type="button" @onclick="OnCancel" class="btn-secondary">@CancelText</button>
+        }
+        <button type="submit" disabled="@IsProcessing" class="btn-primary @(IsProcessing ? "processing" : "")">
+            @(IsProcessing ? ProcessingText : SubmitText)
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public object? Model { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool IsProcessing { get; set; }
+    [Parameter] public bool ShowCancelButton { get; set; } = true;
+    [Parameter] public string SubmitText { get; set; } = "Spara";
+    [Parameter] public string ProcessingText { get; set; } = "Sparar...";
+    [Parameter] public string CancelText { get; set; } = "Avbryt";
+}
