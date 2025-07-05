@@ -11,7 +11,6 @@ public static class ApplicationConfigurationExtension
     {
         // Bind strongly-typed settings from configuration
         services.Configure<DatabaseSettings>(configuration.GetRequiredSection("DatabaseSettings"));
-        services.Configure<RedisSettings>(configuration.GetRequiredSection("RedisSettings"));
         services.Configure<SmtpSettings>(configuration.GetRequiredSection("SmtpSettings"));
         services.Configure<GlobalSettings>(configuration.GetRequiredSection("GlobalSettings"));
         services.Configure<AdminSettings>(configuration.GetRequiredSection("AdminSettings"));

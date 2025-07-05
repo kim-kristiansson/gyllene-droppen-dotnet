@@ -11,6 +11,7 @@
         <ProjectReference Include="..\..\GylleneDroppen.Core\GylleneDroppen.Core.csproj"/>
         <ProjectReference Include="..\..\GylleneDroppen.Infrastructure\GylleneDroppen.Infrastructure.csproj"/>
         <ProjectReference Include="..\GylleneDroppen.Blazor.Client\GylleneDroppen.Blazor.Client.csproj"/>
+        <PackageReference Include="DotNetEnv" Version="3.1.1"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.5"/>
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.5"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.5"/>

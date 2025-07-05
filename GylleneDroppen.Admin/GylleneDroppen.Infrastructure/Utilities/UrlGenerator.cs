@@ -10,11 +10,11 @@ public class UrlGenerator(IOptions<GlobalSettings> options) : IUrlGenerator
 
     public string GenerateEmailConfirmationLink(string email, string encodedToken)
     {
-        return $"{_settings.FrontendBaseUrl}/verifiera-epost?epost={email}&kod={encodedToken}";
+        return $"{_settings.BaseUrl}/verifiera-epost?epost={email}&kod={encodedToken}";
     }
 
     public string GeneratePasswordResetLink(string email, string encodedToken)
     {
-        return $"{_settings.FrontendBaseUrl}/aterstall-losenord?epost={email}&kod={encodedToken}";
+        return $"{_settings.BaseUrl}/aterstall-losenord?epost={email}&kod={encodedToken}";
     }
 }
