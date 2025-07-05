@@ -23,17 +23,18 @@
             <nav class="nav-menu">
                 <NavLink href="" Match="NavLinkMatch.All" class="nav-link">Hem</NavLink>
                 <NavLink href="provningar" class="nav-link">Provningar</NavLink>
+                <NavLink href="whiskies" class="nav-link">Whiskies</NavLink>
                 <NavLink href="konto/hantera" class="nav-link">Mitt konto</NavLink>
 
                 <AuthorizeView Policy="AdminOnly">
                     <Authorized Context="adminContext">
-                        <NavLink href="whiskies" class="nav-link">Whiskies</NavLink>
                         <div class="nav-dropdown">
                             <span class="nav-link dropdown-toggle">Administration</span>
                             <div class="dropdown-menu">
                                 <NavLink href="admin" class="dropdown-item">Dashboard</NavLink>
                                 <NavLink href="admin/anvandare" class="dropdown-item">Hantera Medlemmar</NavLink>
                                 <NavLink href="admin/whiskies" class="dropdown-item">Hantera Whiskies</NavLink>
+                                <NavLink href="admin/lander-regioner" class="dropdown-item">Länder & Regioner</NavLink>
                                 <NavLink href="admin/adresser" class="dropdown-item">Hantera Adresser</NavLink>
                                 <NavLink href="admin/medlemskapsperioder" class="dropdown-item">Medlemskapstyper</NavLink>
                                 <NavLink href="admin/medlemskap" class="dropdown-item">Användarmedlemskap</NavLink>

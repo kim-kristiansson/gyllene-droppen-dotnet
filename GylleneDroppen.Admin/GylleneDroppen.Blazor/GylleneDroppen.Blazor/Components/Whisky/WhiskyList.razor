@@ -3,7 +3,7 @@
 @using GylleneDroppen.Application.Dtos.Whisky
 @using GylleneDroppen.Application.Dtos.WhiskyMetadata
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Policy = "AdminOnly")]
+@attribute [Authorize]
 
 @inject IWhiskyService WhiskyService
 @inject IWhiskyMetadataService WhiskyMetadataService
@@ -68,9 +68,13 @@
     <div style="max-width: 1400px; margin: 0 auto; padding: 0 1rem;">
         <div class="whisky-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding: 2rem; background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
             <h1 style="font-size: 2.5rem; color: #2B1810; margin: 0; font-weight: 600;">🥃 Whisky Samlingen</h1>
-            <a href="/admin/whiskies/skapa" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; text-decoration: none; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; white-space: nowrap;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
-                <span>➕</span> Lägg till ny whisky
-            </a>
+            <AuthorizeView Policy="AdminOnly">
+                <Authorized>
+                    <a href="/admin/whiskies/skapa" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; text-decoration: none; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease; white-space: nowrap;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+                        <span>➕</span> Lägg till ny whisky
+                    </a>
+                </Authorized>
+            </AuthorizeView>
         </div>
 
         <div style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">

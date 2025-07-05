@@ -1,8 +1,82 @@
 ﻿@page "/konto/nekad-atkomst"
+@inject NavigationManager NavigationManager
 
 <PageTitle>Åtkomst nekad</PageTitle>
 
-<header>
-    <h1>Åtkomst nekad</h1>
-    <p>Du har inte behörighet att komma åt denna resurs.</p>
-</header>
+<div style="min-height: 100vh; background: #D4CCC0; display: flex; align-items: center; justify-content: center; padding: 1rem; font-family: Georgia, serif;">
+    <div style="width: 100%; max-width: 420px; text-align: center;">
+        <!-- Access Denied Icon -->
+        <div style="margin-bottom: 2rem;">
+            <div style="width: 100px; height: 100px; margin: 0 auto; background: #EF4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);">
+                <span style="font-size: 3rem; color: white;">🚫</span>
+            </div>
+        </div>
+
+        <!-- Content Card -->
+        <div style="background: #DFD9CE; border: 2px solid #B09B7C; border-radius: 0.5rem; padding: 2rem 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+            <h1 style="color: #2B1810; margin: 0 0 1rem 0; font-size: 1.75rem; font-weight: 600;">Åtkomst nekad</h1>
+            <p style="color: #5C4A3A; margin: 0 0 2rem 0; font-size: 1rem; line-height: 1.6;">
+                Du har inte behörighet att komma åt denna resurs. Denna sida kräver administratörsbehörighet.
+            </p>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button @onclick="GoBack" 
+                        style="width: 100%; padding: 0.875rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                        onmouseover="this.style.background='#6B3410'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'"
+                        onmouseout="this.style.background='#8B4513'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">
+                    Gå tillbaka
+                </button>
+                
+                <a href="/" 
+                   style="width: 100%; padding: 0.875rem 1.5rem; background: transparent; color: #8B4513; border: 1px solid #8B4513; border-radius: 0.375rem; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.2s ease; text-decoration: none; display: inline-block; text-align: center; box-sizing: border-box;"
+                   onmouseover="this.style.background='rgba(139, 69, 19, 0.1)'; this.style.borderColor='#6B3410'; this.style.color='#6B3410'"
+                   onmouseout="this.style.background='transparent'; this.style.borderColor='#8B4513'; this.style.color='#8B4513'">
+                    Till startsidan
+                </a>
+            </div>
+
+            <!-- Help Text -->
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #B09B7C;">
+                <p style="color: #5C4A3A; margin: 0; font-size: 0.875rem;">
+                    Behöver du hjälp? 
+                    <a href="mailto:kontakt@gyllenedroppen.se" 
+                       style="color: #8B4513; text-decoration: none; font-weight: 600;" 
+                       onmouseover="this.style.textDecoration='underline'" 
+                       onmouseout="this.style.textDecoration='none'">
+                        Kontakta administratören
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Mobile-First Responsive Design -->
+        <style>
+            /* Desktop adjustments */
+            @("@media (min-width: 768px) {")
+                /* Larger spacing on desktop */
+                div[style*="padding: 2rem 1.5rem"] {
+                    padding: 3rem 2.5rem !important;
+                }
+                
+                /* Larger icon on desktop */
+                div[style*="width: 100px; height: 100px"] {
+                    width: 120px !important;
+                    height: 120px !important;
+                }
+                
+                /* Larger heading on desktop */
+                h1[style*="font-size: 1.75rem"] {
+                    font-size: 2rem !important;
+                }
+            }
+        </style>
+    </div>
+</div>
+
+@code {
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}

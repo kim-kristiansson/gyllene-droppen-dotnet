@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace GylleneDroppen.Application.Dtos.WhiskyMetadata;
 
 public class WhiskyTypeDto
@@ -19,16 +21,26 @@ public class WhiskyTypeDto
 
 public class CreateWhiskyTypeRequestDto
 {
+    [Required(ErrorMessage = "Namn är obligatoriskt")]
+    [StringLength(100, MinimumLength = 1, ErrorMessage = "Namn måste vara mellan 1 och 100 tecken")]
     public string Name { get; set; } = string.Empty;
+    
+    [StringLength(500, ErrorMessage = "Beskrivning får inte vara längre än 500 tecken")]
     public string? Description { get; set; }
+    
     public Guid? OriginCountryId { get; set; }
     public Guid? OriginRegionId { get; set; }
 }
 
 public class UpdateWhiskyTypeRequestDto
 {
+    [Required(ErrorMessage = "Namn är obligatoriskt")]
+    [StringLength(100, MinimumLength = 1, ErrorMessage = "Namn måste vara mellan 1 och 100 tecken")]
     public string Name { get; set; } = string.Empty;
+    
+    [StringLength(500, ErrorMessage = "Beskrivning får inte vara längre än 500 tecken")]
     public string? Description { get; set; }
+    
     public Guid? OriginCountryId { get; set; }
     public Guid? OriginRegionId { get; set; }
 }

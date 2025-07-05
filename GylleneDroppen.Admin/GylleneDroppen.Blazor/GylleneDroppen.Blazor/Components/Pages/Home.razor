@@ -21,11 +21,6 @@
                         "Whisky är inte snällt, det är ärligt."
                     </p>
                 </div>
-                
-                <div class="hero-actions" style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 3rem;">
-                    <a href="/whiskies" style="padding: 0.75rem 1.5rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.375rem; text-decoration: none; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">Utforska Whiskies</a>
-                    <a href="/provningar" style="padding: 0.75rem 1.5rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; text-decoration: none; font-weight: 600; font-family: Georgia, serif; transition: all 0.2s ease;" onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">Kommande Provningar</a>
-                </div>
 
                 <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
                     <div class="stat-card" style="text-align: center; padding: 2rem 1.5rem; background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
@@ -46,20 +41,81 @@
                     </div>
                 </div>
 
-                <div class="actions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
-                    <a href="/admin" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">🔧 Administration</h3>
-                        <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Hantera medlemmar, whiskies och provningar</p>
-                    </a>
-                    <a href="/provningar/skapa" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">📅 Skapa Provning</h3>
-                        <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Organisera en ny whiskyprovning</p>
-                    </a>
-                    <a href="/admin/whiskies" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">🥃 Hantera Whiskies</h3>
-                        <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Utöka samlingen med nya whiskies</p>
-                    </a>
-                </div>
+                <AuthorizeView Policy="AdminOnly">
+                    <Authorized Context="adminContext">
+                        <div class="actions-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
+                            <a href="/admin" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
+                                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">🔧 Administration</h3>
+                                <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Hantera medlemmar, whiskies och provningar</p>
+                            </a>
+                            <a href="/provningar/skapa" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
+                                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">📅 Skapa Provning</h3>
+                                <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Organisera en ny whiskyprovning</p>
+                            </a>
+                            <a href="/admin/whiskies" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
+                                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">🥃 Hantera Whiskies</h3>
+                                <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Utöka samlingen med nya whiskies</p>
+                            </a>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized Context="userContext">
+                        <!-- Quick Actions for Regular Users -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 3rem 0 2rem 0;">
+                            <a href="/whiskies" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
+                                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">🥃 Utforska Whiskies</h3>
+                                <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Bläddra i vår whiskysamling</p>
+                            </a>
+                            <a href="/provningar" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; text-decoration: none; color: inherit; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15);" onmouseover="this.style.background='#DAD3C7'; this.style.borderColor='#8B4513'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#DFD9CE'; this.style.borderColor='#B09B7C'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.15)';">
+                                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: #2B1810; font-family: Georgia, serif;">📅 Alla Provningar</h3>
+                                <p style="font-size: 0.9rem; color: #5C4A3A; margin: 0; line-height: 1.4; font-family: Georgia, serif;">Se alla kommande och tidigare provningar</p>
+                            </a>
+                        </div>
+
+                        <!-- Upcoming Events for Regular Users -->
+                        <div style="margin: 2rem 0;">
+                            <h2 style="font-size: 1.75rem; color: #2B1810; margin: 0 0 2rem 0; font-weight: 600; font-family: Georgia, serif; text-align: center;">📅 Kommande provningar</h2>
+                            @if (upcomingEvents.Any())
+                            {
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+                                    @foreach (var eventItem in upcomingEvents.Take(6))
+                                    {
+                                        <div style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.3s ease;" 
+                                             onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'; this.style.borderColor='#8B4513';" 
+                                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#B09B7C';">
+                                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #2B1810; margin: 0 0 1rem 0; font-family: Georgia, serif;">@eventItem.Title</h3>
+                                            <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
+                                                <div style="color: #5C4A3A;"><strong style="color: #2B1810;">📅 Datum:</strong> @eventItem.EventDate.ToString("yyyy-MM-dd HH:mm")</div>
+                                                @if (!string.IsNullOrEmpty(eventItem.Location))
+                                                {
+                                                    <div style="color: #5C4A3A;"><strong style="color: #2B1810;">📍 Plats:</strong> @eventItem.Location</div>
+                                                }
+                                                <div style="color: #5C4A3A;"><strong style="color: #2B1810;">🥃 Whiskies:</strong> @eventItem.WhiskyCount st</div>
+                                                <div style="color: #5C4A3A;"><strong style="color: #2B1810;">👥 Deltagare:</strong> @eventItem.ParticipantCount@(eventItem.MaxParticipants.HasValue ? $"/{eventItem.MaxParticipants}" : "") st</div>
+                                            </div>
+                                            <a href="/provningar/@eventItem.Id" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #8B4513; color: white; text-decoration: none; border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem; transition: all 0.2s ease;"
+                                               onmouseover="this.style.background='#6B3410';" onmouseout="this.style.background='#8B4513';">
+                                                Visa detaljer
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                                <div style="text-align: center; margin-top: 2rem;">
+                                    <a href="/provningar" style="padding: 0.75rem 2rem; background: #DFD9CE; color: #2B1810; border: 1px solid #B09B7C; border-radius: 0.375rem; text-decoration: none; font-weight: 600; font-family: Georgia, serif; font-size: 1rem; transition: all 0.2s ease; display: inline-block;"
+                                       onmouseover="this.style.background='#B09B7C'; this.style.color='white';" onmouseout="this.style.background='#DFD9CE'; this.style.color='#2B1810';">
+                                        Visa alla provningar
+                                    </a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div style="text-align: center; padding: 3rem; background: #DAD3C7; border: 2px dashed #B09B7C; border-radius: 0.5rem;">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📅</div>
+                                    <p style="font-size: 1.125rem; color: #5C4A3A; margin: 0; font-style: italic; font-family: Georgia, serif;">Inga kommande provningar just nu.</p>
+                                </div>
+                            }
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
 
                 <div class="activity-section" style="background: #DAD3C7; border: 1px solid #B09B7C; border-radius: 0.5rem; padding: 2rem; margin-top: 3rem; box-shadow: 0 1px 3px rgba(0,0,0,0.15);">
                     <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #B09B7C;">
@@ -97,11 +153,13 @@
 @code {
     private (int WhiskyCount, int UpcomingEventsCount, int TotalUsersCount, int PastEventsCount) stats = (0, 0, 0, 0);
     private List<TastingEventDto> recentEvents = new();
+    private List<TastingEventDto> upcomingEvents = new();
 
     protected override async Task OnInitializedAsync()
     {
         await LoadStatistics();
         await LoadRecentActivity();
+        await LoadUpcomingEvents();
     }
 
     private async Task LoadStatistics()
@@ -142,6 +200,18 @@
         catch (Exception)
         {
             recentEvents = new List<TastingEventDto>();
+        }
+    }
+
+    private async Task LoadUpcomingEvents()
+    {
+        try
+        {
+            upcomingEvents = await TastingEventService.GetUpcomingTastingEventsAsync(20);
+        }
+        catch (Exception)
+        {
+            upcomingEvents = new List<TastingEventDto>();
         }
     }
 

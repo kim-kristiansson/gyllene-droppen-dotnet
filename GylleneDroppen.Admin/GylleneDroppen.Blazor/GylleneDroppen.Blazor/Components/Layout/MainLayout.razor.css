@@ -30,33 +30,18 @@
 
 .content-wrapper {
     flex: 1;
-    padding: 3rem;
-    max-width: 1400px;
+    padding: 0;
+    max-width: 100%;
     width: 100%;
     margin: 0 auto;
-    background: linear-gradient(135deg, 
-        rgba(184, 134, 11, 0.02) 0%, 
-        transparent 30%, 
-        rgba(205, 133, 63, 0.03) 70%, 
-        transparent 100%
-    );
-    border-radius: var(--radius-xl);
-    box-shadow: inset var(--shadow-sm);
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 @media (max-width: 991px) {
     .navbar-top {
         position: relative;
-    }
-    
-    .content-wrapper {
-        padding: 1.5rem;
-    }
-}
-
-@media (max-width: 640px) {
-    .content-wrapper {
-        padding: 1rem;
     }
 }
 

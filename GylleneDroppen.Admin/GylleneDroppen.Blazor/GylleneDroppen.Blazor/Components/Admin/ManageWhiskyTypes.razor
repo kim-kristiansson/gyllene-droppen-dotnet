@@ -4,6 +4,7 @@
 @using Microsoft.AspNetCore.Authorization
 @inject IWhiskyMetadataService WhiskyMetadataService
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 
 @attribute [Authorize(Policy = "AdminOnly")]
 @rendermode InteractiveServer
@@ -11,27 +12,28 @@
 <PageTitle>Hantera Whiskytyper</PageTitle>
 
 <div style="padding: 1.5rem 0; background: #D4CCC0; color: #2B1810; font-family: Georgia, serif; min-height: 100vh;">
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid #B09B7C;">
-    <h1 style="font-size: 2.25rem; color: #2B1810; margin: 0; font-weight: 600;">🥃 Hantera Whiskytyper</h1>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-        <span style="color: #5D4037; font-weight: 600;">Totalt: @whiskyTypes.Count typer</span>
-        <button @onclick="ShowCreateForm" class="btn btn-primary" style="background: #8B4513; border: 1px solid #8B4513; color: white; padding: 0.75rem 1.5rem; border-radius: 0.375rem; font-weight: 600; font-family: Georgia, serif; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='#6B2C0F';" onmouseout="this.style.background='#8B4513';">
-            ➕ Lägg till ny typ
-        </button>
+<div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
+    <div class="page-header">
+        <h1>🥃 Hantera Whiskytyper</h1>
+        <div class="header-actions">
+            <span class="item-count">Totalt: @whiskyTypes.Count typer</span>
+            <button @onclick="ShowCreateForm" class="btn btn-primary">
+                ➕ Lägg till ny typ
+            </button>
+        </div>
     </div>
-</div>
 
 @if (!string.IsNullOrEmpty(statusMessage))
 {
-    <div style="padding: 1rem 1.5rem; border-radius: 0.375rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-weight: 500; @(statusMessage.StartsWith("Fel:") ? "background: rgba(239, 68, 68, 0.15); border: 1px solid #EF4444; color: #EF4444;" : "background: rgba(74, 124, 78, 0.15); border: 1px solid #4A7C4E; color: #4A7C4E;")">
+    <div class="status-message @(statusMessage.StartsWith("Fel:") ? "error" : "success")">
         <span><strong>@(statusMessage.StartsWith("Fel:") ? "Fel" : "Info"):</strong> @statusMessage</span>
-        <button @onclick="() => statusMessage = string.Empty" style="background: transparent; border: none; color: inherit; cursor: pointer; font-size: 1.25rem; padding: 0; opacity: 0.8; transition: opacity 0.2s ease;">✕</button>
+        <button @onclick="() => statusMessage = string.Empty" class="status-close">✕</button>
     </div>
 }
 
     @if (showCreateForm)
     {
-        <div class="form-container">
+        <div class="form-container" style="background: #DFD9CE; border: 1px solid #B09B7C; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
             <h3>@(editingType != null ? "Redigera Whiskytyp" : "Lägg till Ny Whiskytyp")</h3>
             <EditForm Model="typeDto" OnValidSubmit="SubmitTypeAsync" class="form">
                 <DataAnnotationsValidator/>
@@ -39,20 +41,23 @@
 
                 <div class="form-field">
                     <label class="form-label">Namn: <span class="required">*</span></label>
-                    <InputText @bind-Value="typeDto.Name" class="form-input" placeholder="T.ex. Single Malt" />
+                    <InputText @bind-Value="typeDto.Name" class="form-input" placeholder="T.ex. Single Malt" 
+                               style="padding: 14px 18px; border: 1px solid #B09B7C; border-radius: 6px; font-size: 16px; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; min-height: 48px; width: 100%; box-sizing: border-box;" />
                     <ValidationMessage For="() => typeDto.Name" class="validation-message" />
                 </div>
 
                 <div class="form-field">
                     <label class="form-label">Beskrivning:</label>
                     <InputTextArea @bind-Value="typeDto.Description" rows="3" class="form-textarea" 
-                                   placeholder="Beskriv whiskytypen och dess egenskaper..." />
+                                   placeholder="Beskriv whiskytypen och dess egenskaper..."
+                                   style="padding: 14px 18px; border: 1px solid #B09B7C; border-radius: 6px; font-size: 16px; background: #DFD9CE; color: #2B1810; font-family: Georgia, serif; min-height: 90px; width: 100%; box-sizing: border-box; resize: vertical;" />
                     <ValidationMessage For="() => typeDto.Description" class="validation-message" />
                 </div>
 
                 <div class="form-field">
                     <label class="form-label">Ursprungsland:</label>
-                    <InputSelect @bind-Value="selectedOriginCountryIdString" @bind-Value:after="OnOriginCountryChanged" class="form-input">
+                    <InputSelect @bind-Value="selectedOriginCountryIdString" @bind-Value:after="OnOriginCountryChanged" class="form-input"
+                                 style="padding: 14px 18px; border: 1px solid #B09B7C; border-radius: 6px; font-size: 16px; background-color: #DFD9CE; background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23B09B7C\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6,9 12,15 18,9\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; color: #2B1810; font-family: Georgia, serif; min-height: 48px; width: 100%; box-sizing: border-box; appearance: none; padding-right: 45px; cursor: pointer;">
                         <option value="" disabled>Välj ursprungsland (valfritt)</option>
                         <option value="">Inget specifikt land (universell typ)</option>
                         @foreach (var country in countries.OrderBy(c => c.Name))
@@ -65,7 +70,8 @@
 
                 <div class="form-field">
                     <label class="form-label">Ursprungsregion:</label>
-                    <InputSelect @bind-Value="selectedOriginRegionIdString" class="form-input" disabled="@(selectedOriginCountryId == Guid.Empty)">
+                    <InputSelect @bind-Value="selectedOriginRegionIdString" class="form-input" disabled="@(selectedOriginCountryId == Guid.Empty)"
+                                 style="padding: 14px 18px; border: 1px solid #B09B7C; border-radius: 6px; font-size: 16px; background-color: #DFD9CE; background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23B09B7C\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3e%3cpolyline points=\'6,9 12,15 18,9\'%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; color: #2B1810; font-family: Georgia, serif; min-height: 48px; width: 100%; box-sizing: border-box; appearance: none; padding-right: 45px; cursor: pointer;">
                         <option value="" disabled>@(selectedOriginCountryId == Guid.Empty ? "Välj land först" : "Välj ursprungsregion (valfritt)")</option>
                         <option value="">Ingen specifik region</option>
                         @foreach (var region in GetFilteredOriginRegions())
@@ -119,30 +125,23 @@
                         <div class="item-description">@type.Description</div>
                     }
 
-                    @if (type.OriginCountryName != null || type.OriginRegionName != null)
-                    {
-                        <div class="item-origin">
-                            <div style="margin-bottom: 0.5rem;">
-                                <strong>Ursprung:</strong>
-                                @if (type.OriginCountryName != null)
-                                {
-                                    <span style="background: #8B4513; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">🌍 @type.OriginCountryName</span>
-                                }
-                                @if (type.OriginRegionName != null)
-                                {
-                                    <span style="background: #DFD9CE; color: #2B1810; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; border: 1px solid #B09B7C;">📍 @type.OriginRegionName</span>
-                                }
-                            </div>
+                    <div class="item-origin">
+                        <div>
+                            <strong>Ursprung:</strong>
+                            @if (type.OriginCountryName != null)
+                            {
+                                <span class="origin-badge country">🌍 @type.OriginCountryName</span>
+                            }
+                            @if (type.OriginRegionName != null)
+                            {
+                                <span class="origin-badge region">📍 @type.OriginRegionName</span>
+                            }
+                            @if (type.OriginCountryName == null && type.OriginRegionName == null)
+                            {
+                                <span class="origin-badge universal">🌐 Universell typ</span>
+                            }
                         </div>
-                    }
-                    else
-                    {
-                        <div class="item-origin">
-                            <div style="margin-bottom: 0.5rem;">
-                                <span style="background: #6B5D54; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">🌐 Universell typ</span>
-                            </div>
-                        </div>
-                    }
+                    </div>
 
                     <div class="item-meta">
                         <small>Skapat: @type.CreatedDate.ToString("yyyy-MM-dd")</small>
@@ -155,6 +154,9 @@
                     <div class="item-actions">
                         <button @onclick="() => EditType(type)" class="btn btn-outline-primary btn-sm">
                             ✏️ Redigera
+                        </button>
+                        <button @onclick="() => DeleteType(type)" class="btn btn-outline-danger btn-sm" disabled="@isProcessing">
+                            🗑️ Ta bort
                         </button>
                     </div>
                 </div>
@@ -172,6 +174,7 @@
             </button>
         </div>
     }
+</div>
 </div>
 
 @code {
@@ -351,6 +354,45 @@
             isProcessing = false;
             StateHasChanged();
         }
+    }
+
+    private async Task DeleteType(WhiskyTypeDto type)
+    {
+        if (isProcessing) return;
+
+        if (!await ConfirmDelete($"Är du säker på att du vill ta bort whiskytypen '{type.Name}'?"))
+            return;
+
+        try
+        {
+            isProcessing = true;
+            statusMessage = string.Empty;
+
+            var deleted = await WhiskyMetadataService.DeleteWhiskyTypeAsync(type.Id);
+            if (deleted)
+            {
+                statusMessage = $"Whiskytyp '{type.Name}' har tagits bort.";
+                await LoadWhiskyTypes();
+            }
+            else
+            {
+                statusMessage = "Fel: Kunde inte ta bort whiskytyp.";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fel: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task<bool> ConfirmDelete(string message)
+    {
+        return await JSRuntime.InvokeAsync<bool>("confirm", message);
     }
 
 }

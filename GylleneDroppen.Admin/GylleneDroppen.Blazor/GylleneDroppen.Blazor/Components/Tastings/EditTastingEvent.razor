@@ -4,6 +4,7 @@
 @using GylleneDroppen.Application.Dtos.Whisky
 @using GylleneDroppen.Application.Dtos.Address
 @using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Policy = "AdminOnly")]
 @inject ITastingEventService TastingEventService
 @inject IWhiskyService WhiskyService
 @inject IAddressService AddressService

@@ -23,7 +23,7 @@
         </div>
 
 <AuthorizeView>
-    <Authorized>
+    <Authorized Context="userContext">
         @if (membershipStatus != null && (membershipStatus.HasActiveMembership || membershipStatus.HasTrialAvailable || membershipStatus.HasUsedTrial))
         {
             <div style="background: #DAD3C7; border-radius: 0.5rem; padding: 1.75rem 2rem; margin-bottom: 2.5rem; border: 2px solid @(membershipStatus.HasActiveMembership ? "#4A7C4E" : membershipStatus.HasTrialAvailable ? "#4682B4" : "#EF4444"); box-shadow: 0 1px 3px rgba(0,0,0,0.15); position: relative;">
@@ -43,11 +43,15 @@
             </div>
         }
         
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <button @onclick="CreateNewEvent" style="padding: 1rem 2rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.5rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; font-size: 1.125rem; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#6B3410'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#8B4513'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
-                ➕ Skapa nytt event
-            </button>
-        </div>
+        <AuthorizeView Policy="AdminOnly">
+            <Authorized Context="adminContext">
+                <div style="text-align: center; margin-bottom: 3rem;">
+                    <button @onclick="CreateNewEvent" style="padding: 1rem 2rem; background: #8B4513; color: white; border: 1px solid #8B4513; border-radius: 0.5rem; cursor: pointer; font-weight: 600; font-family: Georgia, serif; font-size: 1.125rem; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onmouseover="this.style.background='#6B3410'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)';" onmouseout="this.style.background='#8B4513'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)';">
+                        ➕ Skapa nytt event
+                    </button>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </Authorized>
 </AuthorizeView>
 

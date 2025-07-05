@@ -6,6 +6,7 @@
 @using GylleneDroppen.Application.Dtos.WhiskyMetadata
 @using Microsoft.AspNetCore.Authorization
 @using System.ComponentModel.DataAnnotations
+@attribute [Authorize(Policy = "AdminOnly")]
 @inject ITastingEventService TastingEventService
 @inject IWhiskyService WhiskyService
 @inject IWhiskyMetadataService WhiskyMetadataService
